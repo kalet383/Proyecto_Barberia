@@ -17,7 +17,7 @@
         <v-row justify="center">
             <v-col cols="12" md="8">
                 <h1>BIENVENIDO A STYLEHUB</h1>
-                <p>Gestor de Barberias</p>
+                <p>Gestor de Barberia</p>
                 <v-btn color="primary" to="/login1">Iniciar Sesión</v-btn>
             </v-col>
         </v-row>
