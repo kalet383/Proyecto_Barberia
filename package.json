@@ -44,6 +44,7 @@
     "@vitejs/plugin-vue": "5.2.1",
     "@vue/eslint-config-prettier": "10.1.0",
     "@vue/tsconfig": "0.7.0",
+    "esbuild": "^0.25.2",
     "eslint": "9.17.0",
     "eslint-plugin-vue": "9.32.0",
     "prettier": "3.4.2",

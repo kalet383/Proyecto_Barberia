@@ -1,14 +1,14 @@
 const MainRoutes = {
-  path: '/main',
+  path: '/dashboard',
   meta: {
     requiresAuth: true
   },
-  redirect: '/main/dashboard/default',
+  redirect: '/dashboard/default',
   component: () => import('@/layouts/full/FullLayout.vue'),
   children: [
     {
       name: 'LandingPage',
-      path: '/',
+      path: '/dashboard',
       component: () => import('@/views/dashboards/default/DefaultDashboard.vue')
     },
     {
