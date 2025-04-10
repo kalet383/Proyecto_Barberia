@@ -6,22 +6,21 @@
       </div>
       <nav class="nav">
         <ul>
-          <li><a href="#">Servicios</a></li>
-          <li><a href="#">Barberos</a></li>
-          <li><a href="#">¿Quienes somos?</a></li>
-          <li><a href="#">¿Como llegar?</a></li>
+          <li><a href="#">SERVICIOS</a></li>
+          <li><a href="#">BARBEROS</a></li>
+          <li><a href="#">¿QUIENES SOMOS?</a></li>
+          <li><a href="#">¿COMO LLEGAR?</a></li>
         </ul>
       </nav>
-      <v-btn class="boton" color="#ee6f38" to="/login1">Iniciar Sesión</v-btn>
+      <v-btn class="boton" color="#ee6f38" to="/login1">INICIAR SECCION</v-btn>
     </header>
-      
-    <v-container fluid class="carousel-container">
-          <v-carousel  height="0vh" show-arrows="hover" cycle hide-delimiter-background class="half-screen-carousel">
+        <v-container fluid class="carousel-container">
+          <v-carousel  height="0vh" show-arrows="hover" cycle hide-delimiters hide-delimiter-background class="half-screen-carousel">
             <v-carousel-item v-for="(image, i) in images" :key="i">
               <img :src="image" alt="Imagen del carrusel" class="carousel-image" />
             </v-carousel-item>
           </v-carousel>
-    </v-container>
+        </v-container>
   </div>
 </template>
 
@@ -51,24 +50,23 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0px 40px;
+  padding: 0px 55px;
   color: #ee6f38;
-   /* Fondo semitransparente para legibilidad */
-  background-color: rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(3px);
+  
 }
 
 .imagen-pequeña {
-  width: 125px;
+  width: 120px;
   height: auto;
 }
 
 .boton {
-  font-size: 20px;
+  font-size: 15px;
 }
 
 .nav ul {
   list-style: none;
+  padding: 0;
   display: flex;
   gap: 20px;
   margin-left: 50px;
@@ -76,15 +74,17 @@
 
 .nav ul li a {
   text-decoration: none;
-  color: #ee6f38;
+  color: white;
   font-weight: bold;
-  transition: color 0.3s ease;
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
-  font-size: 20px;
+  transition: border-bottom 0.3s ease;
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
+  font-size: 17px;
+  padding-bottom: 4px;
 }
 
 .nav ul li a:hover {
-  color: white;
+  border-bottom: 2px solid white;
+  color: #ee6f38;
 }
 
 /* Estilos para el carrusel */
@@ -95,7 +95,7 @@
 
 .half-screen-carousel {
   width: 100vw !important;
-  height: 80vh !important; /* Mitad de la pantalla */
+  height: 100vh !important; /* Mitad de la pantalla */
   position: absolute;
   top: 0;
   left: 0;
@@ -105,5 +105,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover; /* Asegurar que la imagen se ajuste correctamente */
+  position: relative
 }
 </style>
