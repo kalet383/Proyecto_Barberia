@@ -1,9 +1,11 @@
-import { createVuetify } from 'vuetify';
-import { aliases, mdi } from 'vuetify/iconsets/mdi-svg';
-import { icons } from './mdi-icon'; // Import icons from separate file
-import * as components from 'vuetify/components';
-import * as directives from 'vuetify/directives';
-import { PurpleTheme } from '@/theme/LightTheme';
+import { createVuetify } from 'vuetify'
+import { h } from 'vue'
+import '@fortawesome/fontawesome-free/css/all.css'
+import { aliases, mdi } from 'vuetify/iconsets/mdi-svg'
+import { icons } from './mdi-icon' // si tienes íconos personalizados
+import * as components from 'vuetify/components'
+import * as directives from 'vuetify/directives'
+import { PurpleTheme } from '@/theme/LightTheme'
 
 export default createVuetify({
   components,
@@ -15,9 +17,13 @@ export default createVuetify({
       ...icons
     },
     sets: {
-      mdi
+      mdi,
+      fa: {
+        component: (props: any) => h('i', { class: props.icon }),
+      },
     }
   },
+  
   theme: {
     defaultTheme: 'PurpleTheme',
     themes: {
