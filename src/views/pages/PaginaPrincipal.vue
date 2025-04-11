@@ -22,7 +22,7 @@
             </v-carousel-item>
           </v-carousel>
           <div class="centered-contend">
-            <h1 class="title">STYLEHUB: ESTILO, PRECISION Y CARACTER</h1>
+            <h1 class="title">ESTILO SIN LIMITES, BIENVENIDO A STYLEHUB.</h1>
             <v-btn class="boton-agendar" color="#ee6f38" to="/login1">¡AGENDA YA!</v-btn>
             <a href="#seccion-inferior" class="flecha-abajo">
               <i class="fa-solid fa-angle-down"></i>
@@ -30,16 +30,18 @@
           </div>
         </v-container>
   </div>
+  <HomeServicios></HomeServicios>
 </template>
 
 <script setup>
+  import HomeServicios from '@/components/home/HomeServicios.vue';
   const images = [
-  'https://img.freepik.com/fotos-premium/hombre-sentado-silla-barbero-mientras-barbero-corta-cabello-precision-barbero-cortando-cuidadosamente-barba-cliente-precision_538213-114313.jpg?w=996',
-  'https://www.blac.media/wp-content/uploads/2022/11/pexels-rodnae-productions-7697394-scaled.jpg',
-  'https://wallpapers.com/images/hd/barber-shop-background-d8q2uecwheabpqj0.jpg',
-  'https://www.giomrbarber.com/wp-content/uploads/2024/01/escuela-de-barberia-en-bogota.jpeg',
-  'https://s1.abcstatics.com/media/summum/2018/11/30/nathon-oski-546863-unsplash-k0MG--1248x698@abc.jpg',
-];
+    'https://img.freepik.com/fotos-premium/hombre-sentado-silla-barbero-mientras-barbero-corta-cabello-precision-barbero-cortando-cuidadosamente-barba-cliente-precision_538213-114313.jpg?w=996',
+    'https://www.blac.media/wp-content/uploads/2022/11/pexels-rodnae-productions-7697394-scaled.jpg',
+    'https://wallpapers.com/images/hd/barber-shop-background-d8q2uecwheabpqj0.jpg',
+    'https://www.giomrbarber.com/wp-content/uploads/2024/01/escuela-de-barberia-en-bogota.jpeg',
+    'https://s1.abcstatics.com/media/summum/2018/11/30/nathon-oski-546863-unsplash-k0MG--1248x698@abc.jpg',
+  ];
 </script>
 
 <style scoped>
@@ -71,6 +73,7 @@
 
 .boton-inicio-seccion {
   font-size: 15px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
 }
 
 .nav ul {
@@ -86,7 +89,7 @@
   color: white;
   font-weight: bold;
   transition: border-bottom 0.3s ease;
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
   font-size: 17px;
   padding-bottom: 4px;
 }
@@ -160,4 +163,16 @@
   }
 }
 
+.title {
+  display: inline-block;
+  font-weight: bold;
+  font-size: 2rem;
+  color: white;
+  transition: transform 0.2s ease, text-shadow 0.2s ease;
+}
+
+.title:hover {
+  transform: scale(1.02);
+  text-shadow: 0 0 10px black, 0 0 20px black;
+}
 </style>
