@@ -13,7 +13,7 @@
           <li><a href="#">¿COMO LLEGAR?</a></li>
         </ul>
       </nav>
-      <v-btn class="boton-inicio-seccion" color="#ee6f38" to="/login1">INICIAR SECCION</v-btn>
+      <v-btn class="boton-inicio-seccion" color="#ee6f38" to="/login1">INICIAR SESION</v-btn>
     </header>
         <v-container fluid class="carousel-container">
           <v-carousel  height="0vh" show-arrows="hover" cycle hide-delimiters hide-delimiter-background class="half-screen-carousel">
@@ -39,7 +39,7 @@
     'https://img.freepik.com/fotos-premium/hombre-sentado-silla-barbero-mientras-barbero-corta-cabello-precision-barbero-cortando-cuidadosamente-barba-cliente-precision_538213-114313.jpg?w=996',
     'https://www.blac.media/wp-content/uploads/2022/11/pexels-rodnae-productions-7697394-scaled.jpg',
     'https://wallpapers.com/images/hd/barber-shop-background-d8q2uecwheabpqj0.jpg',
-    'https://www.giomrbarber.com/wp-content/uploads/2024/01/escuela-de-barberia-en-bogota.jpeg',
+    'https://images.pexels.com/photos/1813272/pexels-photo-1813272.jpeg?cs=srgb&dl=pexels-thgusstavo-1813272.jpg&fm=jpg',
     'https://s1.abcstatics.com/media/summum/2018/11/30/nathon-oski-546863-unsplash-k0MG--1248x698@abc.jpg',
   ];
 </script>
@@ -132,7 +132,7 @@
 }
 
 .boton-agendar {
-  margin-top: 10px;
+  margin-top: 20px;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
   font-size: 18px
 }
@@ -175,4 +175,20 @@
   transform: scale(1.02);
   text-shadow: 0 0 10px black, 0 0 20px black;
 }
+
+@media (min-width: 1024px) {
+  .centered-contend {
+    position: absolute;
+    top: 75%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    z-index: 11;
+    margin-top: 110px;
+  }
+}
+
 </style>
