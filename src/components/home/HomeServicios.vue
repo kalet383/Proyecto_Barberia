@@ -8,12 +8,12 @@
             {{ categoria.nombre }}
           </v-tab>
         </v-tabs>
-        <v-carousel v-model="indicesCarrusel[tab]" height="400" progress="#ee6f38" hide-delimiters v-if="categorias[tab]">
+        <v-carousel v-model="indicesCarrusel[tab]" progress="#ee6f38" hide-delimiters v-if="categorias[tab]">
           <v-carousel-item v-for="(grupo, j) in agruparServicios(categorias[tab].servicios, 3)" :key="j">
-            <v-row dense justify="center">
+            <v-row dense justify="center" class="espacio-cards">
               <v-col v-for="(servicio, k) in grupo" :key="k" cols="12" sm="6" md="4">
                 <v-card class="mx-auto" max-width="400">
-                  <v-img class="align-end text-white" height="225" :src="servicio.imagen" cover>
+                  <v-img class="img-servicio text-white" :src="servicio.imagen" cover>
                     <v-card-title>{{ servicio.nombre }}</v-card-title>
                   </v-img>
                   <v-card-subtitle class="pt-4">
@@ -23,7 +23,7 @@
                     {{ servicio.descripcion }}
                   </v-card-text>
                   <v-card-actions>
-                    <v-btn color="#ee6f38" text="AGENDAR"></v-btn>
+                    <v-btn color="#ee6f38" class="botonAgendar">AGENDAR</v-btn>
                   </v-card-actions>
                 </v-card>
               </v-col>
@@ -160,22 +160,47 @@
 
 <style scoped>
 
-.servicios-section {
-  padding: 60px 0;
-  height: 100vh; /* Hace que la sección ocupe todo el viewport */
-  display: flex;
-  flex-direction: column;
-  justify-content: center; /* Centra el contenido verticalmente */
-  margin-bottom: 45px;
-}
-.section-title {
-  text-align: center;
-  font-size: 2rem;
-  margin-bottom: 30px;
-  font-weight: bold;
-}
+  .servicios-section {
+    padding: 60px 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
 
-.v-card {
-  width: 60%;
-}
+  .section-title {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 30px;
+    font-weight: bold;
+    margin-top: 1%;
+  }
+
+  /* Asegura que las tarjetas crezcan */
+  .v-card {
+    width: 100%;
+    max-width: 400px;
+    height: auto !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin-top: 4%;
+  }
+
+  /* Imagen no muy alta */
+  .img-servicio {
+    height: 300px;
+    object-fit: cover;
+  }
+
+  /* Asegura que el texto no se corte */
+  .v-card-subtitle, .v-card-text {
+    overflow: visible;
+    white-space: normal;
+  }
+
+  .espacio-cards {
+    margin-left: 14%;
+    margin-right: 14%;
+  }
 </style>
