@@ -8,7 +8,7 @@
             {{ categoria.nombre }}
           </v-tab>
         </v-tabs>
-        <v-carousel height="400" progress="#ee6f38" hide-delimiters v-if="categorias[tab]">
+        <v-carousel v-model="indicesCarrusel[tab]" height="400" progress="#ee6f38" hide-delimiters v-if="categorias[tab]">
           <v-carousel-item v-for="(grupo, j) in agruparServicios(categorias[tab].servicios, 3)" :key="j">
             <v-row dense justify="center">
               <v-col v-for="(servicio, k) in grupo" :key="k" cols="12" sm="6" md="4">
@@ -36,8 +36,9 @@
 </template>
 
 <script setup>
-  import { ref, reactive } from 'vue'
+  import { ref, reactive, watchEffect} from 'vue'
   const tab = ref(0)
+  const indicesCarrusel = ref({})
   const categorias = reactive([
     {
       nombre: 'CABELLO',
@@ -147,12 +148,25 @@
     return grupos
   }
 
+  watchEffect(() => {
+    categorias.forEach((_, index) => {
+      if (indicesCarrusel.value[index] === undefined) {
+        indicesCarrusel.value[index] = 0; // Cada categoría empieza en la primera página
+      }
+    });
+  });
+
 </script>
 
 <style scoped>
 
 .servicios-section {
   padding: 60px 0;
+  height: 100vh; /* Hace que la sección ocupe todo el viewport */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Centra el contenido verticalmente */
+  margin-bottom: 45px;
 }
 .section-title {
   text-align: center;
@@ -161,4 +175,7 @@
   font-weight: bold;
 }
 
+.v-card {
+  width: 60%;
+}
 </style>

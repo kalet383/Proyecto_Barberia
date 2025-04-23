@@ -9,8 +9,8 @@
           <li><a href="#">SERVICIOS</a></li>
           <li><a href="#">BARBEROS</a></li>
           <li><a href="#">PRODUCTOS</a></li>
-          <li><a href="#">¿QUIENES SOMOS?</a></li>
           <li><a href="#">¿COMO LLEGAR?</a></li>
+          <li><a href="#">¿QUIENES SOMOS?</a></li>
         </ul>
       </nav>
       <v-btn class="boton-inicio-seccion" color="#ee6f38" to="/login1">INICIAR SESION</v-btn>
@@ -187,8 +187,7 @@
     align-items: center;
     text-align: center;
     z-index: 11;
-    margin-top: 110px;
+    margin-top: 80px;
   }
 }
-
 </style>
