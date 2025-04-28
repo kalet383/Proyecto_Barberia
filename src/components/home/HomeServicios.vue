@@ -3,16 +3,11 @@
     <section id="seccion-inferior">
       <v-container class="servicios-section">
         <h2 class="section-title">NUESTROS SERVICIOS</h2>
-        <v-tabs v-model="tab" class="my-4" align-tabs="center">
-          <v-tab v-for="(categoria, i) in categorias" :key="i">
-            {{ categoria.nombre }}
-          </v-tab>
-        </v-tabs>
         <v-carousel v-model="indicesCarrusel[tab]" progress="#ee6f38" hide-delimiters v-if="categorias[tab]">
           <v-carousel-item v-for="(grupo, j) in agruparServicios(categorias[tab].servicios, 3)" :key="j">
             <v-row dense justify="center" class="espacio-cards">
-              <v-col v-for="(servicio, k) in grupo" :key="k" cols="12" sm="6" md="4">
-                <v-card class="mx-auto" max-width="400">
+              <v-col v-for="(servicio, k) in grupo" :key="k" cols="12" sm="6" md="4" class="d-flex">
+                <v-card class="mx-auto card-servicio" max-width="400">
                   <v-img class="img-servicio text-white" :src="servicio.imagen" cover>
                     <v-card-title>{{ servicio.nombre }}</v-card-title>
                   </v-img>
@@ -41,100 +36,30 @@
   const indicesCarrusel = ref({})
   const categorias = reactive([
     {
-      nombre: 'CABELLO',
       servicios: [
         {
-          nombre: 'Corte Clásico',
-          precio: '$12.000',
+          nombre: 'SERVICIO ESTANDAR',
+          precio: '$15.000 COP',
           tiempo: '30 min',
-          descripcion: 'Un corte limpio y profesional.',
-          imagen: 'https://i.pinimg.com/originals/93/71/93/937193566fba4c2a407bcad4b1889d97.jpg',
+          descripcion: 'Asesoria de imagen y corte de tu preferencia, incluye bebida',
+          imagen: 'https://media.istockphoto.com/id/1473584884/es/foto/barbero-cortando-el-cabello-con-maquinilla-de-afeitar-el%C3%A9ctrica.jpg?s=612x612&w=0&k=20&c=JHW3q7t8M8ui6i-OrI9OFm1_OXvENagz7Auig58Kexw=',
           show: false
         },
         {
-          nombre: 'Taper Fade',
-          precio: '$15.000',
-          tiempo: '35 min',
-          descripcion: 'Estilo degradado perfecto.',
-          imagen: 'https://blog.goldsupplier.com/wp-content/uploads/2024/11/low-taper-fade-curly-hair-2.jpg',
+          nombre: 'SERVICIO SILVER',
+          precio: '$22.000 COP',
+          tiempo: '40 min',
+          descripcion: 'Asesoria de imagen, corte de tu preferencia, perfilado de barba, cejas, mascarilla y bebida incluida',
+          imagen: 'https://thebarbercompany.pe/wp-content/uploads/2019/04/serv4.webp',
           show: false
         },
         {
-          nombre: 'Low Fade',
-          precio: '$15.000',
-          tiempo: '35 min',
-          descripcion: 'Estilo degradado perfecto.',
-          imagen: 'https://i.pinimg.com/736x/57/56/b1/5756b13874ab279d439fd789ced7398c.jpg',
+          nombre: 'SERVICIO GOLD',
+          precio: '$30.000 COP',
+          tiempo: '60 min',
+          descripcion: 'Asesoria de imagen, corte de tu preferencia, perfilado de barba, cejas, lavado de cabello, masaje y bebida incluida',
+          imagen: 'https://www.clubdecaballeros.co/wp-content/uploads/2022/04/IMG_0427.jpg',
           show: false
-        },
-        {
-          nombre: 'Low Fade',
-          precio: '$15.000',
-          tiempo: '35 min',
-          descripcion: 'Estilo degradado perfecto.',
-          imagen: 'https://i.pinimg.com/736x/57/56/b1/5756b13874ab279d439fd789ced7398c.jpg',
-          show: false
-        }
-      ]
-    },
-    {
-      nombre: 'BARBA',
-      servicios: [
-        {
-          nombre: 'Diseño de Barba',
-          precio: '$100 MXN',
-          tiempo: '25 min',
-          descripcion: 'Barba con estilo y detalle.',
-          imagen: 'https://i.pinimg.com/736x/bf/71/ab/bf71abcc025fe6229405db631b94a0f8.jpg',
-          show: false
-        },
-        {
-          nombre: 'Diseño de Barba',
-          precio: '$100 MXN',
-          tiempo: '25 min',
-          descripcion: 'Barba con estilo y detalle.',
-          imagen: 'https://i.pinimg.com/736x/bf/71/ab/bf71abcc025fe6229405db631b94a0f8.jpg',
-          show: false
-        },
-        {
-          nombre: 'Diseño de Barba',
-          precio: '$100 MXN',
-          tiempo: '25 min',
-          descripcion: 'Barba con estilo y detalle.',
-          imagen: 'https://i.pinimg.com/736x/bf/71/ab/bf71abcc025fe6229405db631b94a0f8.jpg',
-          show: false
-        },
-        {
-          nombre: 'Diseño de Barba',
-          precio: '$100 MXN',
-          tiempo: '25 min',
-          descripcion: 'Barba con estilo y detalle.',
-          imagen: 'https://i.pinimg.com/736x/bf/71/ab/bf71abcc025fe6229405db631b94a0f8.jpg',
-          show: false
-        }
-      ]
-    },
-    {
-      nombre: 'CEJAS',
-      servicios: [
-        {
-          nombre: 'Diseño de Cejas',
-          precio: '$80 MXN',
-          tiempo: '15 min',
-          descripcion: 'Perfilado preciso y natural.',
-          imagen: 'https://2356021.fs1.hubspotusercontent-na1.net/hubfs/2356021/linea%20en%20la%20ceja%20hombre%20barberia%202.webp'
-        }
-      ]
-    },
-    {
-      nombre: 'COMBOS STYLEHUB',
-      servicios: [
-        {
-          nombre: 'Corte + Barba',
-          precio: '$200 MXN',
-          tiempo: '50 min',
-          descripcion: 'Paquete completo de estilo.',
-          imagen: '/imagenes/combo.jpg'
         }
       ]
     }
@@ -160,12 +85,19 @@
 
 <style scoped>
 
+  #seccion-inferior {
+    position: relative;
+    z-index: 2;
+    margin-top: 0; /* Asegura que no haya margen superior que cause espacios */
+  }
+
   .servicios-section {
     padding: 60px 0;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+    overflow: visible !important;
   }
 
   .section-title {
@@ -185,6 +117,25 @@
     flex-direction: column;
     justify-content: space-between;
     margin-top: 4%;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .v-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  }
+
+  .card-servicio {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+  }
+
+  .v-card-text {
+    flex-grow: 1;
+    text-align: center;
+    padding: 16px;
   }
 
   /* Imagen no muy alta */
@@ -197,10 +148,26 @@
   .v-card-subtitle, .v-card-text {
     overflow: visible;
     white-space: normal;
+    min-height: 60px;
+    min-height: 24px;
+    text-align: center;
   }
 
   .espacio-cards {
-    margin-left: 14%;
-    margin-right: 14%;
+    margin-left: 12%;
+    margin-right: 12%;
+    height: auto !important;
+  }
+
+  .v-carousel, .v-carousel__item {
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  .v-card-actions {
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+    flex-shrink: 0; /* Evita que el botón se comprima */
   }
 </style>

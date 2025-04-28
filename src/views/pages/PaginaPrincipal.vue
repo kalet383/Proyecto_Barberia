@@ -1,6 +1,6 @@
 <template>
   <div class="page-container">
-    <header class="header">
+    <header ref="headerRef" class="header">
       <div class="logo">
         <img src="/imagenes/logo2.png" class="imagen-pequeña">
       </div>
@@ -35,6 +35,7 @@
 </template>
 
 <script setup>
+  import { ref, onMounted, onUnmounted } from 'vue';
   import HomeServicios from '@/components/home/HomeServicios.vue';
   import HomeBarberos from '@/components/home/HomeBarberos.vue';
   const images = [
@@ -44,13 +45,38 @@
     'https://images.pexels.com/photos/1813272/pexels-photo-1813272.jpeg?cs=srgb&dl=pexels-thgusstavo-1813272.jpg&fm=jpg',
     'https://s1.abcstatics.com/media/summum/2018/11/30/nathon-oski-546863-unsplash-k0MG--1248x698@abc.jpg',
   ];
+
+  // Crear una referencia para el header
+  const headerRef = ref(null);
+
+  // Función para manejar el scroll
+  const handleScroll = () => {
+    if (headerRef.value) {
+      if (window.scrollY > 0) {
+        headerRef.value.classList.add('sticky');
+      } else {
+        headerRef.value.classList.remove('sticky');
+      }
+    }
+  };
+
+  // Agregar y remover el event listener al montar y desmontar el componente
+  onMounted(() => {
+    window.addEventListener('scroll', handleScroll);
+  });
+
+  onUnmounted(() => {
+    window.removeEventListener('scroll', handleScroll);
+  });
 </script>
 
 <style scoped>
 .page-container {
   position: relative;
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .header {
@@ -58,24 +84,47 @@
   top: 0;
   left: 0;
   right: 0;
-  z-index: 10; /* Asegurar que el header esté por encima del carrusel */
+  z-index: 99; /* Asegurar que el header esté por encima del carrusel */
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0px 55px;
   color: #ee6f38;
-  
+  transition: all 0.3s ease;
+}
+
+.header.sticky {
+  position: fixed;
+  top: 0; /* Asegúrate de que esté pegado al tope */
+  width: 100%; /* Ocupa todo el ancho */
+  background-color: rgba(0, 0, 0, 0.70);
+  backdrop-filter: blur(5px);
+  z-index: 99;
+  padding: 0px 40px; /* Reducir el padding */
+  height: 95px; /* Reducir la altura del header */
 }
 
 .imagen-pequeña {
   margin-top: 10px;
   width: 138px;
   height: auto;
+  transition: all 0.3s ease; /* Animación suave */
+}
+
+.header.sticky .imagen-pequeña {
+  width: 100px; /* Reducir tamaño del logo */
+  margin-top: 5px;
 }
 
 .boton-inicio-seccion {
   font-size: 15px;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+  transition: all 0.3s ease;
+}
+
+.header.sticky .boton-inicio-seccion {
+  font-size: 12px; /* Reducir tamaño del texto */
+  padding: 4px 8px; /* Reducir el padding del botón */
 }
 
 .nav ul {
@@ -84,16 +133,26 @@
   display: flex;
   gap: 28px;
   margin-left: 50px;
+  transition: all 0.3s ease;
+}
+
+.header.sticky .nav ul {
+  gap: 20px; /* Reducir el espacio entre enlaces */
+  margin-left: 30px;
 }
 
 .nav ul li a {
   text-decoration: none;
   color: white;
   font-weight: bold;
-  transition: border-bottom 0.3s ease;
+  transition: all 0.3s ease;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
   font-size: 17px;
   padding-bottom: 4px;
+}
+
+.header.sticky .nav ul li a {
+  font-size: 14px; /* Reducir tamaño de fuente */
 }
 
 .nav ul li a:hover {
@@ -105,21 +164,25 @@
 .carousel-container {
   padding: 0 !important;
   margin: 0 !important;
+  position: relative; /* Asegura que el contenedor sea un punto de referencia */
+  height: 100vh; /* Mantén la altura para que ocupe la pantalla */
+  overflow: hidden; /* Evita que el carrusel desborde */
+  background: transparent !important;
 }
 
 .half-screen-carousel {
   width: 100vw !important;
   height: 100vh !important; /* Mitad de la pantalla */
-  position: absolute;
-  top: 0;
-  left: 0;
+  position: relative;
 }
 
 .carousel-image {
   width: 100%;
   height: 100%;
   object-fit: cover; /* Asegurar que la imagen se ajuste correctamente */
-  position: relative
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .centered-contend {
@@ -128,7 +191,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
-  z-index: 11; /* Asegurarse de que esté por encima del carrusel */
+  z-index: 5; /* Asegurarse de que esté por encima del carrusel */
   color: white;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
 }
