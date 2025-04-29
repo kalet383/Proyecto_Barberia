@@ -2,7 +2,9 @@
   <div class="page-container">
     <header ref="headerRef" class="header">
       <div class="logo">
-        <img src="/imagenes/logo2.png" class="imagen-pequeña">
+        <a href="/" @click="location.reload()">
+          <img src="/imagenes/logo2.png" class="imagen-pequeña" />
+        </a>
       </div>
       <nav class="nav">
         <ul>
