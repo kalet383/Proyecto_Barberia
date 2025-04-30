@@ -97,7 +97,7 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    overflow: visible !important;
+    overflow: visible !important; /* Permitir que el contenido desborde si es necesario */
   }
 
   .section-title {
@@ -112,7 +112,7 @@
   .v-card {
     width: 100%;
     max-width: 400px;
-    height: auto !important;
+    height: auto !important; /* Permitir que la tarjeta crezca según el contenido */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -129,13 +129,7 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    height: 100%;
-  }
-
-  .v-card-text {
-    flex-grow: 1;
-    text-align: center;
-    padding: 16px;
+    height: auto; /* Asegurar que la tarjeta no tenga altura fija */
   }
 
   /* Imagen no muy alta */
@@ -145,29 +139,78 @@
   }
 
   /* Asegura que el texto no se corte */
-  .v-card-subtitle, .v-card-text {
+  .v-card-subtitle,
+  .v-card-text {
     overflow: visible;
     white-space: normal;
-    min-height: 60px;
-    min-height: 24px;
     text-align: center;
+    padding: 16px;
   }
 
+  /* Ajustar el contenedor de las tarjetas */
   .espacio-cards {
-    margin-left: 12%;
-    margin-right: 12%;
-    height: auto !important;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 1200px; /* Limitar el ancho máximo para mejor control */
+    height: auto !important; /* Asegurar que el contenedor no restrinja la altura */
+    padding: 20px 0; /* Agregar algo de padding para espaciado */
   }
 
-  .v-carousel, .v-carousel__item {
+  /* Asegurar que el carrusel no corte las tarjetas */
+  .v-carousel,
+  .v-carousel__item {
     overflow: visible !important;
-    height: auto !important;
+    height: auto !important; /* Permitir que el carrusel crezca según el contenido */
+    min-height: 500px; /* Altura mínima para evitar que se colapse */
   }
 
+  /* Botón de acciones */
   .v-card-actions {
     padding: 16px;
     display: flex;
     justify-content: center;
     flex-shrink: 0; /* Evita que el botón se comprima */
+    margin-bottom: 10px; /* Agregar espacio debajo del botón */
+  }
+
+  /* Estilos para las flechas del carrusel */
+  :deep(.v-carousel__controls) {
+    position: absolute; /* Posicionar los controles fuera del flujo normal */
+    top: 50%; /* Centrar verticalmente */
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between; /* Separar las flechas a los extremos */
+    padding: 0 20px; /* Espacio en los bordes */
+    transform: translateY(-50%); /* Ajustar el centrado vertical */
+    z-index: 10; /* Asegurar que las flechas estén por encima del contenido */
+  }
+
+  /* Estilos para los botones de las flechas */
+  :deep(.v-btn--icon.v-btn--density-default) {
+    background-color: rgba(0, 0, 0, 0.6); /* Fondo semitransparente */
+    color: white; /* Color de la flecha */
+    width: 50px; /* Tamaño de los botones */
+    height: 50px;
+    border-radius: 50%; /* Hacer los botones circulares */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Sombra para mejor visibilidad */
+    transition: background-color 0.3s ease;
+  }
+
+  /* Hover para las flechas */
+  :deep(.v-btn--icon.v-btn--density-default:hover) {
+    background-color: #ee6f38; /* Color de fondo al pasar el ratón */
+  }
+
+  /* Asegurar que las flechas estén visibles en pantallas pequeñas */
+  @media (max-width: 600px) {
+    :deep(.v-carousel__controls) {
+      padding: 0 10px; /* Reducir el padding en pantallas pequeñas */
+    }
+
+    :deep(.v-btn--icon.v-btn--density-default) {
+      width: 40px; /* Reducir el tamaño de las flechas */
+      height: 40px;
+    }
   }
 </style>

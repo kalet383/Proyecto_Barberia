@@ -15,7 +15,7 @@
           <li><a href="#">¿QUIENES SOMOS?</a></li>
         </ul>
       </nav>
-      <v-btn class="boton-inicio-seccion" color="#ee6f38" to="/login1">INICIAR SESION</v-btn>
+      <v-btn class="boton-inicio-seccion" to="/login1">INICIAR SESION</v-btn>
     </header>
         <v-container fluid class="carousel-container">
           <v-carousel  height="0vh" show-arrows="hover" cycle hide-delimiters hide-delimiter-background class="half-screen-carousel">
@@ -25,7 +25,7 @@
           </v-carousel>
           <div class="centered-contend">
             <h1 class="title">ESTILO SIN LIMITES, BIENVENIDO A STYLEHUB.</h1>
-            <v-btn class="boton-agendar" color="#ee6f38" to="/login1">¡AGENDA YA!</v-btn>
+            <v-btn class="boton-agendar" to="/login1">¡AGENDA YA!</v-btn>
             <a href="#seccion-inferior" class="flecha-abajo">
               <i class="fa-solid fa-angle-down"></i>
             </a>
@@ -34,6 +34,10 @@
   </div>
   <HomeServicios></HomeServicios>
   <HomeBarberos></HomeBarberos>
+  <a href="https://api.whatsapp.com/send?phone=TU_NUMERO&text=Hola%20quiero%20más%20información"
+    class="whatsapp-button" target="_blank">
+    <i class="fab fa-whatsapp"></i>
+  </a>
 </template>
 
 <script setup>
@@ -91,7 +95,6 @@
   justify-content: space-between;
   align-items: center;
   padding: 0px 55px;
-  color: #ee6f38;
   transition: all 0.3s ease;
 }
 
@@ -119,9 +122,18 @@
 }
 
 .boton-inicio-seccion {
-  font-size: 15px;
+  background-color:#ee6f38;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
   transition: all 0.3s ease;
+}
+
+.boton-inicio-seccion:hover {
+  background-color: white;
+  color: #ee6f38;
+  padding-bottom: 4px;
 }
 
 .header.sticky .boton-inicio-seccion {
@@ -160,6 +172,7 @@
 .nav ul li a:hover {
   border-bottom: 2px solid white;
   color: #ee6f38;
+  padding-left: 12px;
 }
 
 /* Estilos para el carrusel */
@@ -199,9 +212,17 @@
 }
 
 .boton-agendar {
+  background-color:#ee6f38;
+  color: white;
   margin-top: 20px;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
   font-size: 18px
+}
+
+.boton-agendar:hover {
+  background-color: white;
+  color: #ee6f38;
+  padding-bottom: 4px;
 }
 
 .flecha-abajo {
@@ -256,5 +277,22 @@
     z-index: 11;
     margin-top: 80px;
   }
+}
+
+.whatsapp-button { 
+  position: fixed; 
+  bottom: 20px; right: 20px;
+  background-color: #25D366; 
+  color: white;
+  width: 50px; 
+  height: 50px; 
+  border-radius: 50%;
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  font-size: 24px; 
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); 
+  transition: transform 0.3s ease;
+  text-decoration: none;
 }
 </style>
