@@ -3,7 +3,7 @@
     <header ref="headerRef" class="header">
       <div class="logo">
         <a href="/" @click="location.reload()">
-          <img src="/imagenes/logo2.png" class="imagen-pequeña" />
+          <img src="/public/imagenes/logo/logo2.png" class="imagen-pequeña" />
         </a>
       </div>
       <nav class="nav">
@@ -77,6 +77,12 @@
 </script>
 
 <style scoped>
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
 .page-container {
   position: relative;
   width: 100%;

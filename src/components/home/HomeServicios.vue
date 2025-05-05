@@ -1,30 +1,27 @@
 <template>
   <div>
     <section id="seccion-inferior">
+      <div class="promo-ticker">
+          <div class="promo-track">
+            <span>💈🔥 RECUERDA TODOS NUESTROS MIERCOLES DE CANDELA, CON TODA LA BARBERIA EN UN 20% DE DESCUENTO 💈🔥 | VEN Y DISFRUTA DE NUESTRO ESPACIO DE DISTRACCION CON NUESTRAS CONSOLAS DE VIDEOJUEGOS 🎮 | FINES DE SEMANA SERVICIO ESTANDAR CON GRANIZADO GRATIS 🥤</span>
+          </div>
+        </div>
       <v-container class="servicios-section">
         <h2 class="section-title">NUESTROS SERVICIOS</h2>
-        <v-carousel v-model="indicesCarrusel[tab]" progress="#ee6f38" hide-delimiters v-if="categorias[tab]">
-          <v-carousel-item v-for="(grupo, j) in agruparServicios(categorias[tab].servicios, 3)" :key="j">
-            <v-row dense justify="center" class="espacio-cards">
-              <v-col v-for="(servicio, k) in grupo" :key="k" cols="12" sm="6" md="4" class="d-flex">
-                <v-card class="mx-auto card-servicio" max-width="400">
-                  <v-img class="img-servicio text-white" :src="servicio.imagen" cover>
-                    <v-card-title>{{ servicio.nombre }}</v-card-title>
-                  </v-img>
-                  <v-card-subtitle class="pt-4">
-                    {{ servicio.precio }} - {{ servicio.tiempo }}
-                  </v-card-subtitle>
-                  <v-card-text>
-                    {{ servicio.descripcion }}
-                  </v-card-text>
-                  <v-card-actions>
-                    <v-btn color="#ee6f38" class="botonAgendar">AGENDAR</v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-col>
-            </v-row>
-          </v-carousel-item>
-        </v-carousel>
+        <v-row dense justify="center" class="espacio-cards">
+          <v-col v-for="(servicio, k) in categorias[tab].servicios" :key="k" cols="12" sm="6" md="4" class="d-flex">
+            <v-card class="mx-auto card-servicio" max-width="400" :class="`tipo-${servicio.tipo}`">
+              <v-img class="img-servicio" :src="servicio.imagen" cover>
+                <v-card-title class="titulo-superpuesto"> {{ servicio.nombre }} </v-card-title>
+              </v-img>
+              <v-card-subtitle class="pt-4"> {{ servicio.precio }} - {{ servicio.tiempo }} </v-card-subtitle>
+              <v-card-text> {{ servicio.descripcion }} </v-card-text>
+              <v-card-actions>
+                <v-btn class="botonAgendar">AGENDAR</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-col>
+        </v-row>
       </v-container>
     </section>
   </div>
@@ -39,27 +36,27 @@
       servicios: [
         {
           nombre: 'SERVICIO ESTANDAR',
-          precio: '$15.000 COP',
-          tiempo: '30 min',
+          tipo : 'estandar',
+          precio: '💰 $15.000 COP',
+          tiempo: '⏱️ 30 min',
           descripcion: 'Asesoria de imagen y corte de tu preferencia, incluye bebida',
-          imagen: 'https://media.istockphoto.com/id/1473584884/es/foto/barbero-cortando-el-cabello-con-maquinilla-de-afeitar-el%C3%A9ctrica.jpg?s=612x612&w=0&k=20&c=JHW3q7t8M8ui6i-OrI9OFm1_OXvENagz7Auig58Kexw=',
-          show: false
+          imagen: '/public/imagenes/servicios/servicioESTANDAR.jpg'
         },
         {
           nombre: 'SERVICIO SILVER',
-          precio: '$22.000 COP',
-          tiempo: '40 min',
+          tipo : 'silver',
+          precio: '💰 $22.000 COP',
+          tiempo: '⏱️ 40 min',
           descripcion: 'Asesoria de imagen, corte de tu preferencia, perfilado de barba, cejas, mascarilla y bebida incluida',
-          imagen: 'https://thebarbercompany.pe/wp-content/uploads/2019/04/serv4.webp',
-          show: false
+          imagen: '/public/imagenes/servicios/servicioSILVER.webp'
         },
         {
           nombre: 'SERVICIO GOLD',
-          precio: '$30.000 COP',
-          tiempo: '60 min',
+          tipo : 'gold',
+          precio: '💰 $30.000 COP',
+          tiempo: '⏱️ 60 min',
           descripcion: 'Asesoria de imagen, corte de tu preferencia, perfilado de barba, cejas, lavado de cabello, masaje y bebida incluida',
-          imagen: 'https://www.clubdecaballeros.co/wp-content/uploads/2022/04/IMG_0427.jpg',
-          show: false
+          imagen: '/public/imagenes/servicios/servicioGOLD.jpg'
         }
       ]
     }
@@ -120,9 +117,41 @@
     transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
 
+  .tipo-estandar {
+    border: 2px solid #9e9e9e;
+  }
+
+  .tipo-silver {
+    border: 2px solid #607d8b;
+    background-color: #eceff1;
+  }
+
+  .tipo-gold {
+    border: 2px solid #fbc02d;
+    background-color: #fffde7;
+  }
+
   .v-card:hover {
     transform: scale(1.03);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    border: 2px solid black;
+  }
+
+  .v-card-subtitle {
+    color: black;
+    font-weight: bold;
+    font-size: 16px;
+  }
+
+  .titulo-superpuesto {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Fondo semitransparente */
+    color: white;
+    padding: 8px;
+    font-weight: bold;
+    text-align: center;
   }
 
   .card-servicio {
@@ -156,61 +185,58 @@
     padding: 20px 0; /* Agregar algo de padding para espaciado */
   }
 
-  /* Asegurar que el carrusel no corte las tarjetas */
-  .v-carousel,
-  .v-carousel__item {
-    overflow: visible !important;
-    height: auto !important; /* Permitir que el carrusel crezca según el contenido */
-    min-height: 500px; /* Altura mínima para evitar que se colapse */
-  }
-
   /* Botón de acciones */
   .v-card-actions {
     padding: 16px;
     display: flex;
     justify-content: center;
-    flex-shrink: 0; /* Evita que el botón se comprima */
-    margin-bottom: 10px; /* Agregar espacio debajo del botón */
+    margin-bottom: 6px; /* Agregar espacio debajo del botón */
   }
 
-  /* Estilos para las flechas del carrusel */
-  :deep(.v-carousel__controls) {
-    position: absolute; /* Posicionar los controles fuera del flujo normal */
-    top: 50%; /* Centrar verticalmente */
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: space-between; /* Separar las flechas a los extremos */
-    padding: 0 20px; /* Espacio en los bordes */
-    transform: translateY(-50%); /* Ajustar el centrado vertical */
-    z-index: 10; /* Asegurar que las flechas estén por encima del contenido */
-  }
-
-  /* Estilos para los botones de las flechas */
-  :deep(.v-btn--icon.v-btn--density-default) {
-    background-color: rgba(0, 0, 0, 0.6); /* Fondo semitransparente */
-    color: white; /* Color de la flecha */
-    width: 50px; /* Tamaño de los botones */
-    height: 50px;
-    border-radius: 50%; /* Hacer los botones circulares */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Sombra para mejor visibilidad */
+  .botonAgendar {
+    color: #ee6f38;
     transition: background-color 0.3s ease;
   }
 
-  /* Hover para las flechas */
-  :deep(.v-btn--icon.v-btn--density-default:hover) {
-    background-color: #ee6f38; /* Color de fondo al pasar el ratón */
+  .botonAgendar:hover {
+    background-color: #ff7043;
+    color: white;
+    padding-left: 60px;
+    padding-right: 60px;
+    transform: scale(1.1);
+    box-shadow: 0 5px 13px rgba(255, 87, 34, 0.4);
   }
 
-  /* Asegurar que las flechas estén visibles en pantallas pequeñas */
-  @media (max-width: 600px) {
-    :deep(.v-carousel__controls) {
-      padding: 0 10px; /* Reducir el padding en pantallas pequeñas */
-    }
+  .promo-ticker {
+    height: 80px; /* Aumenta el valor a tu gusto */
+    line-height: 60px; /* Centra verticalmente el texto */
+    font-size: 20px; /* También puedes aumentar el tamaño del texto */
+    overflow: hidden;
+    background-color: #ee6f38;
+    color: #000;
+    font-weight: bold;
+    white-space: nowrap;
+    border-top: 2px solid black;
+    border-bottom: 2px solid black;
+    padding: 10px 0;
+  }
 
-    :deep(.v-btn--icon.v-btn--density-default) {
-      width: 40px; /* Reducir el tamaño de las flechas */
-      height: 40px;
+  .promo-track {
+    display: inline-block;
+    padding-left: 100%;
+    animation: scroll-left 15s linear infinite;
+  }
+
+  .promo-ticker:hover .promo-track {
+    animation-play-state: paused;
+  }
+
+  @keyframes scroll-left {
+    0% {
+      transform: translateX(0%);
+    }
+    100% {
+      transform: translateX(-100%);
     }
   }
 </style>
