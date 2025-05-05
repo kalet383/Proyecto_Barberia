@@ -95,6 +95,17 @@
     }
 
     .v-card-actions {
+        color: #ee6f38;
+        transition: background-color 0.3s ease;
         justify-content: center;
+    }
+
+    .v-card-actions:hover {
+        background-color: #ff7043;
+        color: white;
+        padding-left: 60px;
+        padding-right: 60px;
+        transform: scale(1.1);
+        box-shadow: 0 5px 13px rgba(255, 87, 34, 0.4);
     }
 </style>
