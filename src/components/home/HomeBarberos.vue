@@ -1,5 +1,5 @@
 <template>
-    <section class="barberos-section">
+    <section id="barberos-section">
         <v-container>
             <h2 class="tituloseccion">NUESTROS EQUIPO | Barberos profesionales</h2>
             <p>“En StyleHub, nuestros barberos son artistas del estilo. No solo dominan las tijeras y las máquinas, 
@@ -54,7 +54,7 @@
 
 <style scoped>
 
-    .barberos-section {
+    #barberos-section {
         background-color: #000;
     }
 

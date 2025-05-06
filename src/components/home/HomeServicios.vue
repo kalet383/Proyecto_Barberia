@@ -1,6 +1,6 @@
 <template>
   <div>
-    <section id="seccion-inferior">
+    <section id="servicios-section">
       <div class="promo-ticker">
           <div class="promo-track">
             <span>💈🔥 RECUERDA TODOS NUESTROS MIERCOLES DE CANDELA, CON TODA LA BARBERIA EN UN 20% DE DESCUENTO 💈🔥 | VEN Y DISFRUTA DE NUESTRO ESPACIO DE DISTRACCION CON NUESTRAS CONSOLAS DE VIDEOJUEGOS 🎮 | FINES DE SEMANA SERVICIO ESTANDAR CON GRANIZADO GRATIS 🥤</span>
@@ -11,9 +11,12 @@
         <v-row dense justify="center" class="espacio-cards">
           <v-col v-for="(servicio, k) in categorias[tab].servicios" :key="k" cols="12" sm="6" md="4" class="d-flex">
             <v-card class="mx-auto card-servicio" max-width="400" :class="`tipo-${servicio.tipo}`">
-              <v-img class="img-servicio" :src="servicio.imagen" cover>
-                <v-card-title class="titulo-superpuesto"> {{ servicio.nombre }} </v-card-title>
-              </v-img>
+              <div class="media-servicio">
+                <video class="video-servicio" autoplay muted loop playsinline>
+                  <source :src="servicio.video" type="video/mp4" />
+                </video>
+                <div class="titulo-superpuesto">{{ servicio.nombre }}</div>
+              </div>
               <v-card-subtitle class="pt-4"> {{ servicio.precio }} - {{ servicio.tiempo }} </v-card-subtitle>
               <v-card-text> {{ servicio.descripcion }} </v-card-text>
               <v-card-actions>
@@ -40,7 +43,7 @@
           precio: '💰 $15.000 COP',
           tiempo: '⏱️ 30 min',
           descripcion: 'Asesoria de imagen y corte de tu preferencia, incluye bebida',
-          imagen: '/public/imagenes/servicios/servicioESTANDAR.jpg'
+          video : '/public/imagenes/servicios/videoservicioestandar.mp4'
         },
         {
           nombre: 'SERVICIO SILVER',
@@ -48,7 +51,7 @@
           precio: '💰 $22.000 COP',
           tiempo: '⏱️ 40 min',
           descripcion: 'Asesoria de imagen, corte de tu preferencia, perfilado de barba, cejas, mascarilla y bebida incluida',
-          imagen: '/public/imagenes/servicios/servicioSILVER.webp'
+          video : '/public/imagenes/servicios/videoserviciosilver.mp4'
         },
         {
           nombre: 'SERVICIO GOLD',
@@ -56,7 +59,7 @@
           precio: '💰 $30.000 COP',
           tiempo: '⏱️ 60 min',
           descripcion: 'Asesoria de imagen, corte de tu preferencia, perfilado de barba, cejas, lavado de cabello, masaje y bebida incluida',
-          imagen: '/public/imagenes/servicios/servicioGOLD.jpg'
+          video : '/public/imagenes/servicios/videoserviciogold.mp4'
         }
       ]
     }
@@ -82,20 +85,14 @@
 
 <style scoped>
 
-  #seccion-inferior {
-    position: relative;
-    z-index: 2;
-    margin-top: 0; /* Asegura que no haya margen superior que cause espacios */
-  }
-
-  .servicios-section {
+  /* #servicios-section {
     padding: 60px 0;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    overflow: visible !important; /* Permitir que el contenido desborde si es necesario */
-  }
+    overflow: visible !important; /* Permitir que el contenido desborde si es necesario 
+  }  */
 
   .section-title {
     text-align: center;
@@ -113,8 +110,23 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    margin-top: 4%;
+    margin-top: 1%;
+    margin-bottom: 30%;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .media-servicio {
+    position: relative;
+    width: 100%;
+    height: 350px;
+    overflow: hidden;
+    border-bottom: 3px solid black;
+  }
+
+  .video-servicio {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .tipo-estandar {
@@ -147,10 +159,12 @@
     position: absolute;
     bottom: 0;
     width: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Fondo semitransparente */
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(3px);
     color: white;
     padding: 8px;
     font-weight: bold;
+    font-size: 18px;
     text-align: center;
   }
 
@@ -161,19 +175,13 @@
     height: auto; /* Asegurar que la tarjeta no tenga altura fija */
   }
 
-  /* Imagen no muy alta */
-  .img-servicio {
-    height: 300px;
-    object-fit: cover;
-  }
-
   /* Asegura que el texto no se corte */
   .v-card-subtitle,
   .v-card-text {
     overflow: visible;
-    white-space: normal;
     text-align: center;
-    padding: 16px;
+    padding: 10px;
+    flex-grow: 0;
   }
 
   /* Ajustar el contenedor de las tarjetas */
@@ -187,15 +195,17 @@
 
   /* Botón de acciones */
   .v-card-actions {
-    padding: 16px;
+    padding: 8px;
     display: flex;
     justify-content: center;
-    margin-bottom: 6px; /* Agregar espacio debajo del botón */
+    margin-top: 10px;
+    margin-bottom: 10px; /* Agregar espacio debajo del botón */
   }
 
   .botonAgendar {
     color: #ee6f38;
     transition: background-color 0.3s ease;
+    margin-bottom: 10%;
   }
 
   .botonAgendar:hover {

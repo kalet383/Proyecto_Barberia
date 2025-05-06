@@ -8,8 +8,8 @@
       </div>
       <nav class="nav">
         <ul>
-          <li><a href="#">SERVICIOS</a></li>
-          <li><a href="#">BARBEROS</a></li>
+          <li><a href="#servicios-section">SERVICIOS</a></li>
+          <li><a href="#barberos-section">BARBEROS</a></li>
           <li><a href="#">PRODUCTOS</a></li>
           <li><a href="#">¿COMO LLEGAR?</a></li>
           <li><a href="#">¿QUIENES SOMOS?</a></li>
