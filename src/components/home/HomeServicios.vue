@@ -85,21 +85,44 @@
 
 <style scoped>
 
-  /* #servicios-section {
-    padding: 60px 0;
+  #servicios-section {
+    background-color: black;
+    /* padding: 60px 0;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    overflow: visible !important; /* Permitir que el contenido desborde si es necesario 
-  }  */
+    overflow: visible !important; */
+  } 
 
   .section-title {
+    color: white;
     text-align: center;
     font-size: 2rem;
     margin-bottom: 30px;
     font-weight: bold;
-    margin-top: 1%;
+    margin-top: 2%;
+  }
+
+  .section-title::after {
+    content: '';
+    display: block;
+    width: 300px;
+    height: 4px;
+    margin: 8px auto 0 auto;
+    background: linear-gradient(to right, #000, #fff, #000);
+    border-radius: 2px;
+    background-size: 200%;
+    animation: animateGradient 3s linear infinite;
+  }
+
+  @keyframes animateGradient {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: 0 0;
+    }
   }
 
   /* Asegura que las tarjetas crezcan */
@@ -111,8 +134,14 @@
     flex-direction: column;
     justify-content: space-between;
     margin-top: 1%;
-    margin-bottom: 30%;
+    margin-bottom: 8%;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .v-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 8px 20px #ee6f38;
+    border: 3px solid #ee6f38;
   }
 
   .media-servicio {
@@ -141,12 +170,6 @@
   .tipo-gold {
     border: 2px solid #fbc02d;
     background-color: #fffde7;
-  }
-
-  .v-card:hover {
-    transform: scale(1.03);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-    border: 2px solid black;
   }
 
   .v-card-subtitle {
@@ -186,10 +209,10 @@
 
   /* Ajustar el contenedor de las tarjetas */
   .espacio-cards {
-    margin-left: auto;
-    margin-right: auto;
-    max-width: 1200px; /* Limitar el ancho máximo para mejor control */
-    height: auto !important; /* Asegurar que el contenedor no restrinja la altura */
+    margin-left: 12%;
+    margin-right: 12%;
+    /* max-width: 1200px; */ /* Limitar el ancho máximo para mejor control */
+    /* height: auto !important; */ /* Asegurar que el contenedor no restrinja la altura */
     padding: 20px 0; /* Agregar algo de padding para espaciado */
   }
 
@@ -218,23 +241,23 @@
   }
 
   .promo-ticker {
-    height: 80px; /* Aumenta el valor a tu gusto */
-    line-height: 60px; /* Centra verticalmente el texto */
+    height: 50px; /* Aumenta el valor a tu gusto */
+    line-height: 30px; /* Centra verticalmente el texto */
     font-size: 20px; /* También puedes aumentar el tamaño del texto */
     overflow: hidden;
     background-color: #ee6f38;
-    color: #000;
+    color: white;
     font-weight: bold;
     white-space: nowrap;
-    border-top: 2px solid black;
-    border-bottom: 2px solid black;
+    border-top: 2px solid white;
+    border-bottom: 2px solid white;
     padding: 10px 0;
   }
 
   .promo-track {
     display: inline-block;
     padding-left: 100%;
-    animation: scroll-left 15s linear infinite;
+    animation: scroll-left 20s linear infinite;
   }
 
   .promo-ticker:hover .promo-track {
