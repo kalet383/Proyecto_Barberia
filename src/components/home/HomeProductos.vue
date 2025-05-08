@@ -1,9 +1,11 @@
 <template>
-    <section id="productos-section">
-        <v-container>
-            <h2 class="tituloprincipal">PRODUCTOS QUE NECESITAS | Los mas top</h2>
-        </v-container>
+    <section id="productos-section" class="v-container">
+        <h2 class="tituloprincipal">PRODUCTOS QUE NECESITAS | Los mas top</h2>
+        <div>
+            
+        </div>
     </section>
+    <ProductoCard></ProductoCard>
 </template>
 
 <script setup>

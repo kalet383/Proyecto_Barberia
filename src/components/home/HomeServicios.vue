@@ -8,7 +8,7 @@
         </div>
       <v-container class="py-10" fluid>
         <h2 class="section-title">NUESTROS SERVICIOS | Lo que ofrecemos</h2>
-        <v-row dense justify="center" align="stretch" class="espacio-cards" style="max-width: 1400px;">
+        <v-row dense justify="center" align="stretch" class="espacio-cards">
           <v-col v-for="(servicio, k) in categorias[tab].servicios" :key="k" cols="12" sm="6" md="4" class="d-flex">
             <v-card class="mx-auto" max-width="400" :class="`tipo-${servicio.tipo}`">
               <div class="media-servicio">

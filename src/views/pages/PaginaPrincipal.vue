@@ -10,12 +10,15 @@
         <ul>
           <li><a href="#servicios-section">SERVICIOS</a></li>
           <li><a href="#barberos-section">BARBEROS</a></li>
-          <li><a href="#">PRODUCTOS</a></li>
+          <li><a href="#productos-section">PRODUCTOS</a></li>
           <li><a href="#">¿COMO LLEGAR?</a></li>
           <li><a href="#">¿QUIENES SOMOS?</a></li>
         </ul>
       </nav>
-      <v-btn class="boton-inicio-seccion" to="/login1">INICIAR SESION</v-btn>
+      <div class="botonycarrito">
+        <v-btn class="boton-inicio-seccion" to="/login1">INICIAR SESION</v-btn>
+        <i class="fa-solid fa-cart-shopping carrito"></i>
+      </div>
     </header>
         <v-container fluid class="carousel-container">
           <v-carousel  height="0vh" show-arrows="hover" cycle hide-delimiters hide-delimiter-background class="half-screen-carousel">
@@ -144,6 +147,23 @@
     padding-bottom: 4px;
   }
 
+  .botonycarrito {
+    display: flex;
+    align-items: center;
+    gap: 20px; /* Espacio entre el botón y el icono */
+  }
+
+  .carrito {
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+  }
+
+  .carrito:hover {
+    color: #ee6f38;
+  }
+
   .header.sticky .boton-inicio-seccion {
     font-size: 12px; /* Reducir tamaño del texto */
     padding: 4px 8px; /* Reducir el padding del botón */
@@ -153,8 +173,8 @@
     list-style: none;
     padding: 0;
     display: flex;
-    gap: 28px;
-    margin-left: 50px;
+    gap: 30px;
+    margin-left: 80px;
     transition: all 0.3s ease;
   }
 
