@@ -6,11 +6,11 @@
             <span>💈🔥 RECUERDA TODOS NUESTROS MIERCOLES DE CANDELA, CON TODA LA BARBERIA EN UN 20% DE DESCUENTO 💈🔥 | VEN Y DISFRUTA DE NUESTRO ESPACIO DE DISTRACCION CON NUESTRAS CONSOLAS DE VIDEOJUEGOS 🎮 | FINES DE SEMANA SERVICIO ESTANDAR CON GRANIZADO GRATIS 🥤</span>
           </div>
         </div>
-      <v-container class="servicios-section">
-        <h2 class="section-title">NUESTROS SERVICIOS</h2>
-        <v-row dense justify="center" class="espacio-cards">
+      <v-container class="py-10" fluid>
+        <h2 class="section-title">NUESTROS SERVICIOS | Lo que ofrecemos</h2>
+        <v-row dense justify="center" align="stretch" class="espacio-cards" style="max-width: 1400px;">
           <v-col v-for="(servicio, k) in categorias[tab].servicios" :key="k" cols="12" sm="6" md="4" class="d-flex">
-            <v-card class="mx-auto card-servicio" max-width="400" :class="`tipo-${servicio.tipo}`">
+            <v-card class="mx-auto" max-width="400" :class="`tipo-${servicio.tipo}`">
               <div class="media-servicio">
                 <video class="video-servicio" autoplay muted loop playsinline>
                   <source :src="servicio.video" type="video/mp4" />
@@ -31,9 +31,8 @@
 </template>
 
 <script setup>
-  import { ref, reactive, watchEffect} from 'vue'
+  import { ref, reactive} from 'vue'
   const tab = ref(0)
-  const indicesCarrusel = ref({})
   const categorias = reactive([
     {
       servicios: [
@@ -64,35 +63,12 @@
       ]
     }
   ])
-
-  function agruparServicios(servicios, tamGrupo) {
-    const grupos = []
-    for (let i = 0; i < servicios.length; i += tamGrupo) {
-      grupos.push(servicios.slice(i, i + tamGrupo))
-    }
-    return grupos
-  }
-
-  watchEffect(() => {
-    categorias.forEach((_, index) => {
-      if (indicesCarrusel.value[index] === undefined) {
-        indicesCarrusel.value[index] = 0; // Cada categoría empieza en la primera página
-      }
-    });
-  });
-
 </script>
 
 <style scoped>
 
   #servicios-section {
     background-color: black;
-    /* padding: 60px 0;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    overflow: visible !important; */
   } 
 
   .section-title {
@@ -128,7 +104,6 @@
   /* Asegura que las tarjetas crezcan */
   .v-card {
     width: 100%;
-    max-width: 400px;
     height: auto !important; /* Permitir que la tarjeta crezca según el contenido */
     display: flex;
     flex-direction: column;
@@ -191,13 +166,6 @@
     text-align: center;
   }
 
-  .card-servicio {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: auto; /* Asegurar que la tarjeta no tenga altura fija */
-  }
-
   /* Asegura que el texto no se corte */
   .v-card-subtitle,
   .v-card-text {
@@ -222,13 +190,12 @@
     display: flex;
     justify-content: center;
     margin-top: 10px;
-    margin-bottom: 10px; /* Agregar espacio debajo del botón */
   }
 
   .botonAgendar {
     color: #ee6f38;
     transition: background-color 0.3s ease;
-    margin-bottom: 10%;
+    margin-bottom: 5%;
   }
 
   .botonAgendar:hover {
