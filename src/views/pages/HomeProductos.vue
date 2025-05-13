@@ -3,7 +3,7 @@
         <h2 class="tituloprincipal">PRODUCTOS QUE NECESITAS | Los mas top</h2>
 
         <!-- Tabs para las categorías -->
-        <v-tabs v-model="Tabactivado" centered background-color="transparent" color="black">
+        <v-tabs v-model="Tabactivado" align-tabs="center" color="black">
             <v-tab v-for="(categoria, index) in categorias" :key="index" class="tab-categoria">
                 {{ categoria.nombre }}
             </v-tab>
@@ -21,7 +21,10 @@
 </template>
 
 <script>
+    import { mapState } from 'pinia'
+    import { useProductosStore } from '@/stores/useProductosStore';
     import ProductoCard from '@/components/shared/ProductoCard.vue';
+    
     export default {
         name : 'HomeProductos',
         components : {
@@ -30,43 +33,11 @@
         data() {
             return {
                 Tabactivado : 0, // Pestaña activa por defecto
-                categorias : [
-                    {
-                        id : 1,
-                        nombre : 'CABELLO',
-                        productos : [
-                            {id : 1, nombre : 'Gel cabello', precio : 12000, img : ''},
-                            {id : 2, nombre : 'Cera para peinar', precio : 15000, img : ''},
-                            {id : 3, nombre : 'Polvo fijador de cabello', precio : 28000, img : ''}
-                        ]
-                    },
-                    {
-                        id : 2,
-                        nombre : 'BARBA',
-                        productos : [
-                            {id : 4, nombre : 'Aceite para barba', precio : 20000, img : ''},
-                            {id : 5, nombre : 'Tinte negro para barba', precio : 25000, img : ''}
-                        ]
-                    },
-                    {
-                        id : 3,
-                        nombre : 'ROSTRO',
-                        productos : [
-                            {id : 6, nombre : 'Mascarilla Exfoliante', precio : 7000, img : ''},
-                            {id : 7, nombre : 'Crema Hidratante Facial', precio : 22000, img : ''}
-                        ]
-                    },
-                    {
-                        id : 4,
-                        nombre : 'ARTICULOS',
-                        productos : [
-                            {id : 8, nombre : 'Peine Profesional', precio : 20000, img : ''},
-                            {id : 9, nombre : 'Set de Cuchillas', precio : 30000, img : ''}
-                        ]
-                    }
-                ]
             };
         },
+        computed: {
+            ...mapState(useProductosStore, ['categorias'])
+        }
     }
 </script>
 

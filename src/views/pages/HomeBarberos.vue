@@ -66,7 +66,7 @@
         font-size: 2rem;
         margin-bottom: 30px;
         font-weight: bold;
-        margin-top: 5%;
+        margin-top: 3%;
     }
 
     .tituloseccion::after {
@@ -112,7 +112,7 @@
     .espaciocards {
         margin-left: 8%;
         margin-right: 8%;
-        margin-bottom: 8%;
+        margin-bottom: 3%;
     }
 
     .v-card-title {

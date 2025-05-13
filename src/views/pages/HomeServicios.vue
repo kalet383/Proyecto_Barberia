@@ -109,7 +109,6 @@
     flex-direction: column;
     justify-content: space-between;
     margin-top: 1%;
-    margin-bottom: 8%;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     border: 2px solid transparent;
   }

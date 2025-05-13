@@ -1,14 +1,12 @@
 <template>
     <div class="producto-card">
-        <img :src="producto.img" :alt="producto.nombre" class="producto-img">
+        <img :src="producto.img || defaultImage" :alt="producto.nombre" class="producto-img">
         <div class="info-producto">
             <h3 class="nombre-producto"> {{ producto.nombre }} </h3>
             <p class="precio-producto">$ {{ producto.precio.toLocaleString() }} </p>
-            <div class="botondetalles">
-                <button>Ver Detalles</button>
-            </div>
-            <div class="botonagregarcarrito">
-                <button>Agregar al carrito</button>
+            <div class="botonescarta">
+                <button class="btn-detalles">Ver Detalles</button>
+                <button class="btn-carrito">Agregar al carrito</button>
             </div>
         </div>
     </div>
@@ -38,7 +36,7 @@ export default {
     }
 
     .producto-card:hover {
-        transform: scale(1.05);
+        transform: scale(1.03);
     }
 
     .info-producto {
@@ -48,25 +46,44 @@ export default {
     }
 
     .producto-img {
-        width: 60px;
-        height: 60px;
+        width: 160px;
+        height: 160px;
         object-fit: cover;
-        border-radius: 5px;
-        margin-right: 15px;
+        border-radius: 10px;
+        margin-bottom: 10px;
     }
 
     .nombre-producto {
-        font-size: 1.2rem;
-        margin: 10px 0;
+        font-size: 1.1rem;
+        margin: 5px 0;
+        font-weight: bold;
     }
 
     .precio-producto {
         font-size: 1rem;
-        color: #555;
+        color: #1976d2;
         margin-bottom: 10px;
     }
 
-    .botondetalles {
+    .botonescarta {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .btn-detalles,
+    .btn-carrito {
+        padding: 8px;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .btn-detalles {
         color: #ee6f38;
         padding: 5px 15px;
         border-radius: 5px;
@@ -74,13 +91,13 @@ export default {
         transition: background-color 0.3s ease;
     }
 
-    .botondetalles:hover {
+    .btn-detalles:hover {
         background-color: #ff7043;
         color: white;
         box-shadow: 0 2px 10px rgba(255, 87, 34, 0.4);
     }
 
-    .botonagregarcarrito {
+    .btn-carrito {
         color: #ee6f38;
         padding: 5px 15px;
         border-radius: 5px;
@@ -88,32 +105,28 @@ export default {
         transition: background-color 0.3s ease;
     }
 
-    .botonagregarcarrito:hover {
+    .btn-carrito:hover {
         background-color: #ff7043;
         color: white;
         box-shadow: 0 2px 10px rgba(255, 87, 34, 0.4);
     }
 
     @media (max-width: 768px) {
-        .product-card {
-            padding: 8px;
+        .producto-card {
+            padding: 10px;
         }
 
-        .product-image {
-            width: 50px;
-            height: 50px;
+        .producto-img {
+            width: 100px;
+            height: 100px;
         }
 
-        .product-name {
+        .nombre-producto {
+            font-size: 1rem;
+        }
+
+        .precio-producto {
             font-size: 0.9rem;
-        }
-
-        .product-price {
-            font-size: 0.8rem;
-        }
-
-        .product-button {
-            padding: 4px 12px;
         }
     }
 </style>
