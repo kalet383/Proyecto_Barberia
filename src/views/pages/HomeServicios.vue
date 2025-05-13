@@ -42,7 +42,7 @@
           precio: '💰 $15.000 COP',
           tiempo: '⏱️ 30 min',
           descripcion: 'Asesoria de imagen y corte de tu preferencia, incluye bebida',
-          video : '/public/imagenes/servicios/videoservicioestandar.mp4'
+          video : '/imagenes/servicios/videoservicioestandar.mp4'
         },
         {
           nombre: 'SERVICIO SILVER',
@@ -50,7 +50,7 @@
           precio: '💰 $22.000 COP',
           tiempo: '⏱️ 40 min',
           descripcion: 'Asesoria de imagen, corte de tu preferencia, perfilado de barba, cejas, mascarilla y bebida incluida',
-          video : '/public/imagenes/servicios/videoserviciosilver.mp4'
+          video : '/imagenes/servicios/videoserviciosilver.mp4'
         },
         {
           nombre: 'SERVICIO GOLD',
@@ -58,7 +58,7 @@
           precio: '💰 $30.000 COP',
           tiempo: '⏱️ 60 min',
           descripcion: 'Asesoria de imagen, corte de tu preferencia, perfilado de barba, cejas, lavado de cabello, masaje y bebida incluida',
-          video : '/public/imagenes/servicios/videoserviciogold.mp4'
+          video : '/imagenes/servicios/videoserviciogold.mp4'
         }
       ]
     }
@@ -111,12 +111,13 @@
     margin-top: 1%;
     margin-bottom: 8%;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 2px solid transparent;
   }
 
   .v-card:hover {
     transform: scale(1.03);
     box-shadow: 0 8px 20px #ee6f38;
-    border: 3px solid #ee6f38;
+    border-color:#ee6f38;
   }
 
   .media-servicio {

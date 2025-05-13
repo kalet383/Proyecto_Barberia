@@ -46,9 +46,9 @@
 
 <script setup>
   import { ref, onMounted, onUnmounted } from 'vue';
-  import HomeServicios from '@/components/home/HomeServicios.vue';
-  import HomeBarberos from '@/components/home/HomeBarberos.vue';
-  import HomeProductos from '@/components/home/HomeProductos.vue';
+  import HomeServicios from '@/views/pages/HomeServicios.vue';
+  import HomeBarberos from '@/views/pages/HomeBarberos.vue';
+  import HomeProductos from '@/views/pages/HomeProductos.vue';
   const images = [
     'https://img.freepik.com/fotos-premium/hombre-sentado-silla-barbero-mientras-barbero-corta-cabello-precision-barbero-cortando-cuidadosamente-barba-cliente-precision_538213-114313.jpg?w=996',
     'https://www.blac.media/wp-content/uploads/2022/11/pexels-rodnae-productions-7697394-scaled.jpg',

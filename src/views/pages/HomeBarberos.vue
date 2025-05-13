@@ -100,12 +100,13 @@
     .v-card {
         height: auto !important;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 2px solid transparent;
     }
 
     .v-card:hover {
         transform: scale(1.03);
-        box-shadow: 0 0 18px #ee6f38;
-        border: 3px solid #ee6f38;
+        box-shadow: 0 0 20px #ee6f38;
+        border-color:#ee6f38;
     }
 
     .espaciocards {
