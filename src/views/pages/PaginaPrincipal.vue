@@ -38,9 +38,12 @@
   <HomeServicios></HomeServicios>
   <HomeBarberos></HomeBarberos>
   <HomeProductos></HomeProductos>
+
+  <!-- API whatsapp -->
   <a href="https://api.whatsapp.com/send?phone=TU_NUMERO&text=Hola%20quiero%20más%20información"
     class="whatsapp-button" target="_blank">
     <i class="fab fa-whatsapp"></i>
+    <span class="parrafowhatsapp">Escribemos por Whatsapp</span>
   </a>
 </template>
 
@@ -310,17 +313,31 @@
   .whatsapp-button { 
     position: fixed; 
     bottom: 20px; right: 20px;
-    background-color: #25D366; 
+    background-color: #ee6f38; 
     color: white;
-    width: 50px; 
-    height: 50px; 
-    border-radius: 50%;
+    width: 240px; 
+    height: 50px;
+    padding: 12px 20px;
+    border-radius: 20px;
     display: flex; 
     align-items: center; 
     justify-content: center; 
-    font-size: 24px; 
+    font-size: 16px;
+    font-weight: bold;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); 
     transition: transform 0.3s ease;
     text-decoration: none;
+    padding-left: 1%;
+    z-index: 1000;
+    white-space: nowrap;
+  }
+
+  .whatsapp-button:hover {
+    transform: scale(1.05);
+  }
+
+  .whatsapp-button i {
+    font-size: 20px;
+    margin-right: 10px;
   }
 </style>

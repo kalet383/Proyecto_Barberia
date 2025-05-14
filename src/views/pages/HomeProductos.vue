@@ -1,4 +1,11 @@
 <template>
+    <div>
+        <div class="promo-ticker">
+            <div class="promo-track">
+                <span>👉🏻 POR LA COMPRA DE MAS DE 3 PRODUCTOS DE NUESTRA SECCION OBTEN UN 10% EN EL TOTAL DE LA COMPRA 🤑🚨</span>
+            </div>
+        </div>
+    </div>
     <section id="productos-section" class="v-container">
         <h2 class="tituloprincipal">PRODUCTOS QUE NECESITAS | Los mas top</h2>
 
@@ -57,7 +64,7 @@
         font-size: 2rem;
         margin-bottom: 30px;
         font-weight: bold;
-        margin-top: 2%;
+        margin-top: 3%;
     }
 
     .tituloprincipal::after {
@@ -103,6 +110,27 @@
         gap: 24px;
         padding: 24px 12px;
         margin-top: 22px;
+    }
+
+    .promo-ticker {
+        position: relative;
+        top: -15px; /* Sube la cinta visualmente */
+        z-index: 10;
+        margin-bottom: -90px; /* Evita que el contenido se solape */
+        height: 35px; /* Aumenta el valor a tu gusto */
+        line-height: 15px; /* Centra verticalmente el texto */
+        font-size: 20px; /* También puedes aumentar el tamaño del texto */
+        overflow: hidden;
+        background-color: #ee6f38;
+        color: white;
+        font-weight: bold;
+        white-space: nowrap;
+        padding: 10px 0;
+    }
+
+    .promo-track {
+        text-align: center;
+        font-size: 18px;
     }
 
     @media (max-width: 768px) {

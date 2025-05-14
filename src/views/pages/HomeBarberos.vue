@@ -112,7 +112,7 @@
     .espaciocards {
         margin-left: 8%;
         margin-right: 8%;
-        margin-bottom: 3%;
+        margin-bottom: 5%;
     }
 
     .v-card-title {

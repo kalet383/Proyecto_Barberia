@@ -2,10 +2,10 @@
   <div>
     <section id="servicios-section">
       <div class="promo-ticker">
-          <div class="promo-track">
-            <span>💈🔥 RECUERDA TODOS NUESTROS MIERCOLES DE CANDELA, CON TODA LA BARBERIA EN UN 20% DE DESCUENTO 💈🔥 | VEN Y DISFRUTA DE NUESTRO ESPACIO DE DISTRACCION CON NUESTRAS CONSOLAS DE VIDEOJUEGOS 🎮 | FINES DE SEMANA SERVICIO ESTANDAR CON GRANIZADO GRATIS 🥤</span>
-          </div>
+        <div class="promo-track">
+          <span>💈🔥 RECUERDA TODOS NUESTROS MIERCOLES DE CANDELA, CON TODA LA BARBERIA EN UN 20% DE DESCUENTO 💈🔥 | VEN Y DISFRUTA DE NUESTRO ESPACIO DE DISTRACCION CON NUESTRAS CONSOLAS DE VIDEOJUEGOS 🎮 | FINES DE SEMANA SERVICIO ESTANDAR CON GRANIZADO GRATIS 🥤</span>
         </div>
+      </div>
       <v-container class="py-10" fluid>
         <h2 class="section-title">NUESTROS SERVICIOS | Lo que ofrecemos</h2>
         <v-row dense justify="center" align="stretch" class="espacio-cards">
