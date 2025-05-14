@@ -36,15 +36,28 @@ export const useProductosStore = defineStore('productos', {
                     {id : 402, nombre : 'Brocha para la barba', precio : 30000, img : '/imagenes/productos/articulos/brocha_barba.png'}
                 ]
             }
-        ]
+        ],
+        mostrarDetalles: false,
+        productoSeleccionado: null,
     }),
 
-    getters: {
+    /* getters: {
         todosLosProductos: (state) =>
         state.categorias.flatMap(categoria => categoria.productos),
 
         obtenerProductoPorId: (state) => (id) => {
             return state.categorias.flatMap(cat => cat.productos).find(p => p.id === id);
+        }
+    }, */
+
+    actions: {
+        abrirDetalles(producto) {
+            this.productoSeleccionado = producto;
+            this.mostrarDetalles = true;
+        },
+        cerrarDetalles() {
+            this.mostrarDetalles = false;
+            this.productoSeleccionado = null;
         }
     }
 

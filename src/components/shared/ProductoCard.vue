@@ -5,7 +5,7 @@
             <h3 class="nombre-producto"> {{ producto.nombre }} </h3>
             <p class="precio-producto">$ {{ producto.precio.toLocaleString() }} </p>
             <div class="botonescarta">
-                <button class="btn-detalles">Ver Detalles</button>
+                <button class="btn-detalles" @click="emitirverDetalles">Ver Detalles</button>
                 <button class="btn-carrito">Agregar al carrito</button>
             </div>
         </div>
@@ -20,7 +20,12 @@ export default {
             type : Object,
             required : true
         }
-    }
+    },
+    methods: {
+        emitirverDetalles() {
+            this.$emit("ver-detalles", this.producto)
+        }
+    },
 }
 </script>
 

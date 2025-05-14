@@ -13,10 +13,12 @@
         <v-window v-model="Tabactivado">
             <v-window-item v-for="(categoria, index) in categorias" :key="index">
                 <div class="productos-grid">
-                    <ProductoCard v-for="producto in categoria.productos" :key="producto.id" :producto="producto"></ProductoCard>
+                    <ProductoCard v-for="producto in categoria.productos" :key="producto.id" :producto="producto" @ver-detalles="emitirverDetalles"></ProductoCard>
                 </div>
             </v-window-item>
         </v-window>
+
+        <DetallesCard></DetallesCard>
     </section>
 </template>
 
@@ -24,11 +26,13 @@
     import { mapState } from 'pinia'
     import { useProductosStore } from '@/stores/useProductosStore';
     import ProductoCard from '@/components/shared/ProductoCard.vue';
+    import DetallesCard from '@/components/shared/DetallesCard.vue';
     
     export default {
         name : 'HomeProductos',
         components : {
-            ProductoCard
+            ProductoCard,
+            DetallesCard
         },
         data() {
             return {
@@ -37,7 +41,13 @@
         },
         computed: {
             ...mapState(useProductosStore, ['categorias'])
-        }
+        },
+        methods: {
+            emitirverDetalles(producto) {
+                const store = useProductosStore();
+                store.abrirDetalles(producto);
+            }
+        },
     }
 </script>
 
