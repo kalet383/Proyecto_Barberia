@@ -15,10 +15,10 @@
           <li><a href="#">¿QUIENES SOMOS?</a></li>
         </ul>
       </nav>
-      <div class="botonycarrito">
+      <div>
         <v-btn class="boton-inicio-seccion" to="/login1">INICIAR SESION</v-btn>
-        <i class="fa-solid fa-cart-shopping carrito"></i>
       </div>
+        <CarritoCompra></CarritoCompra>
     </header>
         <v-container fluid class="carousel-container">
           <v-carousel  height="0vh" show-arrows="hover" cycle hide-delimiters hide-delimiter-background class="half-screen-carousel">
@@ -52,6 +52,7 @@
   import HomeServicios from '@/views/pages/HomeServicios.vue';
   import HomeBarberos from '@/views/pages/HomeBarberos.vue';
   import HomeProductos from '@/views/pages/HomeProductos.vue';
+  import CarritoCompra from '@/components/shared/CarritoCompra.vue';
   const images = [
     'https://img.freepik.com/fotos-premium/hombre-sentado-silla-barbero-mientras-barbero-corta-cabello-precision-barbero-cortando-cuidadosamente-barba-cliente-precision_538213-114313.jpg?w=996',
     'https://www.blac.media/wp-content/uploads/2022/11/pexels-rodnae-productions-7697394-scaled.jpg',
@@ -139,6 +140,7 @@
     background-color:#ee6f38;
     color: white;
     font-size: 16px;
+    margin-left: 110%;
     font-weight: bold;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
     transition: all 0.3s ease;
@@ -150,26 +152,10 @@
     padding-bottom: 4px;
   }
 
-  .botonycarrito {
-    display: flex;
-    align-items: center;
-    gap: 20px; /* Espacio entre el botón y el icono */
-  }
-
-  .carrito {
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-    transition: color 0.3s ease;
-  }
-
-  .carrito:hover {
-    color: #ee6f38;
-  }
-
   .header.sticky .boton-inicio-seccion {
     font-size: 12px; /* Reducir tamaño del texto */
     padding: 4px 8px; /* Reducir el padding del botón */
+    margin-left: 250%;
   }
 
   .nav ul {
@@ -177,13 +163,18 @@
     padding: 0;
     display: flex;
     gap: 30px;
-    margin-left: 80px;
+    margin-left: 250px;
     transition: all 0.3s ease;
+    justify-content: center;
+    flex-wrap: nowrap; /* Evita que los elementos se envuelvan, pero puedes cambiar a wrap si prefieres */
+    width: 100%; /* Asegura que ocupe el espacio disponible */
+    max-width: 600px; /* Limita el ancho máximo para que no se desborde */
   }
 
   .header.sticky .nav ul {
-    gap: 20px; /* Reducir el espacio entre enlaces */
-    margin-left: 30px;
+    gap: 20px; /* Reducir aún más el espacio entre enlaces */
+    max-width: 500px; /* Ajusta el ancho máximo en el estado sticky */
+    margin: 70 auto; /* Centra el ul */
   }
 
   .nav ul li a {
@@ -194,10 +185,12 @@
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
     font-size: 17px;
     padding-bottom: 4px;
+    white-space: nowrap; /* Evita que el texto se envuelva */
   }
 
   .header.sticky .nav ul li a {
-    font-size: 14px; /* Reducir tamaño de fuente */
+    font-size: 15px; /* Reducir tamaño de fuente */
+    margin-left: 30%;
   }
 
   .nav ul li a:hover {
