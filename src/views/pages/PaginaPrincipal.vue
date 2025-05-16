@@ -15,36 +15,35 @@
           <li><a href="#">¿QUIENES SOMOS?</a></li>
         </ul>
       </nav>
-      <div>
+      <div class="header-actions">
         <v-btn class="boton-inicio-seccion" to="/login1">INICIAR SESION</v-btn>
-      </div>
         <CarritoCompra></CarritoCompra>
+      </div>
     </header>
-        <v-container fluid class="carousel-container">
-          <v-carousel  height="0vh" show-arrows="hover" cycle hide-delimiters hide-delimiter-background class="half-screen-carousel">
-            <v-carousel-item v-for="(image, i) in images" :key="i">
-              <img :src="image" alt="Imagen del carrusel" class="carousel-image" />
-            </v-carousel-item>
-          </v-carousel>
-          <div class="centered-contend">
-            <h1 class="title">ESTILO SIN LIMITES, BIENVENIDO A STYLEHUB.</h1>
-            <v-btn class="boton-agendar" to="/login1">¡AGENDA YA!</v-btn>
-            <a href="#servicios-section" class="flecha-abajo">
-              <i class="fa-solid fa-angle-down"></i>
-            </a>
-          </div>
-        </v-container>
-  </div>
-  <HomeServicios></HomeServicios>
-  <HomeBarberos></HomeBarberos>
-  <HomeProductos></HomeProductos>
+    <v-container fluid class="carousel-container">
+      <v-carousel  height="0vh" show-arrows="hover" cycle hide-delimiters hide-delimiter-background class="half-screen-carousel">
+        <v-carousel-item v-for="(image, i) in images" :key="i">
+          <img :src="image" alt="Imagen del carrusel" class="carousel-image" />
+        </v-carousel-item>
+      </v-carousel>
+      <div class="centered-contend">
+        <h1 class="title">ESTILO SIN LIMITES, BIENVENIDO A STYLEHUB.</h1>
+        <v-btn class="boton-agendar" to="/login1">¡AGENDA YA!</v-btn>
+        <a href="#servicios-section" class="flecha-abajo">
+          <i class="fa-solid fa-angle-down"></i>
+        </a>
+      </div>
+    </v-container>
+    <HomeServicios></HomeServicios>
+    <HomeBarberos></HomeBarberos>
+    <HomeProductos></HomeProductos>
 
-  <!-- API whatsapp -->
-  <a href="https://api.whatsapp.com/send?phone=TU_NUMERO&text=Hola%20quiero%20más%20información"
-    class="whatsapp-button" target="_blank">
-    <i class="fab fa-whatsapp"></i>
-    <span class="parrafowhatsapp">Escribemos por Whatsapp</span>
-  </a>
+    <!-- API whatsapp -->
+    <a href="https://api.whatsapp.com/send?phone=TU_NUMERO&text=Hola%20quiero%20más%20información" class="whatsapp-button" target="_blank">
+      <i class="fab fa-whatsapp"></i>
+      <span class="parrafowhatsapp">Escribemos por Whatsapp</span>
+    </a>
+  </div>
 </template>
 
 <script setup>
@@ -124,6 +123,10 @@
     height: 95px; /* Reducir la altura del header */
   }
 
+  .logo {
+    flex-shrink: 0;
+  }
+
   .imagen-pequeña {
     margin-top: 10px;
     width: 138px;
@@ -140,7 +143,6 @@
     background-color:#ee6f38;
     color: white;
     font-size: 16px;
-    margin-left: 110%;
     font-weight: bold;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
     transition: all 0.3s ease;
@@ -155,7 +157,6 @@
   .header.sticky .boton-inicio-seccion {
     font-size: 12px; /* Reducir tamaño del texto */
     padding: 4px 8px; /* Reducir el padding del botón */
-    margin-left: 250%;
   }
 
   .nav ul {
@@ -163,18 +164,15 @@
     padding: 0;
     display: flex;
     gap: 30px;
-    margin-left: 250px;
+    margin: 0;
     transition: all 0.3s ease;
     justify-content: center;
     flex-wrap: nowrap; /* Evita que los elementos se envuelvan, pero puedes cambiar a wrap si prefieres */
-    width: 100%; /* Asegura que ocupe el espacio disponible */
-    max-width: 600px; /* Limita el ancho máximo para que no se desborde */
+    width: auto; /* Asegura que ocupe el espacio disponible */
   }
 
   .header.sticky .nav ul {
     gap: 20px; /* Reducir aún más el espacio entre enlaces */
-    max-width: 500px; /* Ajusta el ancho máximo en el estado sticky */
-    margin: 70 auto; /* Centra el ul */
   }
 
   .nav ul li a {
@@ -190,13 +188,18 @@
 
   .header.sticky .nav ul li a {
     font-size: 15px; /* Reducir tamaño de fuente */
-    margin-left: 30%;
   }
 
   .nav ul li a:hover {
     border-bottom: 2px solid white;
     color: #ee6f38;
     padding-left: 12px;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
   }
 
   /* Estilos para el carrusel */
@@ -309,9 +312,9 @@
     background-color: #ee6f38; 
     color: white;
     width: 240px; 
-    height: 50px;
+    height: 35px;
     padding: 12px 20px;
-    border-radius: 20px;
+    border-radius: 0px;
     display: flex; 
     align-items: center; 
     justify-content: center; 
@@ -332,5 +335,215 @@
   .whatsapp-button i {
     font-size: 20px;
     margin-right: 10px;
+  }
+
+  /* Media Queries para diferentes tamaños de pantalla */
+  /* Pantallas pequeñas (móviles, menos de 768px) */
+  @media (max-width: 767px) {
+    .header {
+      padding: 0 20px;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+
+    .logo {
+      flex: 1;
+      text-align: center;
+    }
+
+    .imagen-pequeña {
+      width: 100px;
+    }
+
+    .nav {
+      order: 3;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .nav ul {
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .nav ul li a {
+      font-size: 14px;
+    }
+
+    .header-actions {
+      gap: 10px;
+      flex: 1;
+      justify-content: flex-end;
+    }
+
+    .boton-inicio-seccion {
+      font-size: 12px;
+      padding: 4px 8px;
+    }
+
+    .header.sticky {
+      padding: 0 20px;
+      height: auto;
+      flex-wrap: wrap;
+    }
+
+    .header.sticky .nav ul {
+      gap: 8px;
+    }
+
+    .header.sticky .boton-inicio-seccion {
+      font-size: 10px;
+      padding: 3px 6px;
+    }
+
+    .centered-contend {
+      top: 70%;
+    }
+
+    .title {
+      font-size: 1.5rem;
+    }
+
+    .boton-agendar {
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    .flecha-abajo {
+      font-size: 2rem;
+      margin-top: 10px;
+    }
+
+    .whatsapp-button {
+      width: 200px;
+      height: 40px;
+      font-size: 14px;
+      padding: 8px 16px;
+    }
+
+    .whatsapp-button i {
+      font-size: 16px;
+      margin-right: 8px;
+    }
+  }
+
+  /* Pantallas medianas (tablets, entre 768px y 1023px) */
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .header {
+      padding: 0 30px;
+    }
+
+    .imagen-pequeña {
+      width: 120px;
+    }
+
+    .nav ul {
+      gap: 20px;
+    }
+
+    .nav ul li a {
+      font-size: 16px;
+    }
+
+    .header-actions {
+      gap: 15px;
+    }
+
+    .boton-inicio-seccion {
+      font-size: 14px;
+    }
+
+    .header.sticky {
+      padding: 0 30px;
+    }
+
+    .header.sticky .nav ul {
+      gap: 15px;
+    }
+
+    .header.sticky .boton-inicio-seccion {
+      font-size: 12px;
+    }
+
+    .centered-contend {
+      top: 80%;
+    }
+
+    .title {
+      font-size: 1.8rem;
+    }
+
+    .boton-agendar {
+      font-size: 16px;
+    }
+
+    .flecha-abajo {
+      font-size: 2.5rem;
+    }
+  }
+
+  /* Pantallas grandes (escritorios, 1024px y más) */
+  @media (min-width: 1024px) {
+    .header {
+      padding: 0 55px;
+    }
+
+    .imagen-pequeña {
+      width: 138px;
+    }
+
+    .nav ul {
+      gap: 23px;
+    }
+
+    .nav ul li a {
+      font-size: 17px;
+      /* margin-left: 20%; */
+    }
+
+    .header-actions {
+      gap: 20px;
+    }
+
+    .boton-inicio-seccion {
+      font-size: 16px;
+    }
+
+    .header.sticky {
+      padding: 0 40px;
+    }
+
+    .header.sticky .nav ul {
+      gap: 20px;
+    }
+
+    .header.sticky .boton-inicio-seccion {
+      font-size: 12px;
+    }
+
+    .centered-contend {
+      top: 75%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      z-index: 11;
+      margin-top: 80px;
+    }
+
+    .title {
+      font-size: 2rem;
+    }
+
+    .boton-agendar {
+      font-size: 18px;
+    }
+
+    .flecha-abajo {
+      font-size: 3rem;
+    }
   }
 </style>
