@@ -6,7 +6,7 @@
             <p class="precio-producto">$ {{ producto.precio.toLocaleString() }} </p>
             <div class="botonescarta">
                 <button class="btn-detalles" @click="emitirverDetalles">Ver Detalles</button>
-                <button class="btn-carrito">Agregar al carrito</button>
+                <button class="btn-carrito" @click="emitirAgregarCarrito">Agregar al carrito</button>
             </div>
         </div>
     </div>
@@ -24,6 +24,9 @@ export default {
     methods: {
         emitirverDetalles() {
             this.$emit("ver-detalles", this.producto)
+        },
+        emitirAgregarCarrito() {
+            this.$emit('agregar-carrito', this.producto)
         }
     },
 }

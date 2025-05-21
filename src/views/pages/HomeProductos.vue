@@ -20,7 +20,7 @@
         <v-window v-model="Tabactivado">
             <v-window-item v-for="(categoria, index) in categorias" :key="index">
                 <div class="productos-grid">
-                    <ProductoCard v-for="producto in categoria.productos" :key="producto.id" :producto="producto" @ver-detalles="emitirverDetalles"></ProductoCard>
+                    <ProductoCard v-for="producto in categoria.productos" :key="producto.id" :producto="producto" @ver-detalles="emitirverDetalles" @agregar-carrito="AgregaralCarrito"></ProductoCard>
                 </div>
             </v-window-item>
         </v-window>
@@ -53,6 +53,9 @@
             emitirverDetalles(producto) {
                 const store = useProductosStore();
                 store.abrirDetalles(producto);
+            },
+            AgregaralCarrito(producto) {
+                useProductosStore().AgregaralCarrito(producto); // ✅ LLAMA A PINIA
             }
         },
     }

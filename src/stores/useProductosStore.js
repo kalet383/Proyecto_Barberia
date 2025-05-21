@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 
 export const useProductosStore = defineStore('productos', {
     state: () => ({
+        ComprasCarrito : [],
         categorias : [
             {
                 id : 1,
@@ -156,6 +157,14 @@ export const useProductosStore = defineStore('productos', {
         cerrarDetalles() {
             this.mostrarDetalles = false;
             this.productoSeleccionado = null;
+        },
+        AgregaralCarrito(producto) {
+            const existente = this.ComprasCarrito.find(p => p.id === producto.id);
+            if (existente) {
+                existente.cantidad += 1;
+            } else {
+                this.ComprasCarrito.push({ ...producto, cantidad: 1 });
+            }
         }
     }
 
