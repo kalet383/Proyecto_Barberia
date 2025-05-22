@@ -1,13 +1,37 @@
 <template>
     <div>
-        <v-dialog v-model="dialogInterno" max-width="800" @update:modelValue="emitirCambio">
-            <v-data-table v-model="selected" :items="items" :headers="headers" show-select></v-data-table>
-                <tr v-for="item in TiendaProductos.ComprasCarrito" :key="item.id">
-                    <td>{{ item.nombre }}</td>
-                    <td>{{ item.cantidad }}</td>
-                    <td>${{ item.precio.toLocaleString() }}</td>
-                    <td>${{ (item.precio * item.cantidad).toLocaleString() }}</td>
-                </tr>
+        <v-dialog v-model="dialogInterno" max-width="1300" class="rounded-xl" persistent @update:modelValue="emitirCambio">
+            <v-card>
+                <v-toolbar flat>
+                    <v-toolbar-title>SHOPPING CART</v-toolbar-title>
+                    <v-spacer></v-spacer>
+                    <v-btn color="error" @click="vaciarCarrito">Vaciar carrito</v-btn>
+                </v-toolbar>
+
+                <v-row no-gutters>
+                    <!-- Columna izquierda (contenido adicional) -->
+                    <v-col cols="12" md="7" class="pa-4" style="max-height: 600px; overflow-y: auto;">
+                        <v-data-table v-model="selected" :items="carrito" :headers="headers" item-value="id" show-select class="elevation-1">
+                            <template #item.nombre="{ item }">
+                                <div class="d-flex align-center gap-2">
+                                    <v-avatar size="80">
+                                        <v-img :src="item.img" alt="PRODUCTO"></v-img>
+                                    </v-avatar>
+                                    <span><strong>{{ item.nombre }}</strong></span>
+                                </div>
+                            </template>
+                            <template #item.subtotal="{ item }">
+                                ${{ (item.precio * item.cantidad).toLocaleString() }}
+                            </template>
+                        </v-data-table>
+                    </v-col>
+
+                    <v-col cols="12" md="5" class="pa-4">
+                        <!-- Aquí puedes poner lo que quieras, por ejemplo: -->
+                        <h3>TOTAL DEL CARRITO</h3>
+                    </v-col>
+                </v-row> 
+            </v-card>
             <v-btn color="#ee6f38" @click="cerrarModal">Cerrar</v-btn>
         </v-dialog>
     </div>
@@ -28,7 +52,7 @@
                 dialogInterno: this.dialog,
                 selected : [],
                 headers : [
-                    {title: 'NOMBRE', value: 'nombre'},
+                    {title: 'PRODUCTO', value: 'nombre'},
                     {title: 'CANTIDAD', value: 'cantidad'},
                     {title: 'PRECIO', value: 'precio'},
                     {title: 'SUBTOTAL', value: 'subtotal'}
@@ -41,8 +65,8 @@
             },
         },
         computed: {
-            TiendaProductos() {
-                return useProductosStore
+            carrito() {
+                return useProductosStore().ComprasCarrito
             }
         },
         methods: {
@@ -52,6 +76,9 @@
             cerrarModal() {
                 this.dialogInterno = false;
                 this.$emit('update:dialog', false);
+            },
+            vaciarCarrito() {
+                useProductosStore().ComprasCarrito = []
             }
         }
     }
