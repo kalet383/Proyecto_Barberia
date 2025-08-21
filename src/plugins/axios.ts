@@ -2,8 +2,8 @@ import axios from 'axios';
 
 // Instancia base de Axios para tu API NestJS
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000',
-    withCredentials: false, // habilítalo si usas cookies
+    baseURL: 'http://localhost:3000',
+    withCredentials: true, // habilítalo si usas cookies
 });
 
 export function setAuthToken(token: string) {
@@ -25,5 +25,4 @@ api.interceptors.response.use(
         return Promise.reject(error);
     }
 );
-
 export default api;

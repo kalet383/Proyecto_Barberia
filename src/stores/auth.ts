@@ -1,9 +1,8 @@
 import { defineStore } from 'pinia';
-import api, { setAuthToken, clearAuthToken } from '@/plugins/axios';
+import api from '@/plugins/axios';
 import axios from 'axios';
 
 interface AuthState {
-  token: string | null;
   user: Record<string, unknown> | null; // Tipo genérico hasta definir User
   loading: boolean;
   error: string | null;
@@ -11,45 +10,33 @@ interface AuthState {
 
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
-    token: null,
     user: null,
     loading: false,
     error: null,
   }),
 
   getters: {
-    isAuthenticated: (state) => !!state.token,
+    isAuthenticated: (state) => !!state.user,
   },
 
   actions: {
-    loadFromStorage() {
-      const t = localStorage.getItem('auth_token');
-      if (t) {
-        this.token = t;
-        setAuthToken(t);
-      }
-    },
-
     async login(email: string, password: string) {
       this.loading = true;
       this.error = null;
       try {
-        // Tu backend devuelve { accessToken: string }
-        const { data } = await api.post('/auth/login', { email, password });
-        const token = data?.accessToken || data?.access_token;
-        if (!token) throw new Error('No se recibió token JWT');
+        // 🔹 Importante: habilitar envío de cookies
+        await api.post(
+          '/auth/login',
+          { email, password },
+          { withCredentials: true }
+        );
 
-        this.token = token;
-        setAuthToken(token);
-        localStorage.setItem('auth_token', token);
+        // 🔹 Después de login, pedimos el perfil del usuario
+        const { data: profile } = await api.get('/auth/profile', {
+          withCredentials: true,
+        });
+        this.user = profile;
 
-        // (Opcional) obtener perfil si tienes guard activado
-        try {
-          const { data: profile } = await api.post('/auth/profile');
-          this.user = profile;
-        } catch {
-          // Ignorar si no tienes el guard activo todavía
-        }
       } catch (e: unknown) {
         if (axios.isAxiosError(e)) {
           this.error = e.response?.data?.message || 'Error de autenticación';
@@ -62,11 +49,24 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    logout() {
-      this.token = null;
+    async loadUser() {
+      try {
+        const { data: profile } = await api.get('/auth/profile', {
+          withCredentials: true,
+        });
+        this.user = profile;
+      } catch {
+        this.user = null;
+      }
+    },
+
+    async logout() {
+      try {
+        await api.post('/auth/logout', {}, { withCredentials: true });
+      } catch {
+        // aunque falle, limpiamos
+      }
       this.user = null;
-      clearAuthToken();
-      localStorage.removeItem('auth_token');
     },
   },
 });

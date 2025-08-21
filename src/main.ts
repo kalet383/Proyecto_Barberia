@@ -27,8 +27,7 @@ const app = createApp(App);
 const pinia = createPinia();
 app.use(pinia);
 
-const auth = useAuthStore(pinia);
-auth.loadFromStorage();
+useAuthStore(pinia);
 
 app.use(router);
 app.use(PerfectScrollbarPlugin);
