@@ -6,6 +6,7 @@ interface AuthState {
   user: Record<string, unknown> | null; // Tipo genérico hasta definir User
   loading: boolean;
   error: string | null;
+  returnUrl: string | null;
 }
 
 export const useAuthStore = defineStore('auth', {
@@ -13,6 +14,7 @@ export const useAuthStore = defineStore('auth', {
     user: null,
     loading: false,
     error: null,
+    returnUrl: null,
   }),
 
   getters: {
@@ -51,6 +53,7 @@ export const useAuthStore = defineStore('auth', {
         // aunque falle, limpiamos
       }
       this.user = null;
+      this.returnUrl = null;
     },
   },
 });
