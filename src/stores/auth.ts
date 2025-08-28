@@ -20,32 +20,16 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    async login(email: string, password: string) {
-      this.loading = true;
-      this.error = null;
+    async login(credentials: { email: string; password: string }) {
       try {
-        // 🔹 Importante: habilitar envío de cookies
-        await api.post(
-          '/auth/login',
-          { email, password },
-          { withCredentials: true }
-        );
-
-        // 🔹 Después de login, pedimos el perfil del usuario
-        const { data: profile } = await api.get('/auth/profile', {
-          withCredentials: true,
-        });
-        this.user = profile;
-
-      } catch (e: unknown) {
-        if (axios.isAxiosError(e)) {
-          this.error = e.response?.data?.message || 'Error de autenticación';
-        } else {
-          this.error = 'Error inesperado';
+        const res = await api.post('/auth/login', credentials, { withCredentials: true });
+        this.user = res.data.user;
+        return res.data;
+      } catch (err: unknown) {
+        if (axios.isAxiosError(err) && err.response?.data?.message) {
+          throw err.response.data.message;
         }
-        throw e;
-      } finally {
-        this.loading = false;
+        throw 'Login failed';
       }
     },
 
