@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { defineProps } from 'vue';
 import { ChevronRightIcon } from 'vue-tabler-icons';
 
 type Breadcrumb = {

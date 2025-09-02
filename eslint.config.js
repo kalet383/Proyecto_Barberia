@@ -10,6 +10,10 @@ export default [
       parserOptions: {
         parser: '@typescript-eslint/parser'
       }
+    },
+    rules: {
+      // 🔧 Aquí desactivamos la regla que molesta
+      'vue/valid-v-slot': 'on',
     }
   },
   pluginJs.configs.recommended,

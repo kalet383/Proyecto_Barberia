@@ -18,6 +18,10 @@ export const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const auth = useAuthStore();
 
+  console.log('🛡️ Middleware - Going to:', to.path);
+  console.log('👤 User in middleware:', auth.user);
+  console.log('🔐 Is authenticated:', auth.isAuthenticated);
+
   // páginas públicas (no requieren login)
   const publicPages = ['/login', '/register']; // 👈 ajusta según lo que tengas
   const isPublicPage = publicPages.includes(to.path);

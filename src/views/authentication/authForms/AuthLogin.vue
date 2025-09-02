@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import Google from '@/assets/images/auth/social-google.svg';
 import { useAuthStore } from '@/stores/auth';
 import { Form } from 'vee-validate';
 
+const router = useRouter();
 const checkbox = ref(false);
 const valid = ref(false);
 const show1 = ref(false);
-//const logform = ref();
 const password = ref('admin123');
 const username = ref('info@codedthemes.com');
 const passwordRules = ref([
@@ -16,11 +17,28 @@ const passwordRules = ref([
 ]);
 const emailRules = ref([(v: string) => !!v || 'E-mail is required', (v: string) => /.+@.+\..+/.test(v) || 'E-mail must be valid']);
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-function validate(values: any, { setErrors }: any) {
+async function validate(values: any, { setErrors }: any) {
   const authStore = useAuthStore();
-  return authStore.login({ email: username.value, password: password.value })
-  .catch((error: unknown) => setErrors({ apiError: error }));
+  
+  try {
+    console.log('🔄 Iniciando login...');
+    const result = await authStore.login({ email: username.value, password: password.value });
+    console.log('✅ Login exitoso:', result);
+    
+    // 🎯 AQUÍ ESTÁ LA CLAVE: Forzar la carga del usuario
+    await authStore.loadUser();
+    
+    console.log('👤 Usuario después de loadUser:', authStore.user);
+    console.log('🔐 ¿Está autenticado?:', authStore.isAuthenticated);
+    
+    console.log('🚀 Intentando redirigir...');
+    router.push('/dashboard');
+    console.log('📍 Router push ejecutado');
+    
+  } catch (error: unknown) {
+    console.log('❌ Error en login:', error);
+    setErrors({ apiError: error });
+  }
 }
 </script>
 
