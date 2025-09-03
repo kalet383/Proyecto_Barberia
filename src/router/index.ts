@@ -17,22 +17,40 @@ export const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   const auth = useAuthStore();
+  console.log('Usuario en auth:', auth.user);
 
+  console.log('ROUTER GUARD EJECUTADO');
+  console.log('De:', from.path);
+  console.log('A:', to.path);
+  
   console.log('🛡️ Middleware - Going to:', to.path);
   console.log('👤 User in middleware:', auth.user);
   console.log('🔐 Is authenticated:', auth.isAuthenticated);
 
   // páginas públicas (no requieren login)
-  const publicPages = ['/login', '/register']; // 👈 ajusta según lo que tengas
+  const publicPages = ['/login', '/login1', '/register']; // 👈 ajusta según lo que tengas
   const isPublicPage = publicPages.includes(to.path);
+
+  // 🎯 NUEVA LÓGICA: Si viene del dashboard y tiene usuario, bloquear ir a login
+  if (auth.user && (to.path === '/login' || to.path === '/login1') && from.path.startsWith('/dashboard')) {
+    console.log('Bloqueando navegación desde dashboard a login');
+    return next(false); // Bloquea la navegación
+  }
 
   // la ruta requiere autenticación si tiene `meta.requiresAuth`
   const authRequired = !isPublicPage && to.matched.some(record => record.meta.requiresAuth);
 
-  // si requiere login y no hay usuario, redirige
+  // 🎯 NUEVA LÓGICA: Si requiere auth y no hay usuario, intentar cargar desde cookies
   if (authRequired && !auth.user) {
-    auth.returnUrl = to.fullPath;
-    return next('/login');
+    try {
+      console.log('Intentando cargar usuario desde cookies...');
+      await auth.loadUser();
+      console.log('Usuario cargado correctamente desde cookies');
+    } catch (error) {
+      console.log('No se pudo cargar usuario - redirigiendo a login');
+      auth.returnUrl = to.fullPath;
+      return next('/login');
+    }
   }
 
   // si ya está logueado e intenta entrar a /login -> lo mando al home o returnUrl

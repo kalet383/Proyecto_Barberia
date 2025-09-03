@@ -1,11 +1,19 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useRouter } from 'vue-router'; // 🎯 AGREGAR ESTO
 import { SettingsIcon, LogoutIcon, UserIcon } from 'vue-tabler-icons';
 import { useAuthStore } from '@/stores/auth';
 
 const swt1 = ref(true);
 const swt2 = ref(false);
 const authStore = useAuthStore();
+const router = useRouter(); // 🎯 AGREGAR ESTO
+
+// 🎯 NUEVA FUNCIÓN PARA MANEJAR LOGOUT
+const handleLogout = async () => {
+  await authStore.logout();
+  router.push('/'); // Redirige a la página principal
+};
 </script>
 
 <template>
@@ -70,7 +78,8 @@ const authStore = useAuthStore();
           </template>
         </v-list-item>
 
-        <v-list-item @click="authStore.logout()" color="secondary" rounded="md">
+        <!-- 🎯 CAMBIAR AQUÍ: usar handleLogout en lugar de authStore.logout() directamente -->
+        <v-list-item @click="handleLogout" color="secondary" rounded="md">
           <template v-slot:prepend>
             <LogoutIcon size="20" class="mr-2" />
           </template>

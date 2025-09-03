@@ -36,12 +36,15 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async loadUser() {
+      console.log('EJECUTANDO LOADUSER');
       try {
         const { data: profile } = await api.get('/auth/profile', {
           withCredentials: true,
         });
+        console.log('LOADUSER EXITOSO:', profile);
         this.user = profile;
-      } catch {
+      } catch (error) {
+        console.log('LOADUSER FALLÓ:', error);
         this.user = null;
       }
     },
