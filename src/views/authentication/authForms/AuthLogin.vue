@@ -9,20 +9,23 @@ const router = useRouter();
 const checkbox = ref(false);
 const valid = ref(false);
 const show1 = ref(false);
-const password = ref('admin123');
-const username = ref('info@codedthemes.com');
+const password = ref('');
+const email = ref('');
 const passwordRules = ref([
-  (v: string) => !!v || 'Password is required',
-  (v: string) => (v && v.length <= 10) || 'Password must be less than 10 characters'
+  (v: string) => !!v || 'La contraseña es obligatoria',
 ]);
-const emailRules = ref([(v: string) => !!v || 'E-mail is required', (v: string) => /.+@.+\..+/.test(v) || 'E-mail must be valid']);
+const emailRules = ref([
+  (v: string) => !!v || 'El correo electrónico es obligatorio', 
+  (v: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) || 'Formato de correo inválido',
+]);
 
 async function validate(values: any, { setErrors }: any) {
   const authStore = useAuthStore();
   
   try {
     console.log('🔄 Iniciando login...');
-    const result = await authStore.login({ email: username.value, password: password.value });
+    const result = await authStore.login({ email: email.value, password: password.value });
     console.log('✅ Login exitoso:', result);
     
     // 🎯 AQUÍ ESTÁ LA CLAVE: Forzar la carga del usuario
@@ -45,21 +48,21 @@ async function validate(values: any, { setErrors }: any) {
 <template>
   <v-btn block color="primary" variant="outlined" class="text-lightText googleBtn">
     <img :src="Google" alt="google" />
-    <span class="ml-2">Sign in with Google</span></v-btn
+    <span class="ml-2">Inicia sesion con Google</span></v-btn
   >
   <v-row>
     <v-col class="d-flex align-center">
       <v-divider class="custom-devider" />
-      <v-btn variant="outlined" class="orbtn" rounded="md" size="small">OR</v-btn>
+      <v-btn variant="outlined" class="orbtn" rounded="md" size="small">O</v-btn>
       <v-divider class="custom-devider" />
     </v-col>
   </v-row>
-  <h5 class="text-h5 text-center my-4 mb-8">Sign in with Email address</h5>
+  <h5 class="text-h5 text-center my-4 mb-8">Iniciar sesión con dirección de correo electrónico</h5>
   <Form @submit="validate" class="mt-7 loginForm" v-slot="{ errors, isSubmitting }">
     <v-text-field
-      v-model="username"
+      v-model="email"
       :rules="emailRules"
-      label="Email Address / Username"
+      label="Ingrese su correo electronico"
       class="mt-4 mb-8"
       required
       density="comfortable"
@@ -70,7 +73,7 @@ async function validate(values: any, { setErrors }: any) {
     <v-text-field
       v-model="password"
       :rules="passwordRules"
-      label="Password"
+      label="Ingrese su contraseña"
       required
       density="comfortable"
       variant="outlined"
@@ -86,18 +89,18 @@ async function validate(values: any, { setErrors }: any) {
       <v-checkbox
         v-model="checkbox"
         :rules="[(v: any) => !!v || 'You must agree to continue!']"
-        label="Remember me?"
+        label="¿Acuerdate de mi?"
         required
         color="primary"
         class="ms-n2"
         hide-details
       ></v-checkbox>
       <div class="ml-auto">
-        <a href="javascript:void(0)" class="text-primary text-decoration-none">Forgot password?</a>
+        <a href="javascript:void(0)" class="text-primary text-decoration-none">¿Has olvidado tu contraseña?</a>
       </div>
     </div>
     <v-btn color="secondary" :loading="isSubmitting" block class="mt-2" variant="flat" size="large" :disabled="valid" type="submit">
-      Sign In</v-btn
+      Iniciar sesion</v-btn
     >
     <div v-if="errors.apiError" class="mt-2">
       <v-alert color="error">{{ errors.apiError }}</v-alert>
@@ -105,7 +108,7 @@ async function validate(values: any, { setErrors }: any) {
   </Form>
   <div class="mt-5 text-right">
     <v-divider />
-    <v-btn variant="plain" to="/register" class="mt-2 text-capitalize mr-n2">Don't Have an account?</v-btn>
+    <v-btn variant="plain" to="/register" class="mt-2 text-capitalize mr-n2">¿No tienes una cuenta?</v-btn>
   </div>
 </template>
 <style lang="scss">

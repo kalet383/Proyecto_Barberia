@@ -35,6 +35,19 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
+    async register(payload: { nombre: string; apellido: string; email: string; password: string; telefono?: string }) {
+      try {
+        const res = await api.post('/auth/register', payload, { withCredentials: true });
+        this.user = res.data.user; // si tu backend devuelve el usuario creado
+        return res.data;
+      } catch (err: unknown) {
+        if (axios.isAxiosError(err) && err.response?.data?.message) {
+          throw err.response.data.message;
+        }
+        throw 'Registro fallido';
+      }
+    },
+
     async loadUser() {
       console.log('EJECUTANDO LOADUSER');
       try {
