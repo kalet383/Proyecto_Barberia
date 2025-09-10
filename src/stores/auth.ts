@@ -7,6 +7,7 @@ interface AuthState {
   loading: boolean;
   error: string | null;
   returnUrl: string | null;
+  menu: number | null; // Ajusta el tipo según tu estructura de menú
 }
 
 export const useAuthStore = defineStore('auth', {
@@ -15,10 +16,12 @@ export const useAuthStore = defineStore('auth', {
     loading: false,
     error: null,
     returnUrl: null,
+    menu: null,
   }),
 
   getters: {
     isAuthenticated: (state) => !!state.user,
+    isMenu: (state) => state.menu,
   },
 
   actions: {
@@ -26,6 +29,13 @@ export const useAuthStore = defineStore('auth', {
       try {
         const res = await api.post('/auth/login', credentials, { withCredentials: true });
         this.user = res.data.user;
+        if (this.user && (this.user as any).Role == 'Cliente') {
+          this.menu = 2
+        }
+        if (this.user && (this.user as any).Role == 'Administrador') {
+          this.menu = 0
+        }
+        console.log("datos usuarios:", res.data);
         return res.data;
       } catch (err: unknown) {
         if (axios.isAxiosError(err) && err.response?.data?.message) {

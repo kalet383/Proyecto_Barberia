@@ -18,6 +18,8 @@ import print from 'vue3-print-nb';
 
 // Pinia store
 import { useAuthStore } from '@/stores/auth';
+import VueSidebarMenu from 'vue-sidebar-menu'
+import 'vue-sidebar-menu/dist/vue-sidebar-menu.css'
 
 const app = createApp(App);
 
@@ -34,4 +36,5 @@ app.use(PerfectScrollbarPlugin);
 app.use(VueTablerIcons);
 app.use(print);
 app.use(VueApexCharts);
+app.use(VueSidebarMenu)
 app.use(vuetify).mount('#app');
