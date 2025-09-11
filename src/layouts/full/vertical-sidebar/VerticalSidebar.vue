@@ -1,16 +1,53 @@
 <script setup lang="ts">
-import { shallowRef } from 'vue';
+import { shallowRef, ref, onMounted, computed } from 'vue';
 import { useCustomizerStore } from '../../../stores/customizer';
-import sidebarItems from './sidebarItem';
-
+import { useAuthStore } from '@/stores/auth';
+import menus from "../../../config/dashboardConfig.js";
 import NavGroup from './NavGroup/NavGroup.vue';
 import NavItem from './NavItem/NavItem.vue';
 import NavCollapse from './NavCollapse/NavCollapse.vue';
-import ExtraBox from './extrabox/ExtraBox.vue';
 import Logo from '../logo/LogoMain.vue';
 
 const customizer = useCustomizerStore();
-const sidebarMenu = shallowRef(sidebarItems);
+const authStore = useAuthStore();
+
+// Definir el tipo para los elementos del menú
+type MenuItem = {
+  header?: string;
+  hiddenOnCollapse?: boolean;
+  href?: string;
+  title?: string;
+  icon?: string | any; // Permitir string o componente
+  divider?: boolean;
+  children?: MenuItem[];
+  // Agregar otras propiedades según sea necesario
+};
+
+const menu = ref<MenuItem[]>([]);
+
+// Cargar el menú según el rol del usuario
+onMounted(() => {
+  const role = (authStore.user && typeof authStore.user === 'object' && typeof (authStore.user as any).Role === 'string')
+    ? ((authStore.user as any).Role as string).toLowerCase()
+    : '';
+  switch (role) {
+    case 'administrador':
+      menu.value = menus.menuadministrador;
+      break;
+    case 'barbero':
+      menu.value = menus.menubarbero;
+      break;
+    case 'cliente':
+      menu.value = menus.menucliente;
+      break;
+    default:
+      menu.value = []; // O algún otro valor por defecto
+  }
+  console.log("Menu cargado:", menu.value);
+});
+
+// Computed para usar el menú dinámico
+const sidebarMenu = computed(() => menu.value);
 </script>
 
 <template>
@@ -26,7 +63,6 @@ const sidebarMenu = shallowRef(sidebarItems);
     expand-on-hover
   >
     <!---Logo part -->
-
     <div class="pa-5">
       <Logo />
     </div>
@@ -48,12 +84,6 @@ const sidebarMenu = shallowRef(sidebarItems);
           <!---End Single Item-->
         </template>
       </v-list>
-      <div class="pa-4">
-        <ExtraBox />
-      </div>
-      <div class="pa-4 text-center">
-        <v-chip color="inputBorder" size="small"> v1.3.0 </v-chip>
-      </div>
     </perfect-scrollbar>
   </v-navigation-drawer>
 </template>

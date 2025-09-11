@@ -65,7 +65,7 @@ export const useAuthStore = defineStore('auth', {
           withCredentials: true,
         });
         console.log('LOADUSER EXITOSO:', profile);
-        this.user = profile;
+        //this.user = profile;
       } catch (error) {
         console.log('LOADUSER FALLÓ:', error);
         this.user = null;
