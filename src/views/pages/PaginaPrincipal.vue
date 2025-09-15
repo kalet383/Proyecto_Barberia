@@ -11,7 +11,7 @@
           <li><a href="#servicios-section">SERVICIOS</a></li>
           <li><a href="#barberos-section">BARBEROS</a></li>
           <li><a href="#productos-section">PRODUCTOS</a></li>
-          <li><a href="#">¿COMO LLEGAR?</a></li>
+          <li><a href="#ubicacion-section">¿COMO LLEGAR?</a></li>
           <li><a href="#">¿QUIENES SOMOS?</a></li>
         </ul>
       </nav>
@@ -37,6 +37,7 @@
     <HomeServicios></HomeServicios>
     <HomeBarberos></HomeBarberos>
     <HomeProductos></HomeProductos>
+    <HomeUbicacion></HomeUbicacion>
 
     <!-- API whatsapp -->
     <a href="https://api.whatsapp.com/send?phone=TU_NUMERO&text=Hola%20quiero%20más%20información" class="whatsapp-button" target="_blank">
@@ -51,6 +52,7 @@
   import HomeServicios from '@/views/pages/HomeServicios.vue';
   import HomeBarberos from '@/views/pages/HomeBarberos.vue';
   import HomeProductos from '@/views/pages/HomeProductos.vue';
+  import HomeUbicacion from './HomeUbicacion.vue';
   import CarritoCompra from '@/components/shared/CarritoCompra.vue';
   const images = [
     'https://img.freepik.com/fotos-premium/hombre-sentado-silla-barbero-mientras-barbero-corta-cabello-precision-barbero-cortando-cuidadosamente-barba-cliente-precision_538213-114313.jpg?w=996',
