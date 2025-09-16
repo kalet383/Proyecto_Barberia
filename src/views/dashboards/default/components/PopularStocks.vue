@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 import { ref, computed } from 'vue';
 
 // import icons
@@ -167,4 +167,4 @@ const revenues = ref([
       </v-card-text>
     </v-card>
   </v-card>
-</template>
+</template> -->

@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 import { shallowRef } from 'vue';
 import { ArchiveIcon, CopyIcon, DownloadIcon, FileExportIcon } from 'vue-tabler-icons';
 import iconCard from '@/assets/images/icons/icon-card.svg';
@@ -43,4 +43,4 @@ const items = shallowRef([
       <span class="text-subtitle-1 text-medium-emphasis text-white">Total Earning</span>
     </v-card-text>
   </v-card>
-</template>
+</template> -->
