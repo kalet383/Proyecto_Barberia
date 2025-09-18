@@ -101,6 +101,11 @@ export default {
         icon: "mdi-account-tie",
         to: "/barberos"
         },
+        {
+        title: "Crear Barbero",
+        icon: "mdi-account-plus",
+        to: "/crear-barbero"
+        },
         { divider: true },
         { header: 'Pages' },
         commonItems.authentication,

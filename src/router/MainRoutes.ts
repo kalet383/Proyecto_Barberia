@@ -1,3 +1,5 @@
+import CrearBarbero from '@/views/dashboards/default/components/CrearBarbero.vue';
+
 const MainRoutes = {
   path: '/dashboard',
   meta: {
@@ -15,6 +17,11 @@ const MainRoutes = {
       name: 'Default',
       path: '/dashboard/default',
       component: () => import('@/views/dashboards/default/DefaultDashboard.vue')
+    },
+    {
+    path: '/crear-barbero',
+    name: 'CrearBarbero',
+    component: CrearBarbero
     },
     {
       name: 'Starter',
