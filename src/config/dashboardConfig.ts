@@ -99,7 +99,7 @@ export default {
         {
         title: "Barberos",
         icon: "mdi-account-tie",
-        to: "/barberos"
+        to: "/lista-barberos"
         },
         {
         title: "Crear Barbero",
