@@ -8,6 +8,7 @@
 <script>
     import { useProductosStore } from '@/stores/useProductosStore';
     import DetallesCompra from '@/components/shared/DetallesCompra.vue';
+    
     export default {
         name: 'CarritoCompra',
         components: {

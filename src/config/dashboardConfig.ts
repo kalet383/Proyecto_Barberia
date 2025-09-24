@@ -94,7 +94,7 @@ export default {
         {
         title: "Clientes",
         icon: "mdi-account-multiple",
-        to: "/clientes"
+        to: "/lista-clientes"
         },
         {
         title: "Barberos",

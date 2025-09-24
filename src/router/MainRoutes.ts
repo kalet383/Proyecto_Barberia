@@ -1,5 +1,6 @@
 import CrearBarbero from '@/views/dashboards/default/components/CrearBarbero.vue';
 import ListaBarberos from '@/views/dashboards/default/components/ListaBarberos.vue';
+import ListaClientes from '@/views/dashboards/default/components/ListaClientes.vue';
 
 const MainRoutes = {
   path: '/dashboard',
@@ -20,14 +21,19 @@ const MainRoutes = {
       component: () => import('@/views/dashboards/default/DefaultDashboard.vue')
     },
     {
-    path: '/crear-barbero',
-    name: 'CrearBarbero',
-    component: CrearBarbero
+      path: '/crear-barbero',
+      name: 'CrearBarbero',
+      component: CrearBarbero
     },
     {
-    path: '/lista-barberos',
-    name: 'ListaBarberos',
-    component: ListaBarberos
+      path: '/lista-barberos',
+      name: 'ListaBarberos',
+      component: ListaBarberos
+    },
+    {
+      path: '/lista-clientes',
+      name: 'ListaClientes',
+      component: ListaClientes
     },
     {
       name: 'Starter',

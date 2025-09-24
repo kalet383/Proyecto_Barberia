@@ -14,7 +14,6 @@
         <v-row>
             <v-col v-for="barbero in barberStore.barbers" :key="barbero.id" cols="12" sm="6" md="4">
                 <v-card>
-
                     <v-img :src="barbero.foto || 'https://via.placeholder.com/400x200?text=Sin+Foto'" height="200px"></v-img>
 
                     <v-card-title>
@@ -44,13 +43,8 @@
         barberStore.getBarbers()
         })
 
-        const verDetalles = (barbero) => {
-        console.log('Detalles del barbero:', barbero)
-        }
-
         return {
-        barberStore,
-        verDetalles,
+        barberStore
         }
     },
     }
