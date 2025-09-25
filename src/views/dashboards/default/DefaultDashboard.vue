@@ -1,10 +1,11 @@
 <script setup lang="ts">
 // imported components
 // import TotalEarning from './components/TotalEarning.vue';
-// import TotalOrder from './components/TotalOrder.vue';
-// import TotalIncome from './components/TotalIncome.vue';
-// import TotalGrowth from './components/TotalGrowth.vue';
-// import PopularStocks from './components/PopularStocks.vue';
+//import TotalOrder from './components/TotalOrder.vue';
+//import TotalIncome from './components/TotalIncome.vue';
+//import TotalGrowth from './components/TotalGrowth.vue';
+//import PopularStocks from './components/PopularStocks.vue';
+import BannerBienvenida from './components/BannerBienvenida.vue';
 </script>
 
 <template>
@@ -12,8 +13,8 @@
     <!-- -------------------------------------------------------------------- -->
     <!-- Total Earning -->
     <!-- -------------------------------------------------------------------- -->
-    <v-col cols="12" md="4">
-      <TotalEarning />
+    <v-col cols="12" md="6">
+      <BannerBienvenida></BannerBienvenida>
     </v-col>
     <!-- -------------------------------------------------------------------- -->
     <!-- Total Order -->

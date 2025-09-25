@@ -1,40 +1,47 @@
-import { createApp } from 'vue';
-import { createPinia } from 'pinia';
-import App from './App.vue';
-import { router } from './router';
-import vuetify from './plugins/vuetify';
-import '@/scss/style.scss';
-import { PerfectScrollbarPlugin } from 'vue3-perfect-scrollbar';
-import VueApexCharts from 'vue3-apexcharts';
-import VueTablerIcons from 'vue-tabler-icons';
-// import { fakeBackend } from '@/utils/helpers/fake-backend'; // ❌ deshabilitar
-import '@fortawesome/fontawesome-free/css/all.css';
+import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 
-// Axios plugin (asegúrate de tener el archivo en src/plugins/axios.ts)
-import '@/plugins/axios';
-
-// print
-import print from 'vue3-print-nb';
-
-// Pinia store
-import { useAuthStore } from '@/stores/auth';
+// 📦 Plugins y dependencias externas
+import vuetify from './plugins/vuetify'
+import VueApexCharts from 'vue3-apexcharts'
+import VueTablerIcons from 'vue-tabler-icons'
 import VueSidebarMenu from 'vue-sidebar-menu'
 import 'vue-sidebar-menu/dist/vue-sidebar-menu.css'
+import print from 'vue3-print-nb'
 
-const app = createApp(App);
+// 📦 Estilos globales
+import '@fortawesome/fontawesome-free/css/all.css'
+import '@/scss/style.scss'
 
-// fakeBackend(); // ❌ deshabilitar para usar tu API real
+// 📦 Configuración de Axios (plugin)
+import '@/plugins/axios'
 
-// Inicializar Pinia y cargar token guardado
-const pinia = createPinia();
-app.use(pinia);
+// 📦 Componentes y App principal
+import App from './App.vue'
+import { router } from './router'
 
-useAuthStore(pinia);
+// 📦 Pinia store
+import { useAuthStore } from '@/stores/auth'
 
-app.use(router);
-app.use(PerfectScrollbarPlugin);
-app.use(VueTablerIcons);
-app.use(print);
-app.use(VueApexCharts);
+// =========================================
+// Crear la aplicación
+// =========================================
+const app = createApp(App)
+
+// Crear Pinia
+const pinia = createPinia()
+
+// Cargar token/auth desde Pinia antes de montar
+useAuthStore(pinia)
+
+// Usar plugins
+app.use(pinia)
+app.use(router)
+app.use(vuetify)
+app.use(VueTablerIcons)
+app.use(print)
+app.use(VueApexCharts)
 app.use(VueSidebarMenu)
-app.use(vuetify).mount('#app');
+
+// Montar app
+app.mount('#app')

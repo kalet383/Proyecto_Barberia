@@ -2,6 +2,8 @@ import CrearBarbero from '@/views/dashboards/default/components/CrearBarbero.vue
 import CrearServicio from '@/views/dashboards/default/components/CrearServicio.vue';
 import ListaBarberos from '@/views/dashboards/default/components/ListaBarberos.vue';
 import ListaClientes from '@/views/dashboards/default/components/ListaClientes.vue';
+import ListaServicios from '@/views/dashboards/default/components/ListaServicios.vue';
+import DefaultDashboard from '@/views/dashboards/default/DefaultDashboard.vue';
 
 const MainRoutes = {
   path: '/dashboard',
@@ -22,6 +24,11 @@ const MainRoutes = {
       component: () => import('@/views/dashboards/default/DefaultDashboard.vue')
     },
     {
+      path: '/inicio-dashboard',
+      name: 'DefaultDashboard',
+      component: DefaultDashboard
+    },
+    {
       path: '/crear-barbero',
       name: 'CrearBarbero',
       component: CrearBarbero
@@ -40,6 +47,11 @@ const MainRoutes = {
       path: '/lista-clientes',
       name: 'ListaClientes',
       component: ListaClientes
+    },
+    {
+      path: '/lista-servicios',
+      name: 'ListaServicios',
+      component: ListaServicios
     },
     {
       name: 'Starter',

@@ -88,7 +88,11 @@ const commonItems = {
 export default {
     "menuadministrador": [
         { header: 'Menu Administrador' },
-        commonItems.dashboard,
+        {
+        title: "Inicio",
+        icon: "mdi-account-multiple",
+        to: "/inicio-dashboard"
+        },
         { divider: true },
         { header: 'Administración' },
         {
@@ -104,7 +108,7 @@ export default {
         {
         title: "Servicios",
         icon: "mdi-account-tie",
-        to: "/lista-barberos"
+        to: "/lista-servicios"
         },
         {
         title: "Crear Barbero",
@@ -133,7 +137,11 @@ export default {
 
     "menubarbero": [
         { header: 'Menu Barbero' },
-        commonItems.dashboard,
+        {
+        title: "Inicio",
+        icon: "mdi-account-multiple",
+        to: "/inicio-dashboard"
+        },
         { divider: true },
         { header: 'Trabajo' },
         {
