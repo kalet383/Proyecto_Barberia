@@ -39,5 +39,22 @@ export const useServiceStore = defineStore('service', {
                 this.loading = false
             }
         },
+        async createService(payload: Service) {
+            this.loading = true
+            try {
+                const { data } = await api.post('/servicio', payload, { withCredentials: true })
+                this.services.push(data)
+                return data
+            } catch (err: unknown) {
+                if (axios.isAxiosError(err) && err.response?.data?.message) {
+                    this.error = err.response.data.message
+                } else {
+                    this.error = 'Error creando servicio'
+                }
+                throw this.error
+            } finally {
+                this.loading = false
+            }
+        }
     },
 })

@@ -1,4 +1,5 @@
 import CrearBarbero from '@/views/dashboards/default/components/CrearBarbero.vue';
+import CrearServicio from '@/views/dashboards/default/components/CrearServicio.vue';
 import ListaBarberos from '@/views/dashboards/default/components/ListaBarberos.vue';
 import ListaClientes from '@/views/dashboards/default/components/ListaClientes.vue';
 
@@ -24,6 +25,11 @@ const MainRoutes = {
       path: '/crear-barbero',
       name: 'CrearBarbero',
       component: CrearBarbero
+    },
+    {
+      path: '/crear-servicio',
+      name: 'CrearServicio',
+      component: CrearServicio
     },
     {
       path: '/lista-barberos',

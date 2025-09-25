@@ -1,4 +1,3 @@
-// src/stores/barber.ts
 import { defineStore } from 'pinia'
 import api from '@/plugins/axios'
 import axios from 'axios'

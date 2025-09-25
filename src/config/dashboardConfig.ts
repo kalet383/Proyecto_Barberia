@@ -102,9 +102,19 @@ export default {
         to: "/lista-barberos"
         },
         {
+        title: "Servicios",
+        icon: "mdi-account-tie",
+        to: "/lista-barberos"
+        },
+        {
         title: "Crear Barbero",
         icon: "mdi-account-plus",
         to: "/crear-barbero"
+        },
+        {
+        title: "Crear Servicio",
+        icon: "mdi-account-plus",
+        to: "/crear-servicio"
         },
         { divider: true },
         { header: 'Pages' },
