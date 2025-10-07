@@ -65,7 +65,19 @@ export const useAuthStore = defineStore('auth', {
           withCredentials: true,
         });
         console.log('LOADUSER EXITOSO:', profile);
-        //this.user = profile;
+        this.user = profile;
+
+        // También debes setear el menu según el rol
+        if (this.user && (this.user as any).Role == 'cliente') {
+          this.menu = 2
+        }
+        if (this.user && (this.user as any).Role == 'barbero') {
+          this.menu = 1
+        }
+        if (this.user && (this.user as any).Role == 'administrador') {
+          this.menu = 0
+        }
+
       } catch (error) {
         console.log('LOADUSER FALLÓ:', error);
         this.user = null;

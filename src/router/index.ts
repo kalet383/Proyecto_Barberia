@@ -27,6 +27,15 @@ router.beforeEach(async (to, from, next) => {
   console.log('👤 User in middleware:', auth.user);
   console.log('🔐 Is authenticated:', auth.isAuthenticated);
 
+  // 👇 NUEVO: Siempre intentar cargar usuario si no existe en memoria
+  if (!auth.user) {
+    try {
+      await auth.loadUser();
+    } catch (error) {
+      console.log('No hay sesión activa');
+    }
+  }
+
   // páginas públicas (no requieren login)
   const publicPages = ['/login', '/login1', '/register']; // 👈 ajusta según lo que tengas
   const isPublicPage = publicPages.includes(to.path);

@@ -6,7 +6,7 @@ import menus from "../../../config/dashboardConfig.js";
 import NavGroup from './NavGroup/NavGroup.vue';
 import NavItem from './NavItem/NavItem.vue';
 import NavCollapse from './NavCollapse/NavCollapse.vue';
-import Logo from '../logo/LogoMain.vue';
+//import Logo from '../logo/LogoMain.vue';
 
 const customizer = useCustomizerStore();
 const authStore = useAuthStore();
@@ -63,8 +63,8 @@ const sidebarMenu = computed(() => menu.value);
     expand-on-hover
   >
     <!---Logo part -->
-    <div class="pa-5">
-      <Logo />
+    <div class="d-flex justify-center align-center my-4">
+      <img src="/imagenes/logo/logo2.png" alt="Logo" style="width: 100px; max-width: 100%;"/>
     </div>
     <!-- ---------------------------------------------- -->
     <!---Navigation -->
