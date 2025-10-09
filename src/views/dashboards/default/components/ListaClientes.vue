@@ -10,6 +10,11 @@
             {{ clientStore.error }}
         </v-alert>
 
+        <!-- No hay clientes -->
+        <v-alert v-if="!clientStore.loading && clientStore.clients.length === 0" type="info" class="mb-4">
+            No hay clientes disponibles
+        </v-alert>
+
         <!-- Tarjetas -->
         <v-row>
             <v-col v-for="cliente in clientStore.clients" :key="cliente.id" cols="12" sm="6" md="4">

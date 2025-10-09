@@ -2,43 +2,78 @@
   <v-card>
     <v-card-title>Crear Barbero</v-card-title>
     <v-card-text>
-      <v-form @submit.prevent="submitBarber">
-        <v-text-field v-model="form.nombre" label="Nombre" required />
-        <v-text-field v-model="form.apellido" label="Apellido" required />
-        <v-text-field v-model="form.email" label="Email" required />
-        <v-text-field v-model="form.password" label="Contraseña" type="password" required />
-        <v-text-field v-model="form.telefono" label="Teléfono" />
-        <v-text-field v-model="form.foto" label="URL/Foto base64" /> <!-- opcional -->
+      <v-form @submit.prevent="submitBarber" v-model="valid">
+        <v-text-field v-model="form.nombre" label="Nombre" :rules="[v => !!v || 'El nombre es requerido']" required />
+        <v-text-field v-model="form.apellido" label="Apellido" :rules="[v => !!v || 'El apellido es requerido']" required />
+        <v-text-field v-model="form.email" label="Email" :rules="[v => !!v || 'El email es requerido']" required />
+        <v-text-field v-model="form.password" label="Contraseña" type="password" :rules="[v => !!v || 'La contraseña es requerida']" required />
+        <v-text-field v-model="form.telefono" label="Teléfono" :rules="[v => !!v || 'El teléfono es requerido']" required />
+        <v-text-field v-model="form.foto" label="URL/Foto base64" :rules="[v => !!v || 'La URL/Foto es requerida']" required />
 
-        <v-btn type="submit" color="primary">Crear</v-btn>
+        <v-btn type="submit" color="primary" :disabled="!valid">Crear barbero</v-btn>
       </v-form>
     </v-card-text>
   </v-card>
+  <v-snackbar v-model="snackbar" :color="snackbarColor" :timeout="3000">
+    {{ snackbarMessage }}
+  </v-snackbar>
 </template>
 
-<script setup lang="ts">
-import { reactive } from 'vue'
-import { useBarberStore } from '@/stores/barber'
+<script>
+  import { ref } from 'vue'
+  import { useBarberStore } from '@/stores/barber'
 
-const store = useBarberStore()
+  export default {
+    name: 'CrearBarbero',
+    setup() {
+      const form = ref({
+        nombre: '',
+        apellido: '',
+        email: '',
+        password: '',
+        telefono: '',
+        foto: ''
+      });
 
-const form = reactive({
-  nombre: '',
-  apellido: '',
-  email: '',
-  password: '',
-  telefono: '',
-  foto: '', // en tu caso string/base64
-})
+      const valid = ref(false);
+      const snackbar = ref(false);
+      const snackbarMessage = ref('');
+      const loading = ref(false);
+      const barberStore = useBarberStore()
 
-const submitBarber = async () => {
-  try {
-    await store.createBarber(form)
-    alert('Barbero creado correctamente')
-    // limpiar formulario si quieres
-  } catch (error) {
-    console.error(error)
-    alert('Error creando barbero')
+      const submitBarber = async () => {
+        loading.value = true;
+        if (!valid.value) return
+
+        try {
+          await barberStore.createBarber(form.value)
+          snackbarMessage.value = 'Barbero creado exitosamente'
+          snackbar.value = true
+          form.value = {
+            nombre: '',
+            apellido: '',
+            email: '',
+            password: '',
+            telefono: '',
+            foto: ''
+          }
+        } catch (error) {
+          console.error('Error al crear barbero:', error)
+          snackbarMessage.value = 'Error al crear barbero'
+          snackbar.value = true
+        } finally {
+          loading.value = false
+        }
+      }
+
+      return {
+        form,
+        valid,
+        submitBarber,
+        snackbar,
+        snackbarMessage,
+        loading,
+      }
+    }
   }
-}
 </script>

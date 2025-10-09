@@ -31,12 +31,14 @@ export const useBarberStore = defineStore('barber', {
       try {
         const { data } = await api.get('/auth', { withCredentials: true })
         this.barbers = data.filter((u: any) => u.role === 'barbero')
+        return data;
       } catch (err: unknown) {
         if (axios.isAxiosError(err) && err.response?.data?.message) {
           this.error = err.response.data.message
         } else {
           this.error = 'Error cargando barberos'
         }
+        return [];
       } finally {
         this.loading = false
       }

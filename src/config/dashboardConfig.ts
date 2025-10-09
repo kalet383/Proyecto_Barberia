@@ -111,6 +111,18 @@ export default {
         to: "/lista-servicios"
         },
         {
+        title: "Productos",
+        icon: "mdi-account-tie",
+        to: "/lista-productos"
+        },
+        {
+        title: "Categorias de productos",
+        icon: "mdi-account-tie",
+        to: "/lista-categorias"
+        },
+        { divider: true },
+        { header: 'Creacion' },
+        {
         title: "Crear Barbero",
         icon: "mdi-account-plus",
         to: "/crear-barbero"
@@ -119,6 +131,16 @@ export default {
         title: "Crear Servicio",
         icon: "mdi-account-plus",
         to: "/crear-servicio"
+        },
+        {
+        title: "Crear Producto",
+        icon: "mdi-account-plus",
+        to: "/crear-producto"
+        },
+        {
+        title: "Crear categoria para producto",
+        icon: "mdi-account-plus",
+        to: "/crear-categoria-producto"
         },
         { divider: true },
         { header: 'Pages' },

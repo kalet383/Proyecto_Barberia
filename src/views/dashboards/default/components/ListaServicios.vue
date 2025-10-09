@@ -10,6 +10,11 @@
             {{ ServicioStore.error }}
         </v-alert>
 
+        <!-- No hay servicios -->
+        <v-alert v-if="!ServicioStore.loading && ServicioStore.services.length === 0" type="info" class="mb-4">
+            No hay servicios disponibles
+        </v-alert>
+
         <!-- Tarjetas -->
         <v-row>
             <v-col v-for="servicio in ServicioStore.services" :key="servicio.id" cols="12" sm="6" md="4">

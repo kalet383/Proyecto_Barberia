@@ -1,7 +1,11 @@
 import CrearBarbero from '@/views/dashboards/default/components/CrearBarbero.vue';
+import CrearCategoriaproducto from '@/views/dashboards/default/components/CrearCategoriaproducto.vue';
+import CrearProducto from '@/views/dashboards/default/components/CrearProducto.vue';
 import CrearServicio from '@/views/dashboards/default/components/CrearServicio.vue';
 import ListaBarberos from '@/views/dashboards/default/components/ListaBarberos.vue';
+import ListaCategorias from '@/views/dashboards/default/components/ListaCategorias.vue';
 import ListaClientes from '@/views/dashboards/default/components/ListaClientes.vue';
+import ListaProductos from '@/views/dashboards/default/components/ListaProductos.vue';
 import ListaServicios from '@/views/dashboards/default/components/ListaServicios.vue';
 import DefaultDashboard from '@/views/dashboards/default/DefaultDashboard.vue';
 
@@ -39,6 +43,16 @@ const MainRoutes = {
       component: CrearServicio
     },
     {
+      path: '/crear-categoria-producto',
+      name: 'CrearCategoriaproducto',
+      component: CrearCategoriaproducto
+    },
+    {
+      path: '/crear-producto',
+      name: 'CrearProducto',
+      component: CrearProducto
+    },
+    {
       path: '/lista-barberos',
       name: 'ListaBarberos',
       component: ListaBarberos
@@ -52,6 +66,16 @@ const MainRoutes = {
       path: '/lista-servicios',
       name: 'ListaServicios',
       component: ListaServicios
+    },
+    {
+      path: '/lista-productos',
+      name: 'ListaProductos',
+      component: ListaProductos
+    },
+    {
+      path: '/lista-categorias',
+      name: 'ListaCategorias',
+      component: ListaCategorias
     },
     {
       name: 'Starter',

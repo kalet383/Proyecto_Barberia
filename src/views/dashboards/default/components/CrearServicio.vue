@@ -5,10 +5,9 @@
             <v-form @submit.prevent="crearServicio" v-model="valid">
                 <v-text-field label="Nombre del servicio" v-model="form.nombre" :rules="[v => !!v || 'El nombre es requerido']" required />
                 <v-textarea label="Descripción" v-model="form.descripcion" :rules="[v => !!v || 'La descripción es requerida']" auto-grow required />
-                <v-text-field label="Precio" v-model="form.precio" type="number" prefix="$" :rules="[v => v > 0 || 'El precio debe ser mayor que 0']" required
-                />
+                <v-text-field label="Precio" v-model="form.precio" type="number" prefix="$" step="0.01" :rules="[v => v > 0 || 'El precio debe ser mayor que 0']" required/>
                 <v-text-field label="Duración (HH:MM)" v-model="form.duracion" placeholder="00:30" :rules="[v => /^\d{2}:\d{2}$/.test(v) || 'Formato HH:MM']" hint="Ej: 00:30 para 30 minutos o 01:00 para 1 hora" persistent-hint required/>
-                <v-btn color="primary" class="mt-4" type="submit">Guardar Servicio</v-btn>
+                <v-btn color="primary" class="mt-4" type="submit" :disabled="!valid">Guardar Servicio</v-btn>
             </v-form>
         </v-card-text>
     </v-card>
@@ -24,8 +23,6 @@
     export default {
         name: 'CrearServicio',
         setup() {
-            const serviceStore = useServiceStore();
-
             // estado del formulario
             const form = ref({
             nombre: '',
@@ -34,11 +31,14 @@
             duracion: '' // formato "HH:MM"
             })
 
-            const valid = ref(false)
-            const snackbar = ref(false)
-            const snackbarMessage = ref('')
+            const valid = ref(false);
+            const snackbar = ref(false);
+            const snackbarMessage = ref('');
+            const loading = ref(false);
+            const serviceStore = useServiceStore();
 
             const crearServicio = async () => {
+                loading.value = true;
                 if (!valid.value) return
 
                 // Aseguramos segundos "00"
@@ -63,7 +63,7 @@
                 snackbar.value = true
             }
 
-            return { form, valid, crearServicio, snackbar, snackbarMessage }
+            return { form, valid, crearServicio, snackbar, snackbarMessage, loading }
         }
     }
 </script>

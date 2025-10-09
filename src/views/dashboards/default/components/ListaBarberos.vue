@@ -10,6 +10,11 @@
             {{ barberStore.error }}
         </v-alert>
 
+        <!-- No hay barberos -->
+        <v-alert v-if="!barberStore.loading && barberStore.barbers.length === 0" type="info" class="mb-4">
+            No hay barberos disponibles
+        </v-alert>
+
         <!-- Tarjetas -->
         <v-row>
             <v-col v-for="barbero in barberStore.barbers" :key="barbero.id" cols="12" sm="6" md="4">

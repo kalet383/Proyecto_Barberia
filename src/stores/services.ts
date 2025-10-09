@@ -29,12 +29,14 @@ export const useServiceStore = defineStore('service', {
             try {
                 const { data } = await api.get('/servicio', { withCredentials: true })
                 this.services = data // ajusta a tu API
+                return data;
             } catch (err: unknown) {
                 if (axios.isAxiosError(err) && err.response?.data?.message) {
                 this.error = err.response.data.message
                 } else {
                 this.error = 'Error cargando servicios'
                 }
+                return [];
             } finally {
                 this.loading = false
             }
