@@ -35,6 +35,86 @@ const commonItems = {
       }
     ]
   },
+  clientes: {
+    title: 'Clientes',
+    icon: KeyIcon,
+    to: '/clientes',
+    children: [
+      {
+        title: 'Lista de Clientes',
+        icon: CircleIcon,
+        to: '/lista-clientes'
+      },
+    ]
+  },
+  barberos: {
+    title: 'Barberos',
+    icon: KeyIcon,
+    to: '/barberos',
+    children: [
+      {
+        title: 'Lista de Barberos',
+        icon: CircleIcon,
+        to: '/lista-barberos'
+      },
+      {
+        title: 'Crear Barbero',
+        icon: CircleIcon,
+        to: '/crear-barbero'
+      }
+    ]
+  },
+  servicios: {
+    title: 'Servicios',
+    icon: KeyIcon,
+    to: '/servicios',
+    children: [
+      {
+        title: 'Lista de Servicios',
+        icon: CircleIcon,
+        to: '/lista-servicios'
+      },
+      {
+        title: 'Crear Servicio',
+        icon: CircleIcon,
+        to: '/crear-servicio'
+      }
+    ]
+  },
+  productos: {
+    title: 'Productos',
+    icon: KeyIcon,
+    to: '/productos',
+    children: [
+      {
+        title: 'Lista de Productos',
+        icon: CircleIcon,
+        to: '/lista-productos'
+      },
+      {
+        title: 'Crear Producto',
+        icon: CircleIcon,
+        to: '/crear-producto'
+      }
+    ]
+  },
+  categoriasProductos: {
+    title: 'Categorias de productos',
+    icon: KeyIcon,
+    to: '/categorias-productos',
+    children: [
+      {
+        title: 'Lista de Categorias',
+        icon: CircleIcon,
+        to: '/lista-categorias'
+      },
+      {
+        title: 'Crear Categoria',
+        icon: CircleIcon,
+        to: '/crear-categoria-producto'
+      }
+    ]
+  },
   error404: {
     title: 'Error 404',
     icon: BugIcon,
@@ -95,53 +175,11 @@ export default {
         },
         { divider: true },
         { header: 'Administración' },
-        {
-        title: "Clientes",
-        icon: "mdi-account-multiple",
-        to: "/lista-clientes"
-        },
-        {
-        title: "Barberos",
-        icon: "mdi-account-tie",
-        to: "/lista-barberos"
-        },
-        {
-        title: "Servicios",
-        icon: "mdi-account-tie",
-        to: "/lista-servicios"
-        },
-        {
-        title: "Productos",
-        icon: "mdi-account-tie",
-        to: "/lista-productos"
-        },
-        {
-        title: "Categorias de productos",
-        icon: "mdi-account-tie",
-        to: "/lista-categorias"
-        },
-        { divider: true },
-        { header: 'Creacion' },
-        {
-        title: "Crear Barbero",
-        icon: "mdi-account-plus",
-        to: "/crear-barbero"
-        },
-        {
-        title: "Crear Servicio",
-        icon: "mdi-account-plus",
-        to: "/crear-servicio"
-        },
-        {
-        title: "Crear Producto",
-        icon: "mdi-account-plus",
-        to: "/crear-producto"
-        },
-        {
-        title: "Crear categoria para producto",
-        icon: "mdi-account-plus",
-        to: "/crear-categoria-producto"
-        },
+        commonItems.clientes,
+        commonItems.barberos,
+        commonItems.servicios,
+        commonItems.productos,
+        commonItems.categoriasProductos,
         { divider: true },
         { header: 'Pages' },
         commonItems.authentication,

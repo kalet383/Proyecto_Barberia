@@ -12,6 +12,15 @@ interface Barber {
   foto?: string
 }
 
+interface Horario {
+  diasemana: string
+  idFranja: number
+}
+
+interface BarberWithSchedule extends Barber {
+  horarios: Horario[]
+}
+
 interface BarberState {
   barbers: Barber[]
   loading: boolean
@@ -56,6 +65,64 @@ export const useBarberStore = defineStore('barber', {
           this.error = err.response.data.message
         } else {
           this.error = 'Error creando barbero'
+        }
+        throw this.error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    // NUEVO MÉTODO: Crear barbero con horarios
+    async createBarberWithSchedule(payload: BarberWithSchedule) {
+      this.loading = true
+      try {
+        // Separar los datos del barbero de los horarios
+        const { horarios, ...barberData } = payload
+
+        // Opción 1: Si tienes un endpoint especial en el backend
+        // const { data } = await api.post(
+        //   '/auth/register-barber-with-schedule',
+        //   payload,
+        //   { withCredentials: true }
+        // )
+
+        // Opción 2: Hacer dos llamadas (barbero primero, luego horarios)
+        const { data: newBarber } = await api.post(
+          '/auth/register-barber',
+          barberData,
+          { withCredentials: true }
+        )
+
+        // Crear los horarios para el barbero recién creado
+        if (horarios && horarios.length > 0) {
+          const schedulePromises = horarios.map(horario =>
+            api.post(
+              '/horario-barbero', // Asegúrate que esta ruta coincida con tu controlador
+              {
+                barberoId: newBarber.id,
+                diasemana: horario.diasemana,
+                idFranja: horario.idFranja
+              },
+              { withCredentials: true }
+            )
+          )
+
+          await Promise.all(schedulePromises)
+        }
+
+        // Agregar el barbero a la lista
+        this.barbers.push(newBarber)
+        
+        return {
+          barber: newBarber,
+          horarios: horarios,
+          message: 'Barbero y horarios creados exitosamente'
+        }
+      } catch (err: unknown) {
+        if (axios.isAxiosError(err) && err.response?.data?.message) {
+          this.error = err.response.data.message
+        } else {
+          this.error = 'Error creando barbero con horarios'
         }
         throw this.error
       } finally {
