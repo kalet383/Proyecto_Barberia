@@ -1,87 +1,69 @@
 <template>
-  <v-dialog v-model="dialog" max-width="600px">
-    <v-card>
-      <v-card-title>Reservar Cita</v-card-title>
-      <v-card-text>
-        <!-- Paso 1: Servicios -->
-        <h3 class="text-h6">1. Selecciona un servicio</h3>
-        <v-select
-          v-model="reservaStore.servicioSeleccionado"
-          :items="serviceStore.services"
-          item-title="nombre"
-          item-value="id"
-          label="Servicios"
-          :loading="serviceStore.loading"
-        />
+  <div class="text-center pa-4">
+    <v-dialog v-model="props.modelValue" transition="dialog-bottom-transition" fullscreen>
+      <v-card>
+        <v-btn icon="mdi-close" @click="closeDialog"></v-btn>
+        <v-card-title class="text-center justify-center py-2">
+          <h3>RESERVACION DE CITAS</h3>
+        </v-card-title>
+        <v-tabs
+      v-model="tab"
+      color="basil"
+      grow
+    >
+      <v-tab
+        v-for="item in items"
+        :key="item"
+        :text="item"
+        :value="item"
+      ></v-tab>
+    </v-tabs>
 
-        <!-- Paso 2: Barberos -->
-        <h3 class="text-h6 mt-4">2. Selecciona un barbero</h3>
-        <v-select
-          v-model="reservaStore.barberoSeleccionado"
-          :items="barberStore.barbers"
-          item-title="nombre"
-          item-value="id"
-          label="Barberos"
-          :loading="barberStore.loading"
-        />
-
-        <!-- Paso 3: Correo -->
-        <h3 class="text-h6 mt-4">3. Tu correo electrónico</h3>
-        <v-text-field
-          v-model="reservaStore.email"
-          label="Correo electrónico"
-          type="email"
-        />
-      </v-card-text>
-
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn variant="text" @click="cerrarModal">Cancelar</v-btn>
-        <v-btn color="primary" @click="confirmarCita">Confirmar</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+    <v-tabs-window v-model="tab">
+      <v-tabs-window-item
+        v-for="item in items"
+        :key="item"
+        :value="item"
+      >
+        <v-card
+          color="basil"
+          flat
+        >
+          <v-card-text>{{ text }}</v-card-text>
+        </v-card>
+      </v-tabs-window-item>
+    </v-tabs-window>
+      </v-card>
+    </v-dialog>
+  </div>
 </template>
 
-<script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
-import { useServiceStore } from '@/stores/services'
-import { useBarberStore } from '@/stores/barber'
-import { useReservaStore } from '@/stores/reserva'
+<script>
+  import { ref } from 'vue'
 
-const props = defineProps<{ modelValue: boolean }>()
-const emit = defineEmits(['update:modelValue'])
+  export default {
+    name: 'VistareservaCita',
+    props: {
+      modelValue: {
+        type: Boolean,
+        required: true,
+        default: false
+      }
+    },
+    emits: ['update:modelValue'],
+    setup(props, { emit }) {
+      const notifications = ref(true)
+      const sound = ref(false)
+      const widgets = ref(true)
+      const tabs = ref(['Perfil', 'Citas', 'Servicios', 'Configuracion'])
+      const items = ['Perfil', 'Citas', 'Servicios', 'Configuracion']
+      const text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
 
-const dialog = ref(props.modelValue)
+      function closeDialog() {
+        emit('update:modelValue', false)
+      }
 
-// Stores
-const serviceStore = useServiceStore()
-const barberStore = useBarberStore()
-const reservaStore = useReservaStore()
-
-onMounted(() => {
-  // Cargar datos
-  serviceStore.getServices()
-  barberStore.getBarbers()
-})
-
-// Sincronizar v-model
-watch(() => props.modelValue, (val) => (dialog.value = val))
-watch(dialog, (val) => emit('update:modelValue', val))
-
-function cerrarModal() {
-  dialog.value = false
-  reservaStore.reset()
-}
-
-async function confirmarCita() {
-  try {
-    const data = await reservaStore.confirmarReserva()
-    console.log('Reserva confirmada', data)
-    dialog.value = false
-    reservaStore.reset()
-  } catch (error) {
-    console.error(error)
+      return { props, notifications, sound, widgets, closeDialog, tabs, items, text}
+    }
   }
-}
 </script>
