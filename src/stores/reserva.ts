@@ -1,62 +1,60 @@
-// /stores/reserva.ts
-import { defineStore } from 'pinia'
+import { defineStore } from "pinia";
 
-// Declara interfaces mínimas para tipar
-export interface Servicio {
-  id: number
-  nombre: string
-  // agrega aquí los campos que tengas en services.ts
-}
-
-export interface Barbero {
-  id: number
-  nombre: string
-  // agrega aquí los campos que tengas en barber.ts
+interface ReservaState {
+  fechaSeleccionada: string | null
+  horaSeleccionada: string | null
+  barberoSeleccionado: number | null
+  serviciosSeleccionados: number[]
 }
 
 export const useReservaStore = defineStore('reserva', {
-  state: () => ({
-    servicioSeleccionado: null as Servicio | null,
-    barberoSeleccionado: null as Barbero | null,
-    horaSeleccionada: null as string | null,
-    email: '' as string
+  state: (): ReservaState => ({
+    fechaSeleccionada: null,
+    horaSeleccionada: null,
+    barberoSeleccionado: null,
+    serviciosSeleccionados: []
   }),
+
   getters: {
-    datosReserva: (state) => ({
-      servicioId: state.servicioSeleccionado?.id || null,
-      barberoId: state.barberoSeleccionado?.id || null,
-      hora: state.horaSeleccionada,
-      email: state.email
-    })
+    // Obtener el día de la semana en español (sin acentos)
+    diaSemana: (state) => {
+      if (!state.fechaSeleccionada) return null
+      
+      const diasSemana: Record<number, string> = {
+        0: 'domingo',
+        1: 'lunes',
+        2: 'martes',
+        3: 'miercoles',
+        4: 'jueves',
+        5: 'viernes',
+        6: 'sabado'
+      }
+      
+      const fecha = new Date(state.fechaSeleccionada)
+      return diasSemana[fecha.getDay()]
+    },
+
+    // Verificar si hay fecha y hora seleccionadas
+    tieneFechaYHora: (state) => {
+      return !!(state.fechaSeleccionada && state.horaSeleccionada)
+    }
   },
+
   actions: {
-    seleccionarServicio(servicio: Servicio) {
-      this.servicioSeleccionado = servicio
-    },
-    seleccionarBarbero(barbero: Barbero) {
-      this.barberoSeleccionado = barbero
-    },
-    seleccionarHora(hora: string) {
+    setFechaHora(fecha: string, hora: string) {
+      this.fechaSeleccionada = fecha
       this.horaSeleccionada = hora
     },
-    setEmail(email: string) {
-      this.email = email
+
+    setBarbero(barberoId: number) {
+      this.barberoSeleccionado = barberoId
     },
-    reset() {
-      this.servicioSeleccionado = null
-      this.barberoSeleccionado = null
+
+    resetReserva() {
+      this.fechaSeleccionada = null
       this.horaSeleccionada = null
-      this.email = ''
-    },
-    async confirmarReserva() {
-      const payload = this.datosReserva
-      const res = await fetch('/api/reservas', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
-      if (!res.ok) throw new Error('Error al confirmar la reserva')
-      return await res.json()
+      this.barberoSeleccionado = null
+      this.serviciosSeleccionados = []
     }
   }
 })

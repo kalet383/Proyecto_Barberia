@@ -2,18 +2,33 @@
     <v-container class="barbero-container">
         <h3 class="text-h3 mb-4">Selecciona un profesional</h3>
 
-        <!-- 🔹 Contenedor con scroll -->
-        <div class="scroll-barberos">
-            <div class="lista-barberos">
-                <v-card v-for="barbero in barberoStore.barbers" :key="barbero.id" class="barbero-card" outlined :class="{ 'barbero-seleccionado': barberoSeleccionadoId === barbero.id }">
-                    <v-btn size="x-small" variant="outlined" class="btn-seleccionar" @click.stop="seleccionarBarbero(barbero.id)">
-                        {{ barberoSeleccionadoId === barbero.id ? 'Seleccionado' : 'Seleccionar' }}
+        <!-- 🔹 Alerta si no hay fecha/hora seleccionada -->
+        <v-alert v-if="!reservaStore.tieneFechaYHora" type="info" variant="tonal" class="mb-4">
+            Por favor, selecciona primero una fecha y hora en el paso anterior
+        </v-alert>
+
+        <!-- 🔹 Lista de barberos disponibles -->
+        <div v-else class="scroll-barberos">
+            <div v-if="loading" class="text-center py-8">
+                <v-progress-circular indeterminate color="primary" />
+                <p class="mt-4 text-grey">Buscando barberos disponibles...</p>
+            </div>
+
+            <div v-else-if="barberosDisponibles.length === 0" class="text-center py-8">
+                <v-icon size="64" color="grey-lighten-1">mdi-account-off-outline</v-icon>
+                <p class="mt-4 text-grey">No hay barberos disponibles para esta fecha y hora</p>
+            </div>
+
+            <div v-else class="lista-barberos">
+                <v-card v-for="barbero in barberosDisponibles" :key="barbero.id" class="barbero-card" outlined :class="{ 'barbero-seleccionado': reservaStore.barberoSeleccionado === barbero.id }">
+                    <v-btn size="x-small" variant="outlined" class="btn-seleccionar" :class="{ 'btn-activo': reservaStore.barberoSeleccionado === barbero.id }"@click.stop="seleccionarBarbero(barbero.id)">
+                        {{ reservaStore.barberoSeleccionado === barbero.id ? 'Seleccionado' : 'Seleccionar' }}
                     </v-btn>
                     <v-avatar size="64" class="ma-4">
                         <v-img :src="barbero.foto" />
                     </v-avatar>
                     <div class="barbero-info">
-                        <span class="nombre-barbero">{{ barbero.nombre }}</span>
+                        <span class="nombre-barbero">{{ barbero.nombre }} {{ barbero.apellido }}</span>
                         <v-btn variant="text" size="small" class="sobre-mi-btn" @click.stop="abrirDialog(barbero)">
                             Sobre mí
                         </v-btn>
@@ -23,9 +38,9 @@
         </div>
 
         <!-- 🔹 Dialog con la información del barbero -->
-        <v-dialog v-model="dialogVisible" max-width="400px">
+        <v-dialog v-model="dialogVisible" max-width="500px">
             <v-card>
-                <v-card-title class="text-h4">{{ barberoSeleccionado?.nombre }}</v-card-title>
+                <v-card-title class="text-h2">{{ barberoSeleccionado?.nombre }}</v-card-title>
                 <v-card-text>
                     <v-avatar size="80" class="mb-4">
                         <v-img :src="barberoSeleccionado?.foto" />
@@ -42,16 +57,19 @@
 </template>
 
 <script>
-    import { ref, onMounted } from 'vue';
+    import { ref, watch } from 'vue';
     import { useBarberStore } from '@/stores/barber';
+    import { useReservaStore } from '@/stores/reserva';
 
     export default {
         name: 'BarberoTab',
         setup() {
             const barberoStore = useBarberStore();
+            const reservaStore = useReservaStore();
             const dialogVisible = ref(false);
             const barberoSeleccionado = ref(null);
-            const barberoSeleccionadoId = ref(null);
+            const barberosDisponibles = ref([]);
+            const loading = ref(false);
 
             const abrirDialog = (barbero) => {
                 barberoSeleccionado.value = barbero;
@@ -59,19 +77,52 @@
             };
 
             const seleccionarBarbero = (id) => {
-                barberoSeleccionadoId.value = barberoSeleccionadoId.value === id ? null : id;
+                if (reservaStore.barberoSeleccionado === id) {
+                    reservaStore.setBarbero(null);
+                } else {
+                    reservaStore.setBarbero(id);
+                }
             };
 
-            onMounted(() => {
-                barberoStore.getBarbers();
-            });
+            // 🔹 Cargar barberos cuando haya fecha y hora
+            const cargarBarberosDisponibles = async () => {
+                if (!reservaStore.tieneFechaYHora) {
+                    barberosDisponibles.value = [];
+                    return;
+                }
+
+                loading.value = true;
+                try {
+                    const barberos = await barberoStore.getBarberosDisponibles(
+                        reservaStore.diaSemana,
+                        reservaStore.horaSeleccionada
+                    );
+                    barberosDisponibles.value = barberos;
+                } catch (error) {
+                    console.error('Error cargando barberos:', error);
+                    barberosDisponibles.value = [];
+                } finally {
+                    loading.value = false;
+                }
+            };
+
+            // 🔹 Watch para recargar cuando cambie fecha/hora
+            watch(
+                () => [reservaStore.fechaSeleccionada, reservaStore.horaSeleccionada],
+                () => {
+                    cargarBarberosDisponibles();
+                },
+                { immediate: true }
+            );
 
             return {
                 barberoStore,
+                reservaStore,
                 dialogVisible,
                 barberoSeleccionado,
+                barberosDisponibles,
+                loading,
                 abrirDialog,
-                barberoSeleccionadoId,
                 seleccionarBarbero
             }
         }
@@ -125,6 +176,7 @@
 
     .barbero-seleccionado {
         border: 2px solid #1976d2 !important;
+        background-color: #f5f9ff;
     }
 
     .btn-seleccionar {
@@ -135,8 +187,13 @@
         text-transform: none;
         font-size: 0.7rem;
         border-radius: 8px;
-        color: #1976d2;
         transition: all 0.2s ease;
+    }
+
+    .btn-activo {
+        background-color: #1976d2 !important;
+        color: white !important;
+        border-color: #1976d2 !important;
     }
 
     .barbero-info {

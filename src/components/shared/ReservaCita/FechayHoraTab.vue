@@ -2,45 +2,32 @@
   <v-container class="fecha-hora-container">
     <h3 class="text-h3 mb-4">Selecciona una fecha y hora</h3>
 
-    <!-- 🔹 Contenedor con scroll -->
     <div class="scroll-fecha-hora">
       <!-- 🔹 Selector de fecha -->
       <v-card class="pa-4 mb-6" elevation="2" rounded="lg">
         <v-label class="text-subtitle-1 mb-2">Selecciona un día</v-label>
-        <v-date-picker
-          v-model="fechaSeleccionada"
-          color="primary"
-          show-adjacent-months
-          elevation="0"
-          class="date-picker-custom"
-        />
+        <v-date-picker v-model="fechaSeleccionada" color="primary" show-adjacent-months elevation="0" class="date-picker-custom" @update:model-value="actualizarFecha"/>
       </v-card>
 
-      <!-- 🔹 Lista de horas -->
+      <!-- 🔹 Selector de hora -->
       <v-card class="pa-4" elevation="2" rounded="lg">
-        <v-label class="text-subtitle-1 mb-2">Horas disponibles</v-label>
-        <div class="horas-grid">
-          <v-btn
-            v-for="(hora, index) in horasDisponibles"
-            :key="index"
-            variant="outlined"
-            size="small"
-            :class="{ 'hora-seleccionada': horaSeleccionada === hora }"
-            @click="seleccionarHora(hora)"
-          >
-            {{ hora }}
-          </v-btn>
+        <v-label class="text-subtitle-1 mb-2">Selecciona una hora</v-label>
+        
+        <div v-if="!fechaSeleccionada" class="text-center py-4 text-grey">
+          Primero selecciona una fecha
+        </div>
+        
+        <div v-else class="hora-selector">
+          <v-text-field v-model="horaSeleccionada" type="time" variant="outlined" density="comfortable" prepend-inner-icon="mdi-clock-outline" placeholder="HH:MM" hide-details class="time-input" @update:model-value="actualizarHora"/>
         </div>
       </v-card>
 
       <!-- 🔹 Resumen temporal -->
-      <div
-        v-if="fechaSeleccionada && horaSeleccionada"
-        class="resumen-seleccion mt-6"
-      >
-        <v-alert type="info" border="start" color="primary" variant="tonal">
-          <strong>Seleccionado:</strong>
-          {{ formatearFecha(fechaSeleccionada) }} - {{ horaSeleccionada }}
+      <div v-if="fechaSeleccionada && horaSeleccionada" class="resumen-seleccion mt-6">
+        <v-alert type="success" border="start" color="primary" variant="tonal">
+          <strong>Seleccionado:</strong><br>
+          {{ formatearFecha(fechaSeleccionada) }}<br>
+          Hora: {{ formatearHora(horaSeleccionada) }}
         </v-alert>
       </div>
     </div>
@@ -48,30 +35,36 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useReservaStore } from '@/stores/reserva'
 
 export default {
   name: 'FechaHoraTab',
   setup() {
+    const reservaStore = useReservaStore()
     const fechaSeleccionada = ref(null)
     const horaSeleccionada = ref(null)
 
-    // 🔹 Horas ficticias por ahora (se conectará al barbero más adelante)
-    const horasDisponibles = ref([
-      '08:00 AM',
-      '09:00 AM',
-      '10:00 AM',
-      '11:00 AM',
-      '12:00 PM',
-      '01:00 PM',
-      '02:00 PM',
-      '03:00 PM',
-      '04:00 PM',
-      '05:00 PM',
-    ])
+    // Cargar valores previos si existen
+    onMounted(() => {
+      if (reservaStore.fechaSeleccionada) {
+        fechaSeleccionada.value = reservaStore.fechaSeleccionada
+      }
+      if (reservaStore.horaSeleccionada) {
+        horaSeleccionada.value = reservaStore.horaSeleccionada
+      }
+    })
 
-    const seleccionarHora = (hora) => {
-      horaSeleccionada.value = hora
+    const actualizarFecha = () => {
+      if (fechaSeleccionada.value && horaSeleccionada.value) {
+        reservaStore.setFechaHora(fechaSeleccionada.value, horaSeleccionada.value)
+      }
+    }
+
+    const actualizarHora = () => {
+      if (fechaSeleccionada.value && horaSeleccionada.value) {
+        reservaStore.setFechaHora(fechaSeleccionada.value, horaSeleccionada.value)
+      }
     }
 
     const formatearFecha = (fecha) => {
@@ -80,12 +73,22 @@ export default {
       return new Date(fecha).toLocaleDateString('es-ES', opciones)
     }
 
+    const formatearHora = (hora) => {
+      if (!hora) return ''
+      const [hours, minutes] = hora.split(':')
+      const h = parseInt(hours)
+      const ampm = h >= 12 ? 'PM' : 'AM'
+      const h12 = h % 12 || 12
+      return `${h12}:${minutes} ${ampm}`
+    }
+
     return {
       fechaSeleccionada,
       horaSeleccionada,
-      horasDisponibles,
-      seleccionarHora,
+      actualizarFecha,
+      actualizarHora,
       formatearFecha,
+      formatearHora,
     }
   },
 }
@@ -98,7 +101,6 @@ export default {
   text-align: left;
 }
 
-/* 🔹 Scroll personalizado */
 .scroll-fecha-hora {
   max-height: 450px;
   overflow-y: auto;
@@ -118,28 +120,38 @@ export default {
   background-color: #8c8c8c;
 }
 
-/* 🔹 Estilo moderno para el calendario */
 .date-picker-custom {
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
-/* 🔹 Grid de horas */
-.horas-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 12px;
+.hora-selector {
   margin-top: 12px;
 }
 
-/* 🔹 Botón de hora */
-.v-btn {
-  transition: all 0.2s ease;
+.time-input {
+  max-width: 250px;
 }
 
-.hora-seleccionada {
-  border: 2px solid #1976d2 !important;
-  background-color: #e3f2fd !important;
+.time-input :deep(input[type="time"]) {
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.time-input :deep(input[type="time"]::-webkit-calendar-picker-indicator) {
+  cursor: pointer;
+  font-size: 1.2rem;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.time-input :deep(input[type="time"]::-webkit-calendar-picker-indicator:hover) {
+  opacity: 1;
+}
+
+.text-grey {
+  color: #757575;
+  font-size: 0.95rem;
 }
 </style>

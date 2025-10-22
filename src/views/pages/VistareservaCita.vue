@@ -25,15 +25,15 @@
           <v-tabs-window-item value="Servicios">
             <ServiciosTab />
           </v-tabs-window-item>
-          
-          <!-- TAB: Barberos -->
-          <v-tabs-window-item value="Profesional">
-            <BarberoTab />
-          </v-tabs-window-item>
 
           <!-- TAB: Fecha y Hora -->
           <v-tabs-window-item value="Fecha y Hora">
             <FechayHoraTab />
+          </v-tabs-window-item>
+          
+          <!-- TAB: Barberos -->
+          <v-tabs-window-item value="Profesional">
+            <BarberoTab />
           </v-tabs-window-item>
 
         </v-tabs-window>
@@ -65,7 +65,7 @@ export default {
   emits: ['update:modelValue'],
   setup(props, { emit }) {
     const currentTab = ref('Servicios')
-    const items = ['Servicios', 'Profesional', 'Fecha y Hora', 'Confirmacion']
+    const items = ['Servicios', 'Fecha y Hora', 'Profesional', 'Confirmacion']
 
     function closeDialog() {
       emit('update:modelValue', false)

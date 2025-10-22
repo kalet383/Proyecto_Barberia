@@ -79,14 +79,6 @@ export const useBarberStore = defineStore('barber', {
         // Separar los datos del barbero de los horarios
         const { horarios, ...barberData } = payload
 
-        // Opción 1: Si tienes un endpoint especial en el backend
-        // const { data } = await api.post(
-        //   '/auth/register-barber-with-schedule',
-        //   payload,
-        //   { withCredentials: true }
-        // )
-
-        // Opción 2: Hacer dos llamadas (barbero primero, luego horarios)
         const { data: newBarber } = await api.post(
           '/auth/register-barber',
           barberData,
@@ -129,5 +121,23 @@ export const useBarberStore = defineStore('barber', {
         this.loading = false
       }
     },
+
+    // Metodo para traer barberos disponibles segun fecha y hora escogido
+    async getBarberosDisponibles(dia: string, hora: string) {
+      this.loading = true
+      try {
+        const { data } = await api.get(`/horario-barbero/${dia}/${hora}`, { withCredentials: true })
+        return data || []
+      } catch (err: unknown) {
+        if (axios.isAxiosError(err) && err.response?.data?.message) {
+          this.error = err.response.data.message
+        } else {
+          this.error = 'Error cargando barberos disponibles'
+        }
+        return []
+      } finally {
+        this.loading = false
+      }
+    }
   },
 })

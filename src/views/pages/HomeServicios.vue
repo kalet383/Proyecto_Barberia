@@ -20,7 +20,7 @@
               <v-card-subtitle class="pt-4"> {{ servicio.precio }} - {{ servicio.tiempo }} </v-card-subtitle>
               <v-card-text> {{ servicio.descripcion }} </v-card-text>
               <v-card-actions>
-                <v-btn class="botonAgendar" @click="abrirModal(servicio)">AGENDAR</v-btn>
+                <v-btn class="botonAgendar" @click="abrirModal()">AGENDAR</v-btn>
               </v-card-actions>
             </v-card>
           </v-col>
@@ -34,10 +34,9 @@
 <script setup>
   import { ref, reactive} from 'vue'
   import VistareservaCita from '@/views/pages/VistareservaCita.vue'
-  import { useReservaStore } from '@/stores/reserva'
 
   const tab = ref(0)
-  const reservaStore = useReservaStore()
+  const showModal = ref(false)
   const categorias = reactive([
     {
       servicios: [
@@ -68,11 +67,8 @@
       ]
     }
   ])
-
-  const showModal = ref(false)
-
-  function abrirModal(servicio) {
-    reservaStore.seleccionarServicio(servicio) // guarda el servicio
+  
+  function abrirModal() {
     showModal.value = true
   }
 </script>
