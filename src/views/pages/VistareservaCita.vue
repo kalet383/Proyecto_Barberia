@@ -3,67 +3,111 @@
     <v-dialog v-model="props.modelValue" transition="dialog-bottom-transition" fullscreen>
       <v-card>
         <v-btn icon="mdi-close" @click="closeDialog"></v-btn>
+
         <v-card-title class="text-center justify-center py-2">
           <h3>RESERVACION DE CITAS</h3>
         </v-card-title>
-        <v-tabs
-      v-model="tab"
-      color="basil"
-      grow
-    >
-      <v-tab
-        v-for="item in items"
-        :key="item"
-        :text="item"
-        :value="item"
-      ></v-tab>
-    </v-tabs>
 
-    <v-tabs-window v-model="tab">
-      <v-tabs-window-item
-        v-for="item in items"
-        :key="item"
-        :value="item"
-      >
-        <v-card
-          color="basil"
-          flat
-        >
-          <v-card-text>{{ text }}</v-card-text>
-        </v-card>
-      </v-tabs-window-item>
-    </v-tabs-window>
+        <!-- Tabs -->
+        <v-tabs v-model="currentTab" class="custom-tabs" bg-color="transparent">
+          <v-tab v-for="(item, index) in items" :key="item" :value="item">
+            <span class="tab-content">
+              {{ item }}
+              <i v-if="index < items.length - 1" class="fa-solid fa-arrow-right arrow-icon"></i>
+            </span>
+          </v-tab>
+        </v-tabs>
+
+        <!-- Contenido de tabs -->
+        <v-tabs-window v-model="currentTab">
+          
+          <!-- TAB: Servicios -->
+          <v-tabs-window-item value="Servicios">
+            <ServiciosTab />
+          </v-tabs-window-item>
+          
+          <!-- TAB: Barberos -->
+          <v-tabs-window-item value="Profesional">
+            <BarberoTab />
+          </v-tabs-window-item>
+
+          <!-- TAB: Fecha y Hora -->
+          <v-tabs-window-item value="Fecha y Hora">
+            <FechayHoraTab />
+          </v-tabs-window-item>
+
+        </v-tabs-window>
       </v-card>
     </v-dialog>
   </div>
 </template>
 
 <script>
-  import { ref } from 'vue'
+import { ref } from 'vue'
+import ServiciosTab from '@/components/shared/ReservaCita/ServiciosTab.vue';
+import BarberoTab from '@/components/shared/ReservaCita/BarberoTab.vue';
+import FechayHoraTab from '@/components/shared/ReservaCita/FechayHoraTab.vue';
 
-  export default {
-    name: 'VistareservaCita',
-    props: {
-      modelValue: {
-        type: Boolean,
-        required: true,
-        default: false
-      }
-    },
-    emits: ['update:modelValue'],
-    setup(props, { emit }) {
-      const notifications = ref(true)
-      const sound = ref(false)
-      const widgets = ref(true)
-      const tabs = ref(['Perfil', 'Citas', 'Servicios', 'Configuracion'])
-      const items = ['Perfil', 'Citas', 'Servicios', 'Configuracion']
-      const text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
+export default {
+  name: 'VistareservaCita',
+  components: {
+    ServiciosTab,
+    BarberoTab,
+    FechayHoraTab
+  },
+  props: {
+    modelValue: {
+      type: Boolean,
+      required: true,
+      default: false
+    }
+  },
+  emits: ['update:modelValue'],
+  setup(props, { emit }) {
+    const currentTab = ref('Servicios')
+    const items = ['Servicios', 'Profesional', 'Fecha y Hora', 'Confirmacion']
 
-      function closeDialog() {
-        emit('update:modelValue', false)
-      }
+    function closeDialog() {
+      emit('update:modelValue', false)
+    }
 
-      return { props, notifications, sound, widgets, closeDialog, tabs, items, text}
+    return {
+      props,
+      currentTab,
+      items,
+      closeDialog,
     }
   }
+}
 </script>
+
+<style scoped>
+  .custom-tabs {
+    padding-left: 30px;
+  }
+
+  .custom-tabs :deep(.v-slide-group__content) {
+    gap: 0;
+    justify-content: flex-start;
+  }
+
+  .custom-tabs :deep(.v-tab) {
+    min-width: auto !important;
+    padding: 10px 16px !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    font-size: 0.813rem;
+    min-height: 40px !important;
+  }
+
+  .tab-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .arrow-icon {
+    font-size: 0.75rem;
+    opacity: 0.7;
+  }
+</style>
