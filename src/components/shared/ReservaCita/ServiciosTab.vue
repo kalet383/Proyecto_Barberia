@@ -48,24 +48,25 @@
     </v-container>
 </template>
 
-<script>
+<script setup>
 import { ref, onMounted } from 'vue'
 import { useServiceStore } from '@/stores/services'
-
-export default {
-    name: 'ServiciosTab',
-    setup() {
+const emit = defineEmits(['seleccionados'])
+    
+    
         const ServicioStore = useServiceStore()
         const dialog = ref(false)
         const servicioSeleccionado = ref(null)
         const serviciosSeleccionados = ref([]) // 🔹 permite seleccionar varios servicios
-
+        const vm = this
         const toggleSeleccion = (id) => {
             const index = serviciosSeleccionados.value.indexOf(id)
             if (index > -1) {
                 serviciosSeleccionados.value.splice(index, 1)
             } else {
                 serviciosSeleccionados.value.push(id)
+                alert(servicioSeleccionado)
+                emit("seleccionados", servicioSeleccionado)
             }
         }
 
@@ -78,16 +79,15 @@ export default {
             ServicioStore.getServices()
         })
 
-        return {
-            ServicioStore,
-            dialog,
-            servicioSeleccionado,
-            serviciosSeleccionados,
-            toggleSeleccion,
-            abrirDialog
-        }
-    }
-}
+        // return {
+        //     ServicioStore,
+        //     dialog,
+        //     servicioSeleccionado,
+        //     serviciosSeleccionados,
+        //     toggleSeleccion,
+        //     abrirDialog
+        // }
+    
 </script>
 
 <style scoped>

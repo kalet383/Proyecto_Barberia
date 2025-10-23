@@ -72,7 +72,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useReservaStore } from '@/stores/reserva'
 
 export default {
@@ -109,6 +109,13 @@ export default {
         dias.push(fecha)
       }
       return dias
+    })
+
+    // Watch para actualizar cuando cambie la hora
+    watch(horaSeleccionada, (nuevaHora) => {
+      if (nuevaHora && fechaSeleccionada.value) {
+        actualizarFecha()
+      }
     })
 
     // Obtener mes y año actual de la semana visible
@@ -148,9 +155,7 @@ export default {
 
     const seleccionarDia = (fecha) => {
       fechaSeleccionada.value = fecha
-      if (horaSeleccionada.value) {
-        actualizarFecha()
-      }
+      actualizarFecha()
     }
 
     const actualizarFecha = () => {

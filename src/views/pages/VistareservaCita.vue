@@ -8,38 +8,58 @@
           <h3>RESERVACION DE CITAS</h3>
         </v-card-title>
 
-        <!-- Tabs -->
-        <v-tabs v-model="currentTab" class="custom-tabs" bg-color="transparent">
-          <v-tab v-for="(item, index) in items" :key="item" :value="item">
-            <span class="tab-content">
-              <span class="tab-number">
-                <i :class="`fa-solid fa-${index + 1}`"></i>
-              </span>
-              {{ item }}
-              <i v-if="index < items.length - 1" class="fa-solid fa-arrow-right arrow-icon"></i>
-            </span>
-          </v-tab>
-        </v-tabs>
-
-        <!-- Contenido de tabs -->
-        <v-tabs-window v-model="currentTab">
+        <!-- Contenedor principal con layout de dos columnas -->
+        <div class="d-flex" style="height: calc(100vh - 120px);">
           
-          <!-- TAB: Servicios -->
-          <v-tabs-window-item value="Servicios">
-            <ServiciosTab />
-          </v-tabs-window-item>
+          <!-- Columna izquierda: Tabs y contenido -->
+          <div style="flex: 1; overflow-y: auto;">
+            <!-- Tabs -->
+            <v-tabs v-model="currentTab" class="custom-tabs" bg-color="transparent">
+              <v-tab v-for="(item, index) in items" :key="item" :value="item">
+                <span class="tab-content">
+                  <span class="tab-number">
+                    <i :class="`fa-solid fa-${index + 1}`"></i>
+                  </span>
+                  {{ item }}
+                  <i v-if="index < items.length - 1" class="fa-solid fa-arrow-right arrow-icon"></i>
+                </span>
+              </v-tab>
+            </v-tabs>
 
-          <!-- TAB: Fecha y Hora -->
-          <v-tabs-window-item value="Fecha y Hora">
-            <FechayHoraTab />
-          </v-tabs-window-item>
-          
-          <!-- TAB: Barberos -->
-          <v-tabs-window-item value="Profesional">
-            <BarberoTab />
-          </v-tabs-window-item>
+            <!-- Contenido de tabs -->
+            <v-tabs-window v-model="currentTab">
+              
+              <!-- TAB: Servicios -->
+              <v-tabs-window-item value="Servicios">
+                <ServiciosTab
+                @seleccionados = "agregar" />
+              </v-tabs-window-item>
 
-        </v-tabs-window>
+              <!-- TAB: Fecha y Hora -->
+              <v-tabs-window-item value="Fecha y Hora">
+                <FechayHoraTab />
+              </v-tabs-window-item>
+              
+              <!-- TAB: Barberos -->
+              <v-tabs-window-item value="Profesional">
+                <BarberoTab />
+              </v-tabs-window-item>
+
+              <!-- TAB: Confirmacion -->
+              <!-- <v-tabs-window-item value="Confirmacion">
+                Componente de confirmacion aqui
+              </v-tabs-window-item> -->
+
+            </v-tabs-window>
+          </div>
+
+          <!-- Columna derecha: Detalles de la cita (fija) -->
+          <div style="width: 600px; padding: 16px; overflow-y: auto; border-left: 2px solid #e0e0e0;">
+            <DetalleReserva
+            :servicios="itemsseleccionados" />
+          </div>
+
+        </div>
       </v-card>
     </v-dialog>
   </div>
@@ -50,13 +70,15 @@ import { ref } from 'vue'
 import ServiciosTab from '@/components/shared/ReservaCita/ServiciosTab.vue';
 import BarberoTab from '@/components/shared/ReservaCita/BarberoTab.vue';
 import FechayHoraTab from '@/components/shared/ReservaCita/FechayHoraTab.vue';
+import DetalleReserva from '@/components/shared/ReservaCita/DetalleReserva.vue';
 
 export default {
   name: 'VistareservaCita',
   components: {
     ServiciosTab,
     BarberoTab,
-    FechayHoraTab
+    FechayHoraTab,
+    DetalleReserva
   },
   props: {
     modelValue: {
@@ -70,8 +92,15 @@ export default {
     const currentTab = ref('Servicios')
     const items = ['Servicios', 'Fecha y Hora', 'Profesional', 'Confirmacion']
 
+    const itemsseleccionados = []
+
     function closeDialog() {
       emit('update:modelValue', false)
+    }
+
+    function agregar(items) {
+      alert(items)
+      itemsseleccionados.value = [1,2]
     }
 
     return {
@@ -79,6 +108,8 @@ export default {
       currentTab,
       items,
       closeDialog,
+      agregar,
+      itemsseleccionados
     }
   }
 }
