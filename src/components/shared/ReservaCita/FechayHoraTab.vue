@@ -3,31 +3,68 @@
     <h3 class="text-h3 mb-4">Selecciona una fecha y hora</h3>
 
     <div class="scroll-fecha-hora">
-      <!-- 🔹 Selector de fecha -->
+      <!-- 🔹 Selector de fecha horizontal estilo moderno -->
       <v-card class="pa-4 mb-6" elevation="2" rounded="lg">
-        <v-label class="text-subtitle-1 mb-2">Selecciona un día</v-label>
-        <v-date-picker v-model="fechaSeleccionada" color="primary" show-adjacent-months elevation="0" class="date-picker-custom" @update:model-value="actualizarFecha"/>
+        <div class="d-flex justify-space-between align-center mb-4">
+          <div>
+            <v-label class="text-subtitle-1 d-block mb-1">Selecciona un día</v-label>
+            <span class="mes-anio">{{ mesYAnioActual }}</span>
+          </div>
+          <div class="d-flex ga-2">
+            <v-btn icon size="small" variant="outlined" color="primary"@click="semanaAnterior">
+              <i class="fas fa-chevron-left"></i>
+            </v-btn>
+            <v-btn icon size="small" variant="outlined" color="primary"@click="semanaSiguiente">
+              <i class="fas fa-chevron-right"></i>
+            </v-btn>
+          </div>
+        </div>
+
+        <!-- Días en formato horizontal -->
+        <div class="dias-horizontales">
+          <div v-for="(date, index) in diasVisibles" :key="index" class="dia-card"
+            :class="{ 
+              'dia-seleccionado': esMismaFecha(date, fechaSeleccionada),
+              'dia-hoy': esHoy(date) && !esMismaFecha(date, fechaSeleccionada)
+            }"
+            @click="seleccionarDia(date)"
+          >
+            <span class="dia-nombre">{{ obtenerNombreDia(date) }}</span>
+            <span class="dia-numero">{{ date.getDate() }}</span>
+          </div>
+        </div>
       </v-card>
 
       <!-- 🔹 Selector de hora -->
       <v-card class="pa-4" elevation="2" rounded="lg">
-        <v-label class="text-subtitle-1 mb-2">Selecciona una hora</v-label>
+        <v-label class="text-subtitle-1 mb-2">
+          <i class="fas fa-clock mr-2"></i>
+          Selecciona una hora
+        </v-label>
         
         <div v-if="!fechaSeleccionada" class="text-center py-4 text-grey">
+          <i class="fas fa-calendar-day mr-2"></i>
           Primero selecciona una fecha
         </div>
         
         <div v-else class="hora-selector">
-          <v-text-field v-model="horaSeleccionada" type="time" variant="outlined" density="comfortable" prepend-inner-icon="mdi-clock-outline" placeholder="HH:MM" hide-details class="time-input" @update:model-value="actualizarHora"/>
+          <v-text-field v-model="horaSeleccionada" type="time" variant="outlined" density="comfortable" placeholder="HH:MM" hide-details class="time-input">
+            <template v-slot:prepend-inner>
+              <i class="fas fa-clock" style="color: #666; font-size: 18px;"></i>
+            </template>
+          </v-text-field>
         </div>
       </v-card>
 
       <!-- 🔹 Resumen temporal -->
       <div v-if="fechaSeleccionada && horaSeleccionada" class="resumen-seleccion mt-6">
         <v-alert type="success" border="start" color="primary" variant="tonal">
-          <strong>Seleccionado:</strong><br>
-          {{ formatearFecha(fechaSeleccionada) }}<br>
-          Hora: {{ formatearHora(horaSeleccionada) }}
+          <div class="d-flex align-center mb-2">
+            <i class="fas fa-check-circle mr-2"></i>
+            <strong>Tu Cita:</strong>
+          </div>
+          <i class="fas fa-calendar-alt mr-2"></i>{{ formatearFecha(fechaSeleccionada) }}<br>
+          <i class="fas fa-clock mr-2"></i>Hora: {{ formatearHora(horaSeleccionada) }}
         </v-alert>
       </div>
     </div>
@@ -35,7 +72,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useReservaStore } from '@/stores/reserva'
 
 export default {
@@ -44,6 +81,12 @@ export default {
     const reservaStore = useReservaStore()
     const fechaSeleccionada = ref(null)
     const horaSeleccionada = ref(null)
+    const semanaActual = ref(new Date())
+
+    const nombresMeses = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ]
 
     // Cargar valores previos si existen
     onMounted(() => {
@@ -54,6 +97,61 @@ export default {
         horaSeleccionada.value = reservaStore.horaSeleccionada
       }
     })
+
+    // Generar 7 días visibles desde la semana actual
+    const diasVisibles = computed(() => {
+      const dias = []
+      const inicio = new Date(semanaActual.value)
+      
+      for (let i = 0; i < 7; i++) {
+        const fecha = new Date(inicio)
+        fecha.setDate(inicio.getDate() + i)
+        dias.push(fecha)
+      }
+      return dias
+    })
+
+    // Obtener mes y año actual de la semana visible
+    const mesYAnioActual = computed(() => {
+      const fechaMedia = diasVisibles.value[3] || semanaActual.value
+      return `${nombresMeses[fechaMedia.getMonth()]} ${fechaMedia.getFullYear()}`
+    })
+
+    const semanaSiguiente = () => {
+      const nuevaFecha = new Date(semanaActual.value)
+      nuevaFecha.setDate(nuevaFecha.getDate() + 7)
+      semanaActual.value = nuevaFecha
+    }
+
+    const semanaAnterior = () => {
+      const nuevaFecha = new Date(semanaActual.value)
+      nuevaFecha.setDate(nuevaFecha.getDate() - 7)
+      semanaActual.value = nuevaFecha
+    }
+
+    const esHoy = (fecha) => {
+      const hoy = new Date()
+      return fecha.toDateString() === hoy.toDateString()
+    }
+
+    const esMismaFecha = (fecha1, fecha2) => {
+      if (!fecha1 || !fecha2) return false
+      const f1 = new Date(fecha1)
+      const f2 = new Date(fecha2)
+      return f1.toDateString() === f2.toDateString()
+    }
+
+    const obtenerNombreDia = (fecha) => {
+      const nombres = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb']
+      return nombres[fecha.getDay()]
+    }
+
+    const seleccionarDia = (fecha) => {
+      fechaSeleccionada.value = fecha
+      if (horaSeleccionada.value) {
+        actualizarFecha()
+      }
+    }
 
     const actualizarFecha = () => {
       if (fechaSeleccionada.value && horaSeleccionada.value) {
@@ -85,6 +183,14 @@ export default {
     return {
       fechaSeleccionada,
       horaSeleccionada,
+      diasVisibles,
+      mesYAnioActual,
+      semanaSiguiente,
+      semanaAnterior,
+      esHoy,
+      esMismaFecha,
+      obtenerNombreDia,
+      seleccionarDia,
       actualizarFecha,
       actualizarHora,
       formatearFecha,
@@ -96,13 +202,13 @@ export default {
 
 <style scoped>
 .fecha-hora-container {
-  max-width: 500px;
+  max-width: 700px;
   margin-left: 40px;
   text-align: left;
 }
 
 .scroll-fecha-hora {
-  max-height: 450px;
+  max-height: 600px;
   overflow-y: auto;
   padding-right: 8px;
 }
@@ -120,10 +226,75 @@ export default {
   background-color: #8c8c8c;
 }
 
-.date-picker-custom {
+/* Mes y año */
+.mes-anio {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1976d2;
+  text-transform: capitalize;
+}
+
+/* Diseño horizontal de días */
+.dias-horizontales {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 12px;
+}
+
+.dia-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 8px;
+  background-color: #f5f5f5;
   border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  user-select: none;
+}
+
+.dia-card:hover {
+  background-color: #e0e0e0;
+  transform: translateY(-2px);
+}
+
+.dia-seleccionado {
+  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+  transform: scale(1.05);
+}
+
+.dia-hoy {
+  border: 2px solid #1976d2;
+}
+
+.dia-hoy::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #1976d2;
+}
+
+.dia-seleccionado.dia-hoy::after {
+  background-color: white;
+}
+
+.dia-nombre {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  opacity: 0.8;
+}
+
+.dia-numero {
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
 .hora-selector {
@@ -153,5 +324,21 @@ export default {
 .text-grey {
   color: #757575;
   font-size: 0.95rem;
+}
+
+/* Font Awesome icons styling */
+.fas {
+  vertical-align: middle;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .dias-horizontales {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .fecha-hora-container {
+    margin-left: 0;
+  }
 }
 </style>

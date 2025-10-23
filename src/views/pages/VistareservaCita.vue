@@ -12,6 +12,9 @@
         <v-tabs v-model="currentTab" class="custom-tabs" bg-color="transparent">
           <v-tab v-for="(item, index) in items" :key="item" :value="item">
             <span class="tab-content">
+              <span class="tab-number">
+                <i :class="`fa-solid fa-${index + 1}`"></i>
+              </span>
               {{ item }}
               <i v-if="index < items.length - 1" class="fa-solid fa-arrow-right arrow-icon"></i>
             </span>
@@ -104,6 +107,12 @@ export default {
     display: flex;
     align-items: center;
     gap: 8px;
+  }
+
+  .tab-number {
+    display: inline-flex;
+    align-items: center;
+    color: #1976d2;
   }
 
   .arrow-icon {
