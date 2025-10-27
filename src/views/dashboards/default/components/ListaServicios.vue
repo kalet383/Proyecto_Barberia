@@ -32,22 +32,13 @@
     </v-container>
 </template>
 
-<script>
+<script setup>
     import { useServiceStore } from '@/stores/services';
     import { onMounted } from 'vue';
 
-    export default {
-        name: 'ListaServicios',
-        setup() {
-            const ServicioStore = useServiceStore()
+    const ServicioStore = useServiceStore()
 
-            onMounted(() => {
-                ServicioStore.getServices()
-            })
-
-            return {
-                ServicioStore
-            }
-        }
-    }
+    onMounted(() => {
+        ServicioStore.getServices()
+    })
 </script>

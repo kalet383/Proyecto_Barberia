@@ -12,24 +12,26 @@
     </div>
 </template>
 
-<script>
-export default {
-    name : 'ProductoCard',
-    props : {
-        producto : {
-            type : Object,
-            required : true
+<script setup>
+    const props = defineProps({
+        producto: {
+            type: Object,
+            required: true
         }
-    },
-    methods: {
-        emitirverDetalles() {
-            this.$emit("ver-detalles", this.producto)
-        },
-        emitirAgregarCarrito() {
-            this.$emit('agregar-carrito', this.producto)
-        }
-    },
-}
+    })
+
+    const emit = defineEmits(['ver-detalles', 'agregar-carrito'])
+
+    // Imagen por defecto
+    const defaultImage = '/public/imagenes/logo/logo2.png'
+
+    const emitirverDetalles = () => {
+        emit('ver-detalles', props.producto)
+    }
+
+    const emitirAgregarCarrito = () => {
+        emit('agregar-carrito', props.producto)
+    }
 </script>
 
 <style scoped>

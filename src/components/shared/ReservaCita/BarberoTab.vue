@@ -56,77 +56,69 @@
     </v-container>
 </template>
 
-<script>
+<script setup>
     import { ref, watch } from 'vue';
     import { useBarberStore } from '@/stores/barber';
     import { useReservaStore } from '@/stores/reserva';
 
-    export default {
-        name: 'BarberoTab',
-        setup() {
-            const barberoStore = useBarberStore();
-            const reservaStore = useReservaStore();
-            const dialogVisible = ref(false);
-            const barberoSeleccionado = ref(null);
-            const barberosDisponibles = ref([]);
-            const loading = ref(false);
+    const barberoStore = useBarberStore();
+    const reservaStore = useReservaStore();
+    const emit = defineEmits(['emitBarbero'])
+    const dialogVisible = ref(false);
+    const barberoSeleccionado = ref(null);
+    const barberosDisponibles = ref([]);
+    const loading = ref(false);
 
-            const abrirDialog = (barbero) => {
-                barberoSeleccionado.value = barbero;
-                dialogVisible.value = true;
-            };
+    const abrirDialog = (barbero) => {
+        barberoSeleccionado.value = barbero;
+        dialogVisible.value = true;
+    };
 
-            const seleccionarBarbero = (id) => {
-                if (reservaStore.barberoSeleccionado === id) {
-                    reservaStore.setBarbero(null);
-                } else {
-                    reservaStore.setBarbero(id);
-                }
-            };
-
-            // 🔹 Cargar barberos cuando haya fecha y hora
-            const cargarBarberosDisponibles = async () => {
-                if (!reservaStore.tieneFechaYHora) {
-                    barberosDisponibles.value = [];
-                    return;
-                }
-
-                loading.value = true;
-                try {
-                    const barberos = await barberoStore.getBarberosDisponibles(
-                        reservaStore.diaSemana,
-                        reservaStore.horaSeleccionada
-                    );
-                    barberosDisponibles.value = barberos;
-                } catch (error) {
-                    console.error('Error cargando barberos:', error);
-                    barberosDisponibles.value = [];
-                } finally {
-                    loading.value = false;
-                }
-            };
-
-            // 🔹 Watch para recargar cuando cambie fecha/hora
-            watch(
-                () => [reservaStore.fechaSeleccionada, reservaStore.horaSeleccionada],
-                () => {
-                    cargarBarberosDisponibles();
-                },
-                { immediate: true }
-            );
-
-            return {
-                barberoStore,
-                reservaStore,
-                dialogVisible,
-                barberoSeleccionado,
-                barberosDisponibles,
-                loading,
-                abrirDialog,
-                seleccionarBarbero
-            }
+    const seleccionarBarbero = (id) => {
+        if (reservaStore.barberoSeleccionado === id) {
+            reservaStore.setBarbero(null);
+            console.log('❌ Deseleccionando barbero');
+            emit('emitBarbero', null);
+        } else {
+            reservaStore.setBarbero(id);
+            const barbero = barberosDisponibles.value.find(b => {
+                return b.id === id;
+            });
+            console.log('✅ Barbero encontrado:', barbero);
+            emit('emitBarbero', barbero);
         }
-    }
+    };
+
+    // 🔹 Cargar barberos cuando haya fecha y hora
+    const cargarBarberosDisponibles = async () => {
+        if (!reservaStore.tieneFechaYHora) {
+            barberosDisponibles.value = [];
+            return;
+        }
+
+        loading.value = true;
+        try {
+            const barberos = await barberoStore.getBarberosDisponibles(
+                reservaStore.diaSemana,
+                reservaStore.horaSeleccionada
+            );
+            barberosDisponibles.value = barberos;
+        } catch (error) {
+            console.error('Error cargando barberos:', error);
+            barberosDisponibles.value = [];
+        } finally {
+            loading.value = false;
+        }
+    };
+
+    // 🔹 Watch para recargar cuando cambie fecha/hora
+    watch(
+        () => [reservaStore.fechaSeleccionada, reservaStore.horaSeleccionada],
+        () => {
+            cargarBarberosDisponibles();
+        },
+        { immediate: true }
+    );
 </script>
 
 <style scoped>

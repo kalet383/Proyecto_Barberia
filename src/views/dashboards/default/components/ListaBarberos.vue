@@ -35,22 +35,13 @@
     </v-container>
 </template>
 
-<script>
-    import { useBarberStore } from '@/stores/barber'
+<script setup>
     import { onMounted } from 'vue'
+    import { useBarberStore } from '@/stores/barber'
 
-    export default {
-    name: 'ListaBarberos',
-    setup() {
-        const barberStore = useBarberStore()
+    const barberStore = useBarberStore()
 
-        onMounted(() => {
+    onMounted(() => {
         barberStore.getBarbers()
-        })
-
-        return {
-        barberStore
-        }
-    },
-    }
+    })
 </script>

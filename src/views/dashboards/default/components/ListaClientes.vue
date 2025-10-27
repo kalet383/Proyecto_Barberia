@@ -35,22 +35,13 @@
     </v-container>
 </template>
 
-<script>
-    import { useClientStore } from '@/stores/client';
+<script setup>
     import { onMounted } from 'vue';
+    import { useClientStore } from '@/stores/client';
+    
+    const clientStore = useClientStore()
 
-    export default {
-        name: 'ListaClientes',
-        setup (){ 
-            const clientStore = useClientStore()
-
-            onMounted(() => {
-                clientStore.getClients()
-            })
-
-            return{
-                clientStore
-            }
-        },
-    }
+    onMounted(() => {
+        clientStore.getClients()
+    })
 </script>

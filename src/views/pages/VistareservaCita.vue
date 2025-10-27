@@ -32,17 +32,17 @@
               <!-- TAB: Servicios -->
               <v-tabs-window-item value="Servicios">
                 <ServiciosTab
-                @seleccionados = "agregar" />
+                @seleccionados="actualizarServicios" />
               </v-tabs-window-item>
 
               <!-- TAB: Fecha y Hora -->
               <v-tabs-window-item value="Fecha y Hora">
-                <FechayHoraTab />
+                <FechayHoraTab @emit-fechay-hora="actualizarFechayHora" />
               </v-tabs-window-item>
               
               <!-- TAB: Barberos -->
               <v-tabs-window-item value="Profesional">
-                <BarberoTab />
+                <BarberoTab @emit-barbero="actualizarBarbero"/>
               </v-tabs-window-item>
 
               <!-- TAB: Confirmacion -->
@@ -56,7 +56,9 @@
           <!-- Columna derecha: Detalles de la cita (fija) -->
           <div style="width: 600px; padding: 16px; overflow-y: auto; border-left: 2px solid #e0e0e0;">
             <DetalleReserva
-            :servicios="itemsseleccionados" />
+            :servicios="serviciosSeleccionados"
+            :barbero="barberoSeleccionado"
+            :-fechay-hora="fechayhoraseleccionada"/>
           </div>
 
         </div>
@@ -65,54 +67,62 @@
   </div>
 </template>
 
-<script>
-import { ref } from 'vue'
-import ServiciosTab from '@/components/shared/ReservaCita/ServiciosTab.vue';
-import BarberoTab from '@/components/shared/ReservaCita/BarberoTab.vue';
-import FechayHoraTab from '@/components/shared/ReservaCita/FechayHoraTab.vue';
-import DetalleReserva from '@/components/shared/ReservaCita/DetalleReserva.vue';
+<script setup>
+  import { ref, computed } from 'vue'
+  import { useServiceStore } from '@/stores/services'
+  import ServiciosTab from '@/components/shared/ReservaCita/ServiciosTab.vue'
+  import BarberoTab from '@/components/shared/ReservaCita/BarberoTab.vue'
+  import FechayHoraTab from '@/components/shared/ReservaCita/FechayHoraTab.vue'
+  import DetalleReserva from '@/components/shared/ReservaCita/DetalleReserva.vue'
 
-export default {
-  name: 'VistareservaCita',
-  components: {
-    ServiciosTab,
-    BarberoTab,
-    FechayHoraTab,
-    DetalleReserva
-  },
-  props: {
+  const ServicioStore = useServiceStore()
+
+  // ✅ Props y emits
+  const props = defineProps({
     modelValue: {
       type: Boolean,
       required: true,
-      default: false
-    }
-  },
-  emits: ['update:modelValue'],
-  setup(props, { emit }) {
-    const currentTab = ref('Servicios')
-    const items = ['Servicios', 'Fecha y Hora', 'Profesional', 'Confirmacion']
+      default: false,
+    },
+  })
+  const emit = defineEmits(['update:modelValue'])
 
-    const itemsseleccionados = []
+  // ✅ Estado
+  const currentTab = ref('Servicios')
+  const items = ['Servicios', 'Fecha y Hora', 'Profesional', 'Confirmacion']
+  const serviciosSeleccionadosIds = ref([])
+  const barberoSeleccionado = ref(null)
+  const fechayhoraseleccionada = ref({
+    fecha: null,
+    hora: null
+  })
 
-    function closeDialog() {
-      emit('update:modelValue', false)
-    }
+  // ✅ Computed para obtener los objetos completos de los servicios
+  const serviciosSeleccionados = computed(() => {
+    return ServicioStore.services.filter(servicio => 
+      serviciosSeleccionadosIds.value.includes(servicio.id)
+    )
+  })
 
-    function agregar(items) {
-      alert(items)
-      itemsseleccionados.value = [1,2]
-    }
-
-    return {
-      props,
-      currentTab,
-      items,
-      closeDialog,
-      agregar,
-      itemsseleccionados
-    }
+  // ✅ Métodos
+  function closeDialog() {
+    emit('update:modelValue', false)
   }
-}
+
+  function actualizarServicios(idsSeleccionados) {
+    serviciosSeleccionadosIds.value = idsSeleccionados
+  }
+
+  function actualizarBarbero(barbero) {
+    console.log('📥 Padre recibió:', barbero);
+    barberoSeleccionado.value = barbero; // Guarda el objeto completo directamente
+    console.log('💾 Barbero guardado:', barberoSeleccionado.value);
+  }
+
+  function actualizarFechayHora(data) {
+    console.log('📅 Padre recibió fecha y hora:', data)
+    fechayhoraseleccionada.value = data
+  }
 </script>
 
 <style scoped>

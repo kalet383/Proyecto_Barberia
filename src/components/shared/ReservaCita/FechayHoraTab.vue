@@ -71,138 +71,118 @@
   </v-container>
 </template>
 
-<script>
-import { ref, computed, onMounted, watch } from 'vue'
-import { useReservaStore } from '@/stores/reserva'
+<script setup>
+  import { ref, computed, onMounted, watch } from 'vue'
+  import { useReservaStore } from '@/stores/reserva'
 
-export default {
-  name: 'FechaHoraTab',
-  setup() {
-    const reservaStore = useReservaStore()
-    const fechaSeleccionada = ref(null)
-    const horaSeleccionada = ref(null)
-    const semanaActual = ref(new Date())
+  const reservaStore = useReservaStore()
+  const emit = defineEmits(['emitFechayHora'])
+  const fechaSeleccionada = ref(null)
+  const horaSeleccionada = ref(null)
+  const semanaActual = ref(new Date())
 
-    const nombresMeses = [
-      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-    ]
+  const nombresMeses = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ]
 
-    // Cargar valores previos si existen
-    onMounted(() => {
-      if (reservaStore.fechaSeleccionada) {
-        fechaSeleccionada.value = reservaStore.fechaSeleccionada
-      }
-      if (reservaStore.horaSeleccionada) {
-        horaSeleccionada.value = reservaStore.horaSeleccionada
-      }
-    })
-
-    // Generar 7 días visibles desde la semana actual
-    const diasVisibles = computed(() => {
-      const dias = []
-      const inicio = new Date(semanaActual.value)
-      
-      for (let i = 0; i < 7; i++) {
-        const fecha = new Date(inicio)
-        fecha.setDate(inicio.getDate() + i)
-        dias.push(fecha)
-      }
-      return dias
-    })
-
-    // Watch para actualizar cuando cambie la hora
-    watch(horaSeleccionada, (nuevaHora) => {
-      if (nuevaHora && fechaSeleccionada.value) {
-        actualizarFecha()
-      }
-    })
-
-    // Obtener mes y año actual de la semana visible
-    const mesYAnioActual = computed(() => {
-      const fechaMedia = diasVisibles.value[3] || semanaActual.value
-      return `${nombresMeses[fechaMedia.getMonth()]} ${fechaMedia.getFullYear()}`
-    })
-
-    const semanaSiguiente = () => {
-      const nuevaFecha = new Date(semanaActual.value)
-      nuevaFecha.setDate(nuevaFecha.getDate() + 7)
-      semanaActual.value = nuevaFecha
+  // Cargar valores previos si existen
+  onMounted(() => {
+    if (reservaStore.fechaSeleccionada) {
+      fechaSeleccionada.value = reservaStore.fechaSeleccionada
     }
-
-    const semanaAnterior = () => {
-      const nuevaFecha = new Date(semanaActual.value)
-      nuevaFecha.setDate(nuevaFecha.getDate() - 7)
-      semanaActual.value = nuevaFecha
+    if (reservaStore.horaSeleccionada) {
+      horaSeleccionada.value = reservaStore.horaSeleccionada
     }
+  })
 
-    const esHoy = (fecha) => {
-      const hoy = new Date()
-      return fecha.toDateString() === hoy.toDateString()
+  // Generar 7 días visibles desde la semana actual
+  const diasVisibles = computed(() => {
+    const dias = []
+    const inicio = new Date(semanaActual.value)
+    
+    for (let i = 0; i < 7; i++) {
+      const fecha = new Date(inicio)
+      fecha.setDate(inicio.getDate() + i)
+      dias.push(fecha)
     }
+    return dias
+  })
 
-    const esMismaFecha = (fecha1, fecha2) => {
-      if (!fecha1 || !fecha2) return false
-      const f1 = new Date(fecha1)
-      const f2 = new Date(fecha2)
-      return f1.toDateString() === f2.toDateString()
+  // Watch para actualizar cuando cambie la hora
+  watch(horaSeleccionada, (nuevaHora) => {
+    if (nuevaHora && fechaSeleccionada.value) {
+      actualizarFechayHora()
     }
+  })
 
-    const obtenerNombreDia = (fecha) => {
-      const nombres = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb']
-      return nombres[fecha.getDay()]
-    }
+  // Obtener mes y año actual de la semana visible
+  const mesYAnioActual = computed(() => {
+    const fechaMedia = diasVisibles.value[3] || semanaActual.value
+    return `${nombresMeses[fechaMedia.getMonth()]} ${fechaMedia.getFullYear()}`
+  })
 
-    const seleccionarDia = (fecha) => {
-      fechaSeleccionada.value = fecha
-      actualizarFecha()
-    }
+  const semanaSiguiente = () => {
+    const nuevaFecha = new Date(semanaActual.value)
+    nuevaFecha.setDate(nuevaFecha.getDate() + 7)
+    semanaActual.value = nuevaFecha
+  }
 
-    const actualizarFecha = () => {
-      if (fechaSeleccionada.value && horaSeleccionada.value) {
-        reservaStore.setFechaHora(fechaSeleccionada.value, horaSeleccionada.value)
-      }
-    }
+  const semanaAnterior = () => {
+    const nuevaFecha = new Date(semanaActual.value)
+    nuevaFecha.setDate(nuevaFecha.getDate() - 7)
+    semanaActual.value = nuevaFecha
+  }
 
-    const actualizarHora = () => {
-      if (fechaSeleccionada.value && horaSeleccionada.value) {
-        reservaStore.setFechaHora(fechaSeleccionada.value, horaSeleccionada.value)
-      }
-    }
+  const esHoy = (fecha) => {
+    const hoy = new Date()
+    return fecha.toDateString() === hoy.toDateString()
+  }
 
-    const formatearFecha = (fecha) => {
-      if (!fecha) return ''
-      const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
-      return new Date(fecha).toLocaleDateString('es-ES', opciones)
-    }
+  const esMismaFecha = (fecha1, fecha2) => {
+    if (!fecha1 || !fecha2) return false
+    const f1 = new Date(fecha1)
+    const f2 = new Date(fecha2)
+    return f1.toDateString() === f2.toDateString()
+  }
 
-    const formatearHora = (hora) => {
-      if (!hora) return ''
-      const [hours, minutes] = hora.split(':')
-      const h = parseInt(hours)
-      const ampm = h >= 12 ? 'PM' : 'AM'
-      const h12 = h % 12 || 12
-      return `${h12}:${minutes} ${ampm}`
-    }
+  const obtenerNombreDia = (fecha) => {
+    const nombres = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb']
+    return nombres[fecha.getDay()]
+  }
 
-    return {
-      fechaSeleccionada,
-      horaSeleccionada,
-      diasVisibles,
-      mesYAnioActual,
-      semanaSiguiente,
-      semanaAnterior,
-      esHoy,
-      esMismaFecha,
-      obtenerNombreDia,
-      seleccionarDia,
-      actualizarFecha,
-      actualizarHora,
-      formatearFecha,
-      formatearHora,
+  const seleccionarDia = (fecha) => {
+    fechaSeleccionada.value = fecha
+    actualizarFechayHora()
+  }
+
+  const actualizarFechayHora = () => {
+    if (fechaSeleccionada.value && horaSeleccionada.value) {
+      // Guardar en la store
+      reservaStore.setFechaHora(fechaSeleccionada.value, horaSeleccionada.value)
+
+      // Emitir al padre
+      emit('emit-fechay-hora', {
+        fecha: formatearFecha(fechaSeleccionada.value),
+        hora: formatearHora(horaSeleccionada.value)
+      })
     }
-  },
-}
+  }
+
+  const formatearFecha = (fecha) => {
+    if (!fecha) return ''
+    const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
+    return new Date(fecha).toLocaleDateString('es-ES', opciones)
+  }
+
+  const formatearHora = (hora) => {
+    if (!hora) return ''
+    const [hours, minutes] = hora.split(':')
+    const h = parseInt(hours)
+    const ampm = h >= 12 ? 'PM' : 'AM'
+    const h12 = h % 12 || 12
+    return `${h12}:${minutes} ${ampm}`
+  }
 </script>
 
 <style scoped>

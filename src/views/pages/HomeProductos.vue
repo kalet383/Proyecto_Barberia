@@ -29,35 +29,28 @@
     </section>
 </template>
 
-<script>
-    import { mapState } from 'pinia'
-    import { useProductosStore } from '@/stores/useProductosStore';
-    import ProductoCard from '@/components/shared/ProductoCard.vue';
-    import DetallesCard from '@/components/shared/DetallesCard.vue';
-    
-    export default {
-        name : 'HomeProductos',
-        components : {
-            ProductoCard,
-            DetallesCard
-        },
-        data() {
-            return {
-                Tabactivado : 0, // Pestaña activa por defecto
-            };
-        },
-        computed: {
-            ...mapState(useProductosStore, ['categorias'])
-        },
-        methods: {
-            emitirverDetalles(producto) {
-                const store = useProductosStore();
-                store.abrirDetalles(producto);
-            },
-            AgregaralCarrito(producto) {
-                useProductosStore().AgregaralCarrito(producto); // ✅ LLAMA A PINIA
-            }
-        },
+<script setup>
+    import { ref, computed } from 'vue'
+    import { useProductosStore } from '@/stores/useProductosStore'
+    import ProductoCard from '@/components/shared/ProductoCard.vue'
+    import DetallesCard from '@/components/shared/DetallesCard.vue'
+
+    // Estado local
+    const Tabactivado = ref(0)
+
+    // Store de productos
+    const productoStore = useProductosStore()
+
+    // Computed para las categorías desde Pinia
+    const categorias = computed(() => productoStore.categorias)
+
+    // Métodos
+    const emitirverDetalles = (producto) => {
+        productoStore.abrirDetalles(producto)
+    }
+
+    const AgregaralCarrito = (producto) => {
+        productoStore.AgregaralCarrito(producto)
     }
 </script>
 

@@ -13,43 +13,31 @@
     </v-snackbar>
 </template>
 
-<script>
+<script setup>
     import { ref } from 'vue'
-    import { useCategoriaProductoStore } from '@/stores/CategoriaProducto';
+    import { useCategoriaProductoStore } from '@/stores/CategoriaProducto'
 
-    export default {
-        name: 'CrearCategoriaproducto',
-        setup() {
-            const form = ref({
-                nombre: ''
-            });
-            
-            const valid = ref(false);
-            const snackbar = ref(false);
-            const snackbarMessage = ref('');
-            const loading = ref(false);
-            const categoriaProductoStore = useCategoriaProductoStore();
+    // Opcional: mantener el nombre del componente
+    defineOptions({ name: 'CrearCategoriaproducto' })
 
-            const crearCategoria = async () => {
-                loading.value = true;
-                if (!valid.value) return;
-                const response = await categoriaProductoStore.createCategoriaProducto(form.value);
-                if (response) {
-                    snackbarMessage.value = 'Categoría creada exitosamente';
-                    snackbar.value = true;
-                    form.value.nombre = '';
-                }
-                loading.value = false;
-            };
+    const form = ref({ nombre: '' })
+    const valid = ref(false)
+    const snackbar = ref(false)
+    const snackbarMessage = ref('')
+    const loading = ref(false)
+    const categoriaProductoStore = useCategoriaProductoStore()
 
-            return {
-                form,
-                snackbar,
-                snackbarMessage,
-                valid,
-                crearCategoria,
-                loading
-            };
+    const crearCategoria = async () => {
+        loading.value = true
+        if (!valid.value) return
+
+        const response = await categoriaProductoStore.createCategoriaProducto(form.value)
+        if (response) {
+            snackbarMessage.value = 'Categoría creada exitosamente'
+            snackbar.value = true
+            form.value.nombre = ''
         }
+
+        loading.value = false
     }
 </script>

@@ -49,45 +49,34 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useServiceStore } from '@/stores/services'
-const emit = defineEmits(['seleccionados'])
-    
-    
-        const ServicioStore = useServiceStore()
-        const dialog = ref(false)
-        const servicioSeleccionado = ref(null)
-        const serviciosSeleccionados = ref([]) // 🔹 permite seleccionar varios servicios
-        const vm = this
-        const toggleSeleccion = (id) => {
-            const index = serviciosSeleccionados.value.indexOf(id)
-            if (index > -1) {
-                serviciosSeleccionados.value.splice(index, 1)
-            } else {
-                serviciosSeleccionados.value.push(id)
-                alert(servicioSeleccionado)
-                emit("seleccionados", servicioSeleccionado)
-            }
+    import { ref, onMounted } from 'vue'
+    import { useServiceStore } from '@/stores/services'
+
+    const ServicioStore = useServiceStore()
+    const emit = defineEmits(['seleccionados'])
+    const dialog = ref(false)
+    const servicioSeleccionado = ref(null)
+    const serviciosSeleccionados = ref([]) // 🔹 permite seleccionar varios servicios
+
+    const toggleSeleccion = (id) => {
+        const index = serviciosSeleccionados.value.indexOf(id)
+        if (index > -1) {
+            serviciosSeleccionados.value.splice(index, 1)
+        } else {
+            serviciosSeleccionados.value.push(id)
         }
+        // Emitir los IDs seleccionados al padre
+        emit('seleccionados', serviciosSeleccionados.value)
+    }
 
-        const abrirDialog = (servicio) => {
-            servicioSeleccionado.value = servicio
-            dialog.value = true
-        }
+    const abrirDialog = (servicio) => {
+        servicioSeleccionado.value = servicio
+        dialog.value = true
+    }
 
-        onMounted(() => {
-            ServicioStore.getServices()
-        })
-
-        // return {
-        //     ServicioStore,
-        //     dialog,
-        //     servicioSeleccionado,
-        //     serviciosSeleccionados,
-        //     toggleSeleccion,
-        //     abrirDialog
-        // }
-    
+    onMounted(() => {
+        ServicioStore.getServices()
+    })
 </script>
 
 <style scoped>
@@ -151,5 +140,13 @@ const emit = defineEmits(['seleccionados'])
 
     .btn-seleccionar:hover {
         background-color: #e3f2fd;
+    }
+
+    .icono-seleccionado {
+        color: #1976d2;
+    }
+
+    .icono-normal {
+        color: #666;
     }
 </style>

@@ -5,30 +5,19 @@
     </div>
 </template>
 
-<script>
-    import { useProductosStore } from '@/stores/useProductosStore';
-    import DetallesCompra from '@/components/shared/DetallesCompra.vue';
-    
-    export default {
-        name: 'CarritoCompra',
-        components: {
-            DetallesCompra
-        },
-        data() {
-                return {
-                    estadoCarrito : false
-                }
-            },
-            computed: {
-                TiendaProductos() {
-                    return useProductosStore
-                }
-            },
-            methods: {
-                activarCarrito() {
-                    this.estadoCarrito = true
-                }
-        },
+<script setup>
+    import { ref, computed } from 'vue'
+    import { useProductosStore } from '@/stores/useProductosStore'
+    import DetallesCompra from '@/components/shared/DetallesCompra.vue'
+
+    const estadoCarrito = ref(false)
+
+    const TiendaProductos = computed(() => {
+        return useProductosStore()
+    })
+
+    const activarCarrito = () => {
+        estadoCarrito.value = true
     }
 </script>
 

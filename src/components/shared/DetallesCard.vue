@@ -27,23 +27,21 @@
     </v-dialog>
 </template>
 
-<script>
-    import { useProductosStore } from '@/stores/useProductosStore';
-    import { mapState, mapActions } from 'pinia';
+<script setup>
+    import { storeToRefs } from 'pinia'
+    import { useProductosStore } from '@/stores/useProductosStore'
 
-    export default {
-        name: 'DetallesCard',
-        computed: {
-            ...mapState(useProductosStore, ['mostrarDetalles', 'productoSeleccionado']),
-        },
-        methods: {
-            ...mapActions(useProductosStore, ['cerrarDetalles']),
-            
-            onDialogToggle(val) {
-            if (!val) this.cerrarDetalles();
-            }
-        },
-    };
+    const productosStore = useProductosStore()
+
+    // Extraer el estado reactivo del store
+    const { mostrarDetalles, productoSeleccionado } = storeToRefs(productosStore)
+
+    // Extraer las acciones (no necesitan storeToRefs)
+    const { cerrarDetalles } = productosStore
+
+    const onDialogToggle = (val) => {
+        if (!val) cerrarDetalles()
+    }
 </script>
 
 <style scoped>

@@ -41,22 +41,13 @@
     </v-container>
 </template>
 
-<script>
-    import { useProductoStore } from '@/stores/producto';
+<script setup>
     import { onMounted } from 'vue';
+    import { useProductoStore } from '@/stores/producto';
+        
+    const productoStore = useProductoStore();
 
-    export default {
-        name: 'ListaProductos',
-        setup() {
-            const productoStore = useProductoStore();
-
-            onMounted(async () => {
-                await productoStore.getProductos();
-            });
-
-            return {
-                productoStore
-            }
-        }
-    }
+    onMounted(async () => {
+        await productoStore.getProductos();
+    });
 </script>

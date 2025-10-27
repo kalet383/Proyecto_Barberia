@@ -16,54 +16,48 @@
     </v-snackbar>
 </template>
 
-<script>
+<script setup>
     import { ref } from 'vue'
-    import { useServiceStore } from '@/stores/services';
+    import { useServiceStore } from '@/stores/services'
 
-    export default {
-        name: 'CrearServicio',
-        setup() {
-            // estado del formulario
-            const form = ref({
-            nombre: '',
-            descripcion: '',
-            precio: null,
-            duracion: '' // formato "HH:MM"
-            })
+    // Estado del formulario
+    const form = ref({
+    nombre: '',
+    descripcion: '',
+    precio: null,
+    duracion: '' // formato "HH:MM"
+    })
 
-            const valid = ref(false);
-            const snackbar = ref(false);
-            const snackbarMessage = ref('');
-            const loading = ref(false);
-            const serviceStore = useServiceStore();
+    const valid = ref(false)
+    const snackbar = ref(false)
+    const snackbarMessage = ref('')
+    const loading = ref(false)
 
-            const crearServicio = async () => {
-                loading.value = true;
-                if (!valid.value) return
+    const serviceStore = useServiceStore()
 
-                // Aseguramos segundos "00"
-                let duracionFinal = form.value.duracion
-                if (/^\d{2}:\d{2}$/.test(duracionFinal)) {
-                    duracionFinal = duracionFinal + ':00'
-                }
+    const crearServicio = async () => {
+    loading.value = true
+    if (!valid.value) return
 
-                // Llamas a tu store para guardar
-                await serviceStore.createService({
-                    nombre: form.value.nombre,
-                    descripcion: form.value.descripcion,
-                    precio: parseFloat(form.value.precio),
-                    duracionAprox: duracionFinal
-                })
+    // Aseguramos segundos "00"
+    let duracionFinal = form.value.duracion
+    if (/^\d{2}:\d{2}$/.test(duracionFinal)) {
+        duracionFinal = duracionFinal + ':00'
+    }
 
-                // Limpia formulario
-                form.value = { nombre: '', descripcion: '', precio: null, duracion: '' }
+    // Llamas a tu store para guardar
+    await serviceStore.createService({
+        nombre: form.value.nombre,
+        descripcion: form.value.descripcion,
+        precio: parseFloat(form.value.precio),
+        duracionAprox: duracionFinal
+    })
 
-                // Mostrar snackbar
-                snackbarMessage.value = 'Servicio creado y guardado con éxito'
-                snackbar.value = true
-            }
+    // Limpia formulario
+    form.value = { nombre: '', descripcion: '', precio: null, duracion: '' }
 
-            return { form, valid, crearServicio, snackbar, snackbarMessage, loading }
-        }
+    // Mostrar snackbar
+    snackbarMessage.value = 'Servicio creado y guardado con éxito'
+    snackbar.value = true
     }
 </script>

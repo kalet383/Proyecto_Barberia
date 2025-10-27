@@ -12,29 +12,22 @@
     </section>
 </template>
 
-<script>
-    import { useAuthStore } from '../../../../stores/auth'
+<script setup>
     import { computed } from 'vue'
+    import { useAuthStore } from '../../../../stores/auth'
 
-    export default {
-        name: 'BannerBienvenida',
-        setup() {
-            const authStore = useAuthStore()
+    const authStore = useAuthStore()
 
-            const nombreUsuario = computed(() => {
-            const u = authStore.user
-            if (!u) return 'Usuario'
-            return `${u.nombre} ${u.apellido}`
-            })
+    const nombreUsuario = computed(() => {
+        const u = authStore.user
+        if (!u) return 'Usuario'
+        return `${u.nombre} ${u.apellido}`
+    })
 
-            const saludo = computed(() => {
-            const hora = new Date().getHours()
-            if (hora < 12) return 'Buenos días'
-            if (hora < 19) return 'Buenas tardes'
-            return 'Buenas noches'
-            })
-
-            return { nombreUsuario, saludo }
-        }
-    }
+    const saludo = computed(() => {
+        const hora = new Date().getHours()
+        if (hora < 12) return 'Buenos días'
+        if (hora < 19) return 'Buenas tardes'
+        return 'Buenas noches'
+    })
 </script>

@@ -33,22 +33,13 @@
     </v-container>
 </template>
 
-<script>
-    import { onMounted } from 'vue';
-    import { useCategoriaProductoStore } from '@/stores/CategoriaProducto';
+<script setup>
+    import { onMounted } from 'vue'
+    import { useCategoriaProductoStore } from '@/stores/CategoriaProducto'
 
-    export default {
-        name: 'ListaCategorias',
-        setup() {
-            const categoriaProductoStore = useCategoriaProductoStore();
-            
-            onMounted(async () => {
-                await categoriaProductoStore.getCategoriasProducto();
-            });
+    const categoriaProductoStore = useCategoriaProductoStore()
 
-            return {
-                categoriaProductoStore
-            }
-        }
-    }
+    onMounted(async () => {
+        await categoriaProductoStore.getCategoriasProducto()
+    })
 </script>

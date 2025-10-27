@@ -37,49 +37,51 @@
     </div>
 </template>
 
-<script>
-    import { useProductosStore } from '@/stores/useProductosStore';
-    export default {
-        name: 'DetallesCompra',
-        props: {
-            dialog : {
-                type: Boolean,
-                default: false
-            }
-        },
-        data() {
-            return {
-                dialogInterno: this.dialog,
-                selected : [],
-                headers : [
-                    {title: 'PRODUCTO', value: 'nombre'},
-                    {title: 'CANTIDAD', value: 'cantidad'},
-                    {title: 'PRECIO', value: 'precio'},
-                    {title: 'SUBTOTAL', value: 'subtotal'}
-                ]
-            }
-        },
-        watch: {
-            dialog(nuevoValor) {
-                this.dialogInterno = nuevoValor;
-            },
-        },
-        computed: {
-            carrito() {
-                return useProductosStore().ComprasCarrito
-            }
-        },
-        methods: {
-            emitirCambio(nuevoValor) {
-                this.$emit('update:dialog', nuevoValor);
-            },
-            cerrarModal() {
-                this.dialogInterno = false;
-                this.$emit('update:dialog', false);
-            },
-            vaciarCarrito() {
-                useProductosStore().ComprasCarrito = []
-            }
+<script setup>
+    import { ref, watch, computed } from 'vue'
+    import { storeToRefs } from 'pinia'
+    import { useProductosStore } from '@/stores/useProductosStore'
+
+    const props = defineProps({
+        dialog: {
+            type: Boolean,
+            default: false
         }
+    })
+
+    const emit = defineEmits(['update:dialog'])
+
+    const productosStore = useProductosStore()
+    const { ComprasCarrito } = storeToRefs(productosStore)
+
+    const dialogInterno = ref(props.dialog)
+    const selected = ref([])
+    const headers = [
+        { title: 'PRODUCTO', value: 'nombre' },
+        { title: 'CANTIDAD', value: 'cantidad' },
+        { title: 'PRECIO', value: 'precio' },
+        { title: 'SUBTOTAL', value: 'subtotal' }
+    ]
+
+    // Watch para sincronizar con el prop
+    watch(() => props.dialog, (nuevoValor) => {
+        dialogInterno.value = nuevoValor
+    })
+
+    const carrito = computed(() => {
+        return ComprasCarrito.value
+    })
+
+    const emitirCambio = (nuevoValor) => {
+        emit('update:dialog', nuevoValor)
+    }
+
+    const cerrarModal = () => {
+        dialogInterno.value = false
+        emit('update:dialog', false)
+    }
+
+    const vaciarCarrito = () => {
+        ComprasCarrito.value = []
     }
 </script>

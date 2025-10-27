@@ -18,97 +18,84 @@
     </v-snackbar>
 </template>
 
-<script>
-import { ref, onMounted } from 'vue'
-import { useProductoStore } from '@/stores/producto';
-import { useCategoriaProductoStore } from '@/stores/CategoriaProducto';
+<script setup>
+    import { ref, onMounted } from 'vue'
+    import { useProductoStore } from '@/stores/producto'
+    import { useCategoriaProductoStore } from '@/stores/CategoriaProducto'
 
-export default {
-    name: 'CrearProducto',
-    setup() {
-        const form = ref({
+    // Mantener nombre del componente
+    defineOptions({ name: 'CrearProducto' })
+
+    const productoStore = useProductoStore()
+    const categoriaProductoStore = useCategoriaProductoStore()
+    const form = ref({
+    nombre: '',
+    descripcion: '',
+    precio: 0,
+    stock: 0,
+    imagenUrl: '',
+    categoriaId: null
+    })
+
+    const valid = ref(false)
+    const snackbar = ref(false)
+    const snackbarMessage = ref('')
+    const snackbarColor = ref('green')
+    const loading = ref(false)
+    const categorias = ref([])
+
+    const getCategorias = async () => {
+    loading.value = true
+    try {
+        const data = await categoriaProductoStore.getCategoriasProducto()
+        categorias.value = data
+        console.log('Categorías cargadas:', data)
+    } catch (error) {
+        console.error('Error al cargar categorías:', error)
+    } finally {
+        loading.value = false
+    }
+    }
+
+    onMounted(() => {
+    getCategorias()
+    })
+
+    const crearProducto = async () => {
+    if (!valid.value) return
+
+    // Asegurar que precio y stock sean números
+    const payload = {
+        nombre: form.value.nombre,
+        descripcion: form.value.descripcion,
+        precio: Number(form.value.precio),
+        stock: Number(form.value.stock),
+        imagenUrl: form.value.imagenUrl,
+        categoriaId: Number(form.value.categoriaId)
+    }
+
+    console.log('Enviando payload:', payload)
+
+    try {
+        const response = await productoStore.createProducto(payload)
+        if (response) {
+        snackbarMessage.value = 'Producto creado exitosamente'
+        snackbarColor.value = 'green'
+        snackbar.value = true
+        form.value = {
             nombre: '',
             descripcion: '',
             precio: 0,
             stock: 0,
             imagenUrl: '',
             categoriaId: null
-        });
-        
-        const valid = ref(false);
-        const snackbar = ref(false);
-        const snackbarMessage = ref('');
-        const snackbarColor = ref('green');
-        const loading = ref(false);
-        const productoStore = useProductoStore();
-        const categoriaProductoStore = useCategoriaProductoStore();
-        const categorias = ref([]);
-
-        const getCategorias = async () => {
-            loading.value = true;
-            try {
-                const data = await categoriaProductoStore.getCategoriasProducto();
-                categorias.value = data;
-                console.log('Categorías cargadas:', data);
-            } catch (error) {
-                console.error('Error al cargar categorías:', error);
-            } finally {
-                loading.value = false;
-            }
-        };
-
-        onMounted(() => {
-            getCategorias();
-        });
-
-        const crearProducto = async () => {
-            if (!valid.value) return;
-            
-            // Asegurar que precio y stock sean números
-            const payload = {
-                nombre: form.value.nombre,
-                descripcion: form.value.descripcion,
-                precio: Number(form.value.precio),
-                stock: Number(form.value.stock),
-                imagenUrl: form.value.imagenUrl,
-                categoriaId: Number(form.value.categoriaId)
-            };
-            
-            console.log('Enviando payload:', payload);
-            
-            try {
-                const response = await productoStore.createProducto(payload);
-                if (response) {
-                    snackbarMessage.value = 'Producto creado exitosamente';
-                    snackbarColor.value = 'green';
-                    snackbar.value = true;
-                    form.value = {
-                        nombre: '',
-                        descripcion: '',
-                        precio: 0,
-                        stock: 0,
-                        imagenUrl: '',
-                        categoriaId: null
-                    };
-                }
-            } catch (error) {
-                console.error('Error al crear producto:', error);
-                snackbarMessage.value = 'Error al crear el producto';
-                snackbarColor.value = 'error';
-                snackbar.value = true;
-            }
-        };
-
-        return {
-            form,
-            snackbar,
-            snackbarMessage,
-            snackbarColor,
-            valid,
-            loading,
-            crearProducto,
-            categorias
-        };
+        }
+        }
+    } catch (error) {
+        console.error('Error al crear producto:', error)
+        snackbarMessage.value = 'Error al crear el producto'
+        snackbarColor.value = 'error'
+        snackbar.value = true
     }
-}
+    }
 </script>

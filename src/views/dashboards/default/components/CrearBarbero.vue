@@ -105,120 +105,99 @@
   </v-snackbar>
 </template>
 
-<script>
-import { ref, onMounted } from 'vue'
-import { useBarberStore } from '@/stores/barber'
-import api from '@/plugins/axios'
+<script setup>
+  import { ref, onMounted } from 'vue'
+  import { useBarberStore } from '@/stores/barber'
+  import api from '@/plugins/axios'
 
-export default {
-  name: 'CrearBarbero',
-  setup() {
-    const form = ref({
-      nombre: '',
-      apellido: '',
-      email: '',
-      password: '',
-      telefono: '',
-      foto: '',
-      horarios: []
-    });
+  const form = ref({
+    nombre: '',
+    apellido: '',
+    email: '',
+    password: '',
+    telefono: '',
+    foto: '',
+    horarios: []
+  })
 
-    const diasSemana = [
-      { title: 'Lunes', value: 'lunes' },
-      { title: 'Martes', value: 'martes' },
-      { title: 'Miércoles', value: 'miercoles' },
-      { title: 'Jueves', value: 'jueves' },
-      { title: 'Viernes', value: 'viernes' },
-      { title: 'Sábado', value: 'sabado' },
-      { title: 'Domingo', value: 'domingo' },
-    ];
+  const diasSemana = [
+    { title: 'Lunes', value: 'lunes' },
+    { title: 'Martes', value: 'martes' },
+    { title: 'Miércoles', value: 'miercoles' },
+    { title: 'Jueves', value: 'jueves' },
+    { title: 'Viernes', value: 'viernes' },
+    { title: 'Sábado', value: 'sabado' },
+    { title: 'Domingo', value: 'domingo' },
+  ]
 
-    const valid = ref(false);
-    const snackbar = ref(false);
-    const snackbarMessage = ref('');
-    const snackbarColor = ref('success');
-    const loading = ref(false);
-    const franjas = ref([]);
-    const barberStore = useBarberStore();
+  const valid = ref(false)
+  const snackbar = ref(false)
+  const snackbarMessage = ref('')
+  const snackbarColor = ref('success')
+  const loading = ref(false)
+  const franjas = ref([])
+  const barberStore = useBarberStore()
 
-    // Cargar franjas horarias disponibles
-    const loadFranjas = async () => {
-      try {
-        const { data } = await api.get('/franja-horaria', { withCredentials: true })
-        franjas.value = data.map(franja => ({
-          id_franja: franja.id_franja,
-          label: `${franja.hora_inicio} - ${franja.hora_fin}`
-        }));
-      } catch (error) {
-        console.error('Error completo al cargar franjas:', error);
-        snackbarMessage.value = 'Error al cargar franjas horarias';
-        snackbarColor.value = 'error';
-        snackbar.value = true;
-      }
-    };
-
-    const addHorario = () => {
-      form.value.horarios.push({
-        diasemana: '',
-        idFranja: ''
-      });
-    };
-
-    const removeHorario = (index) => {
-      form.value.horarios.splice(index, 1);
-    };
-
-    const submitBarber = async () => {
-      loading.value = true;
-      if (!valid.value) {
-        loading.value = false;
-        return;
-      }
-
-      try {
-        // Llamar al servicio que crea barbero + horarios
-        await barberStore.createBarberWithSchedule(form.value);
-        snackbarMessage.value = 'Barbero y horarios creados exitosamente';
-        snackbarColor.value = 'success';
-        snackbar.value = true;
-        
-        // Limpiar formulario
-        form.value = {
-          nombre: '',
-          apellido: '',
-          email: '',
-          password: '',
-          telefono: '',
-          foto: '',
-          horarios: []
-        };
-      } catch (error) {
-        console.error('Error al crear barbero:', error);
-        snackbarMessage.value = error.message || 'Error al crear barbero';
-        snackbarColor.value = 'error';
-        snackbar.value = true;
-      } finally {
-        loading.value = false;
-      }
-    };
-
-    onMounted(() => {
-      loadFranjas();
-    });
-
-    return {
-      form,
-      valid,
-      submitBarber,
-      snackbar,
-      snackbarMessage,
-      snackbarColor,
-      loading,
-      diasSemana,
-      franjas,
-      addHorario,
-      removeHorario,
-    };
+  // Cargar franjas horarias disponibles
+  const loadFranjas = async () => {
+    try {
+      const { data } = await api.get('/franja-horaria', { withCredentials: true })
+      franjas.value = data.map(franja => ({
+        id_franja: franja.id_franja,
+        label: `${franja.hora_inicio} - ${franja.hora_fin}`
+      }))
+    } catch (error) {
+      console.error('Error completo al cargar franjas:', error)
+      snackbarMessage.value = 'Error al cargar franjas horarias'
+      snackbarColor.value = 'error'
+      snackbar.value = true
+    }
   }
-};
+
+  const addHorario = () => {
+    form.value.horarios.push({
+      diasemana: '',
+      idFranja: ''
+    })
+  }
+
+  const removeHorario = (index) => {
+    form.value.horarios.splice(index, 1)
+  }
+
+  const submitBarber = async () => {
+    loading.value = true
+    if (!valid.value) {
+      loading.value = false
+      return
+    }
+
+    try {
+      await barberStore.createBarberWithSchedule(form.value)
+      snackbarMessage.value = 'Barbero y horarios creados exitosamente'
+      snackbarColor.value = 'success'
+      snackbar.value = true
+
+      form.value = {
+        nombre: '',
+        apellido: '',
+        email: '',
+        password: '',
+        telefono: '',
+        foto: '',
+        horarios: []
+      }
+    } catch (error) {
+      console.error('Error al crear barbero:', error)
+      snackbarMessage.value = error.message || 'Error al crear barbero'
+      snackbarColor.value = 'error'
+      snackbar.value = true
+    } finally {
+      loading.value = false
+    }
+  }
+
+  onMounted(() => {
+    loadFranjas()
+  })
 </script>
