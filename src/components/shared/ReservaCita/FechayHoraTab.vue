@@ -11,10 +11,10 @@
             <span class="mes-anio">{{ mesYAnioActual }}</span>
           </div>
           <div class="d-flex ga-2">
-            <v-btn icon size="small" variant="outlined" color="primary"@click="semanaAnterior">
+            <v-btn icon size="small" variant="outlined" color="black"@click="semanaAnterior">
               <i class="fas fa-chevron-left"></i>
             </v-btn>
-            <v-btn icon size="small" variant="outlined" color="primary"@click="semanaSiguiente">
+            <v-btn icon size="small" variant="outlined" color="black"@click="semanaSiguiente">
               <i class="fas fa-chevron-right"></i>
             </v-btn>
           </div>
@@ -58,7 +58,7 @@
 
       <!-- 🔹 Resumen temporal -->
       <div v-if="fechaSeleccionada && horaSeleccionada" class="resumen-seleccion mt-6">
-        <v-alert type="success" border="start" color="primary" variant="tonal">
+        <v-alert type="success" border="start" color="#ee6f38" variant="tonal">
           <div class="d-flex align-center mb-2">
             <i class="fas fa-check-circle mr-2"></i>
             <strong>Tu Cita:</strong>
@@ -215,7 +215,7 @@
 .mes-anio {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #1976d2;
+  color: black;
   text-transform: capitalize;
 }
 
@@ -245,14 +245,14 @@
 }
 
 .dia-seleccionado {
-  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+  background: linear-gradient(135deg, #ee6f38 0%, #ee6f38 100%);
   color: white;
   box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
   transform: scale(1.05);
 }
 
 .dia-hoy {
-  border: 2px solid #1976d2;
+  border: 2px solid #ee6f38;
 }
 
 .dia-hoy::after {
@@ -262,7 +262,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: #1976d2;
+  background-color: #ee6f38;
 }
 
 .dia-seleccionado.dia-hoy::after {

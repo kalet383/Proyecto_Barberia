@@ -124,7 +124,7 @@
 
     /* 🔹 Solo borde resaltado cuando está seleccionado */
     .servicio-seleccionado {
-        border: 2px solid #1976d2 !important;
+        border: 2px solid #ee6f38 !important;
     }
 
     /* 🔹 Botón en la esquina superior derecha */
@@ -139,11 +139,11 @@
     }
 
     .btn-seleccionar:hover {
-        background-color: #e3f2fd;
+        background-color: #dddada;
     }
 
     .icono-seleccionado {
-        color: #1976d2;
+        color: #ee6f38;
     }
 
     .icono-normal {

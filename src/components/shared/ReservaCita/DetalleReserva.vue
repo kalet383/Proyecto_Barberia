@@ -27,32 +27,25 @@
           <h4 class="text-h6 mb-2">
             <i class="fa-solid fa-scissors mr-2"></i>
             Servicios Seleccionados
-            <v-chip v-if="servicios && servicios.length > 0" size="small" color="primary" class="ml-2">
+            <v-chip v-if="servicios && servicios.length > 0" size="small" color="#ee6f38" class="ml-2">
               {{ servicios.length }}
             </v-chip>
           </h4>
           
           <!-- Si hay servicios seleccionados, mostrarlos -->
           <div v-if="servicios && servicios.length > 0">
-            <!-- Chips compactos -->
-            <div class="chips-container">
-              <v-chip v-for="servicio in servicios" :key="servicio.id" class="ma-1" closable color="primary" variant="outlined" size="small">
-                {{ servicio.nombre }}
-              </v-chip>
-            </div>
-            
             <!-- Detalles de cada servicio -->
             <v-list class="mt-3 servicios-list" density="compact">
               <v-list-item v-for="servicio in servicios" :key="servicio.id" class="servicio-item">
                 <template v-slot:prepend>
-                  <i class="fa-solid fa-circle-check" style="color: #1976d2; font-size: 16px;"></i>
+                  <i class="fa-solid fa-circle-check" style="color: #ee6f38; font-size: 16px;"></i>
                 </template>
                 
                 <v-list-item-title class="text-body-2">
-                  {{ servicio.nombre }}
+                  <strong>{{ servicio.nombre }}</strong>
                 </v-list-item-title>
                 <v-list-item-subtitle class="text-caption">
-                  {{ servicio.precio }} - {{ servicio.duracionAprox }}
+                  {{ servicio.precio }} - {{ servicio.duracionAprox}}
                 </v-list-item-subtitle>
               </v-list-item>
             </v-list>
@@ -62,11 +55,11 @@
             <div class="resumen-container">
               <div class="resumen-item">
                 <i class="fa-regular fa-clock mr-1" style="font-size: 14px;"></i>
-                <span class="text-body-2">{{ calcularDuracionTotal }}</span>
+                <span class="text-body-2">{{ calcularDuracionTotal }} Aprox</span>
               </div>
               <div class="resumen-item precio-total">
                 <i class="fa-solid fa-money-bill-wave mr-1" style="font-size: 14px;"></i>
-                <span class="text-h6 text-primary">{{ calcularPrecioTotal }}</span>
+                <span class="text-h6">{{ calcularPrecioTotal }}</span>
               </div>
             </div>
           </div>
@@ -125,7 +118,7 @@
 
       <!-- 🔹 Botón FIJO en la parte inferior -->
       <v-card-actions class="acciones-fijas">
-        <v-btn block color="primary" size="large" :disabled="!servicios || servicios.length === 0" elevation="2">
+        <v-btn block color="#ee6f38" size="large" :disabled="!servicios || servicios.length === 0" elevation="2">
           Siguiente
           <i class="fa-solid fa-arrow-right ml-2"></i>
         </v-btn>
@@ -237,13 +230,6 @@ const calcularDuracionTotal = computed(() => {
   z-index: 10;
 }
 
-/* 🔹 Chips más compactos */
-.chips-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
 /* 🔹 Lista de servicios más compacta */
 .servicios-list {
   background: transparent;
@@ -251,7 +237,7 @@ const calcularDuracionTotal = computed(() => {
 }
 
 .servicio-item {
-  border-left: 3px solid #1976d2;
+  border-left: 3px solid #ee6f38;
   margin-bottom: 8px;
   background-color: #f5f5f5;
   border-radius: 4px;
@@ -269,7 +255,7 @@ const calcularDuracionTotal = computed(() => {
   justify-content: space-between;
   align-items: center;
   padding: 12px;
-  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  background: rgb(231, 230, 230);
   border-radius: 8px;
   margin-top: 8px;
 }

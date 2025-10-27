@@ -153,7 +153,7 @@
   .tab-number {
     display: inline-flex;
     align-items: center;
-    color: #1976d2;
+    color: black;
   }
 
   .arrow-icon {

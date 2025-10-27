@@ -167,8 +167,8 @@
     }
 
     .barbero-seleccionado {
-        border: 2px solid #1976d2 !important;
-        background-color: #f5f9ff;
+        border: 2px solid #ee6f38 !important;
+        background-color: #f1f1f1;
     }
 
     .btn-seleccionar {
@@ -183,9 +183,9 @@
     }
 
     .btn-activo {
-        background-color: #1976d2 !important;
+        background-color: #ee6f38 !important;
         color: white !important;
-        border-color: #1976d2 !important;
+        border-color: #ee6f38 !important;
     }
 
     .barbero-info {
