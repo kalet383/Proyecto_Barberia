@@ -29,14 +29,25 @@ export const useAuthStore = defineStore('auth', {
       try {
         const res = await api.post('/auth/login', credentials, { withCredentials: true });
         this.user = res.data.user;
+        
         if (this.user && (this.user as any).Role == 'Cliente') {
-          this.menu = 2
+          this.menu = 2;
         }
         if (this.user && (this.user as any).Role == 'Administrador') {
-          this.menu = 0
+          this.menu = 0;
         }
+        // 🔥 AGREGA ESTO (por si tienes barberos)
+        if (this.user && (this.user as any).Role == 'Barbero') {
+          this.menu = 1;
+        }
+        
         console.log("datos usuarios:", res.data);
-        return res.data;
+        
+        // 🎯 RETORNAR EL ROL
+        return {
+          ...res.data,
+          role: (this.user as any).Role
+        };
       } catch (err: unknown) {
         if (axios.isAxiosError(err) && err.response?.data?.message) {
           throw err.response.data.message;

@@ -28,15 +28,26 @@ async function validate(values: any, { setErrors }: any) {
     const result = await authStore.login({ email: email.value, password: password.value });
     console.log('✅ Login exitoso:', result);
     
-    // 🎯 AQUÍ ESTÁ LA CLAVE: Forzar la carga del usuario
+    // 🎯 FORZAR LA CARGA DEL USUARIO
     await authStore.loadUser();
     
     console.log('👤 Usuario después de loadUser:', authStore.user);
-    console.log('🔐 ¿Está autenticado?:', authStore.isAuthenticated);
+    console.log('🔐 Rol del usuario:', (authStore.user as any)?.Role);
     
-    console.log('🚀 Intentando redirigir...');
-    router.push('/dashboard');
-    console.log('📍 Router push ejecutado');
+    // 🚀 REDIRIGIR SEGÚN EL ROL
+    const userRole = (authStore.user as any)?.Role;
+    
+    if (userRole === 'cliente') {
+      console.log('📍 Cliente - Redirigiendo a página principal');
+      router.push('/');
+    } else if (userRole === 'administrador' || userRole === 'barbero') {
+      console.log('📍 Admin/Barbero - Redirigiendo a dashboard');
+      router.push('/dashboard');
+    } else {
+      // Por defecto, dashboard
+      console.log('📍 Rol desconocido - Redirigiendo a dashboard');
+      router.push('/dashboard');
+    }
     
   } catch (error: unknown) {
     console.log('❌ Error en login:', error);

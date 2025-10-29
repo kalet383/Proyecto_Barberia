@@ -16,9 +16,73 @@
         </ul>
       </nav>
       <div class="header-actions">
-        <v-btn class="boton-inicio-seccion" to="/login1">INICIAR SESION</v-btn>
-        <CarritoCompra></CarritoCompra>
-      </div>
+  <!-- Usuario NO logueado -->
+  <v-btn 
+    v-if="!authStore.isAuthenticated" 
+    class="boton-inicio-seccion" 
+    to="/login1"
+  >
+    INICIAR SESION
+  </v-btn>
+
+  <!-- Usuario LOGUEADO -->
+  <div v-else class="user-menu">
+    <v-menu offset-y>
+      <template v-slot:activator="{ props }">
+        <div v-bind="props" class="user-info">
+          <v-avatar size="40" color="orange-darken-1">
+            <v-icon color="white">fa-solid fa-user-circle</v-icon>
+          </v-avatar>
+          <span class="user-name">{{ authStore.user?.nombre }}</span>
+          <v-icon size="20" color="white">fa-solid fa-chevron-down</v-icon>
+        </div>
+      </template>
+
+      <v-list>
+        <v-list-item>
+          <v-list-item-title class="font-weight-bold">
+            {{ authStore.user?.nombre }} {{ authStore.user?.apellido }}
+          </v-list-item-title>
+          <v-list-item-subtitle>{{ authStore.user?.email }}</v-list-item-subtitle>
+        </v-list-item>
+        
+        <v-divider></v-divider>
+        
+        <v-list-item @click="irADashboard">
+          <template v-slot:prepend>
+            <v-icon>fa-solid fa-grid-2</v-icon>
+          </template>
+          <v-list-item-title>Mi Dashboard</v-list-item-title>
+        </v-list-item>
+        
+        <v-list-item @click="irAMisCitas">
+          <template v-slot:prepend>
+            <v-icon>fa-solid fa-calendar-check</v-icon>
+          </template>
+          <v-list-item-title>Mis Citas</v-list-item-title>
+        </v-list-item>
+        
+        <v-list-item @click="irAPerfil">
+          <template v-slot:prepend>
+            <v-icon>fa-solid fa-user-pen</v-icon>
+          </template>
+          <v-list-item-title>Mi Perfil</v-list-item-title>
+        </v-list-item>
+        
+        <v-divider></v-divider>
+        
+        <v-list-item @click="cerrarSesion">
+          <template v-slot:prepend>
+            <v-icon color="red">fa-solid fa-right-from-bracket</v-icon>
+          </template>
+          <v-list-item-title class="text-red">Cerrar Sesión</v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-menu>
+  </div>
+
+  <CarritoCompra></CarritoCompra>
+</div>
     </header>
     <v-container fluid class="carousel-container">
       <v-carousel  height="0vh" show-arrows="hover" cycle hide-delimiters hide-delimiter-background class="half-screen-carousel">
@@ -48,42 +112,74 @@
 </template>
 
 <script setup>
-  import { ref, onMounted, onUnmounted } from 'vue';
-  import HomeServicios from '@/views/pages/HomeServicios.vue';
-  import HomeBarberos from '@/views/pages/HomeBarberos.vue';
-  import HomeProductos from '@/views/pages/HomeProductos.vue';
-  import HomeUbicacion from './HomeUbicacion.vue';
-  import CarritoCompra from '@/components/shared/CarritoCompra.vue';
-  const images = [
-    'https://img.freepik.com/fotos-premium/hombre-sentado-silla-barbero-mientras-barbero-corta-cabello-precision-barbero-cortando-cuidadosamente-barba-cliente-precision_538213-114313.jpg?w=996',
-    'https://www.blac.media/wp-content/uploads/2022/11/pexels-rodnae-productions-7697394-scaled.jpg',
-    'https://wallpapers.com/images/hd/barber-shop-background-d8q2uecwheabpqj0.jpg',
-    'https://images.pexels.com/photos/1813272/pexels-photo-1813272.jpeg?cs=srgb&dl=pexels-thgusstavo-1813272.jpg&fm=jpg',
-    'https://s1.abcstatics.com/media/summum/2018/11/30/nathon-oski-546863-unsplash-k0MG--1248x698@abc.jpg',
-  ];
+import { ref, onMounted, onUnmounted } from 'vue';
+import { useAuthStore } from '@/stores/auth';
+import { useRouter } from 'vue-router';
+import HomeServicios from '@/views/pages/HomeServicios.vue';
+import HomeBarberos from '@/views/pages/HomeBarberos.vue';
+import HomeProductos from '@/views/pages/HomeProductos.vue';
+import HomeUbicacion from './HomeUbicacion.vue';
+import CarritoCompra from '@/components/shared/CarritoCompra.vue';
 
-  // Crear una referencia para el header
-  const headerRef = ref(null);
+const authStore = useAuthStore();
+const router = useRouter();
 
-  // Función para manejar el scroll
-  const handleScroll = () => {
-    if (headerRef.value) {
-      if (window.scrollY > 0) {
-        headerRef.value.classList.add('sticky');
-      } else {
-        headerRef.value.classList.remove('sticky');
-      }
+const images = [
+  'https://img.freepik.com/fotos-premium/hombre-sentado-silla-barbero-mientras-barbero-corta-cabello-precision-barbero-cortando-cuidadosamente-barba-cliente-precision_538213-114313.jpg?w=996',
+  'https://www.blac.media/wp-content/uploads/2022/11/pexels-rodnae-productions-7697394-scaled.jpg',
+  'https://wallpapers.com/images/hd/barber-shop-background-d8q2uecwheabpqj0.jpg',
+  'https://images.pexels.com/photos/1813272/pexels-photo-1813272.jpeg?cs=srgb&dl=pexels-thgusstavo-1813272.jpg&fm=jpg',
+  'https://s1.abcstatics.com/media/summum/2018/11/30/nathon-oski-546863-unsplash-k0MG--1248x698@abc.jpg',
+];
+
+const headerRef = ref(null);
+
+// 🔥 CARGAR USUARIO AL MONTAR
+onMounted(async () => {
+  window.addEventListener('scroll', handleScroll);
+  
+  if (!authStore.user) {
+    try {
+      console.log('🔄 Cargando usuario desde cookies...');
+      await authStore.loadUser();
+      console.log('✅ Usuario cargado:', authStore.user);
+    } catch (error) {
+      console.log('ℹ️ No hay sesión activa');
     }
-  };
+  }
+});
 
-  // Agregar y remover el event listener al montar y desmontar el componente
-  onMounted(() => {
-    window.addEventListener('scroll', handleScroll);
-  });
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll);
+});
 
-  onUnmounted(() => {
-    window.removeEventListener('scroll', handleScroll);
-  });
+const handleScroll = () => {
+  if (headerRef.value) {
+    if (window.scrollY > 0) {
+      headerRef.value.classList.add('sticky');
+    } else {
+      headerRef.value.classList.remove('sticky');
+    }
+  }
+};
+
+// Funciones del menú
+const irADashboard = () => {
+  router.push('/dashboard');
+};
+
+const irAMisCitas = () => {
+  router.push('/mis-citas');
+};
+
+const irAPerfil = () => {
+  router.push('/perfil');
+};
+
+const cerrarSesion = async () => {
+  await authStore.logout();
+  window.location.href = '/';
+};
 </script>
 
 <style scoped>
