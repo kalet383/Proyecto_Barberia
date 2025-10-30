@@ -2,9 +2,13 @@
   <div class="text-center pa-4">
     <v-dialog v-model="props.modelValue" transition="dialog-bottom-transition" fullscreen>
       <v-card>
-        <v-btn icon="mdi-close" @click="closeDialog"></v-btn>
 
-        <v-card-title class="text-center justify-center py-2">
+        <div class="boton-cerrar">
+          <!-- <v-btn icon="mdi-close" @click="closeDialog"></v-btn> -->
+          <i class="fa-solid fa-x" @click="closeDialog"></i>
+        </div>
+        
+        <v-card-title class="titulo-reserva text-center justify-center py-6">
           <h3>RESERVACION DE CITAS</h3>
         </v-card-title>
 
@@ -15,7 +19,7 @@
           <div style="flex: 1; overflow-y: auto;">
             <!-- Tabs -->
             <v-tabs v-model="currentTab" class="custom-tabs" bg-color="transparent">
-              <v-tab v-for="(item, index) in items" :key="item" :value="item">
+              <v-tab v-for="(item, index) in items" :key="item" :value="item" :disabled="!isTabEnabled(index)"> 
                 <span class="tab-content">
                   <span class="tab-number">
                     <i :class="`fa-solid fa-${index + 1}`"></i>
@@ -32,12 +36,14 @@
               <!-- TAB: Servicios -->
               <v-tabs-window-item value="Servicios">
                 <ServiciosTab
-                @seleccionados="actualizarServicios" />
+                @seleccionados="actualizarServicios" 
+                @estado-siguiente="botonActivo = $event"/>
               </v-tabs-window-item>
 
               <!-- TAB: Fecha y Hora -->
               <v-tabs-window-item value="Fecha y Hora">
-                <FechayHoraTab @emit-fechay-hora="actualizarFechayHora" />
+                <FechayHoraTab @emit-fechay-hora="actualizarFechayHora" 
+                @estado-siguiente="botonActivo = $event"/>
               </v-tabs-window-item>
               
               <!-- TAB: Barberos -->
@@ -47,7 +53,7 @@
 
               <!-- TAB: Confirmacion -->
               <v-tabs-window-item value="Confirmacion">
-                
+                <ConfirmacionTab></ConfirmacionTab>
               </v-tabs-window-item>
 
             </v-tabs-window>
@@ -58,7 +64,9 @@
             <DetalleReserva
             :servicios="serviciosSeleccionados"
             :barbero="barberoSeleccionado"
-            :-fechay-hora="fechayhoraseleccionada"/>
+            :-fechay-hora="fechayhoraseleccionada"
+            :habilitar-boton="botonActivo"
+            @siguiente-tab="avanzarTab"/>
           </div>
 
         </div>
@@ -73,6 +81,7 @@
   import ServiciosTab from '@/components/shared/ReservaCita/ServiciosTab.vue'
   import BarberoTab from '@/components/shared/ReservaCita/BarberoTab.vue'
   import FechayHoraTab from '@/components/shared/ReservaCita/FechayHoraTab.vue'
+  import ConfirmacionTab from '@/components/shared/ReservaCita/ConfirmacionTab.vue'
   import DetalleReserva from '@/components/shared/ReservaCita/DetalleReserva.vue'
 
   const ServicioStore = useServiceStore()
@@ -88,14 +97,26 @@
   const emit = defineEmits(['update:modelValue'])
 
   // ✅ Estado
-  const currentTab = ref('Servicios')
   const items = ['Servicios', 'Fecha y Hora', 'Profesional', 'Confirmacion']
+  const currentIndex = ref(0) // indice actual del tab
   const serviciosSeleccionadosIds = ref([])
   const barberoSeleccionado = ref(null)
   const fechayhoraseleccionada = ref({
     fecha: null,
     hora: null
   })
+  const botonActivo = ref(false)
+
+  const currentTab = computed({
+    get: () => items[currentIndex.value],
+    set: (val) => {
+      const index = items.indexOf(val)
+      if (index <= currentIndex.value) currentIndex.value = index // solo permite ir hacia atrás
+    }
+  })
+
+  // ✅ Función para controlar qué tabs están activos
+  const isTabEnabled = (index) => index <= currentIndex.value
 
   // ✅ Computed para obtener los objetos completos de los servicios
   const serviciosSeleccionados = computed(() => {
@@ -123,9 +144,50 @@
     console.log('📅 Padre recibió fecha y hora:', data)
     fechayhoraseleccionada.value = data
   }
+
+  // Avanzar al siguiente tab (desde el botón)
+  function avanzarTab() {
+    if (currentIndex.value < items.length - 1) {
+      currentIndex.value++
+    }
+  }
 </script>
 
 <style scoped>
+
+  .titulo-reserva {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #e0e0e0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px 0;
+  }
+  
+
+  .titulo-reserva h3 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #222;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .boton-cerrar {
+    position: absolute;
+    top: 15px;      /* separa del borde superior */
+    right: 20px;    /* separa del borde derecho */
+    font-size: 20px;
+    cursor: pointer;
+    color: #333;
+    transition: transform 0.2s ease, color 0.2s ease;
+  }
+
+  .boton-cerrar:hover {
+    transform: scale(1.2);
+    color: #000;
+  }
+
   .custom-tabs {
     padding-left: 30px;
   }

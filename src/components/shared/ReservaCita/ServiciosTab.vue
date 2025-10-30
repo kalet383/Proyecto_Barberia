@@ -49,11 +49,11 @@
 </template>
 
 <script setup>
-    import { ref, onMounted } from 'vue'
+    import { ref, onMounted, watch } from 'vue'
     import { useServiceStore } from '@/stores/services'
 
     const ServicioStore = useServiceStore()
-    const emit = defineEmits(['seleccionados'])
+    const emit = defineEmits(['seleccionados', 'estado-siguiente'])
     const dialog = ref(false)
     const servicioSeleccionado = ref(null)
     const serviciosSeleccionados = ref([]) // 🔹 permite seleccionar varios servicios
@@ -73,6 +73,12 @@
         servicioSeleccionado.value = servicio
         dialog.value = true
     }
+
+    // 🔹 Emitir si hay servicios seleccionados o no
+    watch(serviciosSeleccionados, (nuevoValor) => {
+        const habilitar = nuevoValor.length > 0
+        emit('estado-siguiente', habilitar)
+    })
 
     onMounted(() => {
         ServicioStore.getServices()

@@ -118,7 +118,7 @@
 
       <!-- 🔹 Botón FIJO en la parte inferior -->
       <v-card-actions class="acciones-fijas">
-        <v-btn block color="#ee6f38" size="large" :disabled="!servicios || servicios.length === 0" elevation="2">
+        <v-btn block color="#ee6f38" size="large" :disabled="!props.habilitarBoton" elevation="2" @click="emit('siguiente-tab')">
           Siguiente
           <i class="fa-solid fa-arrow-right ml-2"></i>
         </v-btn>
@@ -142,8 +142,14 @@ const props = defineProps({
   FechayHora: {
     type: Object,
     default: () => ({ fecha: null, hora: null })
+  },
+  habilitarBoton: {
+    type: Boolean,
+    default: false
   }
 })
+
+const emit = defineEmits(['siguiente-tab'])
 
 // 🔹 Calcular precio total
 const calcularPrecioTotal = computed(() => {
