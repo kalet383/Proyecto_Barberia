@@ -46,9 +46,9 @@
               </v-tabs-window-item>
 
               <!-- TAB: Confirmacion -->
-              <!-- <v-tabs-window-item value="Confirmacion">
-                Componente de confirmacion aqui
-              </v-tabs-window-item> -->
+              <v-tabs-window-item value="Confirmacion">
+                
+              </v-tabs-window-item>
 
             </v-tabs-window>
           </div>

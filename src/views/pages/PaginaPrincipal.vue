@@ -16,76 +16,91 @@
         </ul>
       </nav>
       <div class="header-actions">
-  <!-- Usuario NO logueado -->
-  <v-btn 
-    v-if="!authStore.isAuthenticated" 
-    class="boton-inicio-seccion" 
-    to="/login1"
-  >
-    INICIAR SESION
-  </v-btn>
+        <!-- Usuario NO logueado -->
+        <v-btn 
+          v-if="!authStore.isAuthenticated" 
+          class="boton-inicio-seccion" 
+          to="/login1"
+        >
+          INICIAR SESION
+        </v-btn>
 
-  <!-- Usuario LOGUEADO -->
-  <div v-else class="user-menu">
-    <v-menu offset-y>
-      <template v-slot:activator="{ props }">
-        <div v-bind="props" class="user-info">
-          <v-avatar size="40" color="orange-darken-1">
-            <v-icon color="white">fa-solid fa-user-circle</v-icon>
-          </v-avatar>
-          <span class="user-name">{{ authStore.user?.nombre }}</span>
-          <v-icon size="20" color="white">fa-solid fa-chevron-down</v-icon>
+        <!-- Usuario LOGUEADO -->
+        <div v-else class="user-menu">
+          <v-menu offset-y>
+            <template v-slot:activator="{ props }">
+              <div v-bind="props" class="user-info">
+                <v-avatar size="40" class="user-avatar">
+                  <i v-if="!authStore.user?.foto" class="fas fa-user-circle"></i>
+                  <v-img v-else :src="authStore.user.foto" alt="Usuario"></v-img>
+                </v-avatar>
+                <span class="user-name">{{ authStore.user?.nombre }}</span>
+                <i class="fas fa-chevron-down chevron-icon"></i>
+              </div>
+            </template>
+
+            <v-list class="user-dropdown">
+              <!-- Header del menú -->
+              <v-list-item class="user-header">
+                <div class="user-header-content">
+                  <v-avatar size="50" class="mb-2">
+                    <i v-if="!authStore.user?.foto" class="fas fa-user-circle fa-3x text-orange"></i>
+                    <v-img v-else :src="authStore.user.foto" alt="Usuario"></v-img>
+                  </v-avatar>
+                  <v-list-item-title class="font-weight-bold text-h6">
+                    {{ authStore.user?.nombre }} {{ authStore.user?.apellido }}
+                  </v-list-item-title>
+                  <v-list-item-subtitle class="text-caption">
+                    {{ authStore.user?.email }}
+                  </v-list-item-subtitle>
+                </div>
+              </v-list-item>
+              
+              <v-divider></v-divider>
+              
+              <!-- Opciones del menú -->
+              <v-list-item @click="irADashboard" class="menu-item">
+                <template v-slot:prepend>
+                  <i class="fas fa-chart-line menu-icon"></i>
+                </template>
+                <v-list-item-title>Mi Dashboard</v-list-item-title>
+              </v-list-item>
+              
+              <v-list-item @click="irAMisCitas" class="menu-item">
+                <template v-slot:prepend>
+                  <i class="fas fa-calendar-check menu-icon"></i>
+                </template>
+                <v-list-item-title>Mis Citas</v-list-item-title>
+              </v-list-item>
+              
+              <v-list-item @click="irAPerfil" class="menu-item">
+                <template v-slot:prepend>
+                  <i class="fas fa-user-edit menu-icon"></i>
+                </template>
+                <v-list-item-title>Mi Perfil</v-list-item-title>
+              </v-list-item>
+              
+              <v-divider></v-divider>
+              
+              <v-list-item @click="cerrarSesion" class="menu-item logout-item">
+                <template v-slot:prepend>
+                  <i class="fas fa-sign-out-alt menu-icon text-red"></i>
+                </template>
+                <v-list-item-title class="text-red font-weight-medium">
+                  Cerrar Sesión
+                </v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
         </div>
-      </template>
 
-      <v-list>
-        <v-list-item>
-          <v-list-item-title class="font-weight-bold">
-            {{ authStore.user?.nombre }} {{ authStore.user?.apellido }}
-          </v-list-item-title>
-          <v-list-item-subtitle>{{ authStore.user?.email }}</v-list-item-subtitle>
-        </v-list-item>
-        
-        <v-divider></v-divider>
-        
-        <v-list-item @click="irADashboard">
-          <template v-slot:prepend>
-            <v-icon>fa-solid fa-grid-2</v-icon>
-          </template>
-          <v-list-item-title>Mi Dashboard</v-list-item-title>
-        </v-list-item>
-        
-        <v-list-item @click="irAMisCitas">
-          <template v-slot:prepend>
-            <v-icon>fa-solid fa-calendar-check</v-icon>
-          </template>
-          <v-list-item-title>Mis Citas</v-list-item-title>
-        </v-list-item>
-        
-        <v-list-item @click="irAPerfil">
-          <template v-slot:prepend>
-            <v-icon>fa-solid fa-user-pen</v-icon>
-          </template>
-          <v-list-item-title>Mi Perfil</v-list-item-title>
-        </v-list-item>
-        
-        <v-divider></v-divider>
-        
-        <v-list-item @click="cerrarSesion">
-          <template v-slot:prepend>
-            <v-icon color="red">fa-solid fa-right-from-bracket</v-icon>
-          </template>
-          <v-list-item-title class="text-red">Cerrar Sesión</v-list-item-title>
-        </v-list-item>
-      </v-list>
-    </v-menu>
-  </div>
-
-  <CarritoCompra></CarritoCompra>
-</div>
+        <CarritoCompra></CarritoCompra>
+      </div>
     </header>
+
+    <!-- Resto del contenido -->
     <v-container fluid class="carousel-container">
-      <v-carousel  height="0vh" show-arrows="hover" cycle hide-delimiters hide-delimiter-background class="half-screen-carousel">
+      <v-carousel height="0vh" show-arrows="hover" cycle hide-delimiters hide-delimiter-background class="half-screen-carousel">
         <v-carousel-item v-for="(image, i) in images" :key="i">
           <img :src="image" alt="Imagen del carrusel" class="carousel-image" />
         </v-carousel-item>
@@ -98,6 +113,7 @@
         </a>
       </div>
     </v-container>
+
     <HomeServicios></HomeServicios>
     <HomeBarberos></HomeBarberos>
     <HomeProductos></HomeProductos>
@@ -134,7 +150,6 @@ const images = [
 
 const headerRef = ref(null);
 
-// 🔥 CARGAR USUARIO AL MONTAR
 onMounted(async () => {
   window.addEventListener('scroll', handleScroll);
   
@@ -163,7 +178,6 @@ const handleScroll = () => {
   }
 };
 
-// Funciones del menú
 const irADashboard = () => {
   router.push('/dashboard');
 };
@@ -183,465 +197,398 @@ const cerrarSesion = async () => {
 </script>
 
 <style scoped>
+body {
+  margin: 0;
+  padding: 0;
+}
 
-  body {
-    margin: 0;
-    padding: 0;
+.page-container {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 99;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0px 55px;
+  transition: all 0.3s ease;
+}
+
+.header.sticky {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  z-index: 99;
+  padding: 0px 40px;
+  height: 95px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.logo {
+  flex-shrink: 0;
+}
+
+.imagen-pequeña {
+  margin-top: 10px;
+  width: 138px;
+  height: auto;
+  transition: all 0.3s ease;
+}
+
+.header.sticky .imagen-pequeña {
+  width: 100px;
+  margin-top: 5px;
+}
+
+.boton-inicio-seccion {
+  background-color:#ee6f38;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+  transition: all 0.3s ease;
+}
+
+.boton-inicio-seccion:hover {
+  background-color: white;
+  color: #ee6f38;
+  padding-bottom: 4px;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(238, 111, 56, 0.4);
+}
+
+.header.sticky .boton-inicio-seccion {
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+/* 🎨 ESTILOS DEL MENÚ DE USUARIO */
+.user-menu {
+  position: relative;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 8px 20px;
+  border-radius: 30px;
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, rgba(238, 111, 56, 0.15), rgba(238, 111, 56, 0.25));
+  border: 2px solid rgba(238, 111, 56, 0.4);
+  backdrop-filter: blur(5px);
+}
+
+.user-info:hover {
+  background: linear-gradient(135deg, rgba(238, 111, 56, 0.3), rgba(238, 111, 56, 0.4));
+  border-color: #ee6f38;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(238, 111, 56, 0.4);
+}
+
+.user-avatar {
+  background-color: #ee6f38;
+  border: 2px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.user-avatar i {
+  color: white;
+  font-size: 24px;
+}
+
+.user-name {
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+}
+
+.chevron-icon {
+  color: white;
+  font-size: 14px;
+  transition: transform 0.3s ease;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+}
+
+.user-info:hover .chevron-icon {
+  transform: translateY(2px);
+}
+
+.header.sticky .user-name {
+  font-size: 14px;
+  max-width: 120px;
+}
+
+.header.sticky .user-info {
+  padding: 6px 16px;
+}
+
+/* 🎨 DROPDOWN MENU */
+.user-dropdown {
+  min-width: 280px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.user-header {
+  background: linear-gradient(135deg, #ee6f38, #ff8c61);
+  padding: 20px !important;
+}
+
+.user-header-content {
+  text-align: center;
+  color: white;
+}
+
+.text-orange {
+  color: white !important;
+}
+
+.menu-item {
+  padding: 12px 20px !important;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.menu-item:hover {
+  background-color: rgba(238, 111, 56, 0.1);
+  padding-left: 24px !important;
+}
+
+.menu-icon {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+  color: #ee6f38;
+  margin-right: 12px;
+}
+
+.logout-item:hover {
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+.text-red {
+  color: #f44336 !important;
+}
+
+/* RESTO DE ESTILOS (sin cambios) */
+.nav ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  gap: 30px;
+  margin: 0;
+  transition: all 0.3s ease;
+  justify-content: center;
+  flex-wrap: nowrap;
+  width: auto;
+}
+
+.header.sticky .nav ul {
+  gap: 20px;
+}
+
+.nav ul li a {
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+  font-size: 17px;
+  padding-bottom: 4px;
+  white-space: nowrap;
+}
+
+.header.sticky .nav ul li a {
+  font-size: 15px;
+}
+
+.nav ul li a:hover {
+  border-bottom: 2px solid white;
+  color: #ee6f38;
+  padding-left: 12px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.carousel-container {
+  padding: 0 !important;
+  margin: 0 !important;
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+  background: transparent !important;
+}
+
+.half-screen-carousel {
+  width: 100vw !important;
+  height: 100vh !important;
+  position: relative;
+}
+
+.carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.centered-contend {
+  position: absolute;
+  top: 85%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 5;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+}
+
+.boton-agendar {
+  background-color:#ee6f38;
+  color: white;
+  margin-top: 20px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+  font-size: 18px
+}
+
+.boton-agendar:hover {
+  background-color: white;
+  color: #ee6f38;
+  padding-bottom: 4px;
+}
+
+.flecha-abajo {
+  display: block;
+  font-size: 3rem;
+  color: white;
+  opacity: 0.6;
+  text-align: center;
+  margin-top: 20px;
+  transition: opacity 0.3s, transform 0.3s;
+  animation: bounce 2s infinite;
+}
+
+.flecha-abajo:hover {
+  opacity: 2;
+  transform: translateY(4px);
+  cursor: pointer;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
   }
-
-  .page-container {
-    position: relative;
-    width: 100%;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+  50% {
+    transform: translateY(8px);
   }
+}
 
-  .header {
-    position: absolute; /* Superponer el header sobre el carrusel */
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 99; /* Asegurar que el header esté por encima del carrusel */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0px 55px;
-    transition: all 0.3s ease;
-  }
+.title {
+  display: inline-block;
+  font-weight: bold;
+  font-size: 2rem;
+  color: white;
+  transition: transform 0.2s ease, text-shadow 0.2s ease;
+}
 
-  .header.sticky {
-    position: fixed;
-    top: 0; /* Asegúrate de que esté pegado al tope */
-    width: 100%; /* Ocupa todo el ancho */
-    background-color: rgba(0, 0, 0, 0.70);
-    backdrop-filter: blur(5px);
-    z-index: 99;
-    padding: 0px 40px; /* Reducir el padding */
-    height: 95px; /* Reducir la altura del header */
-  }
+.title:hover {
+  transform: scale(1.02);
+  text-shadow: 0 0 10px black, 0 0 20px black;
+}
 
-  .logo {
-    flex-shrink: 0;
-  }
-
-  .imagen-pequeña {
-    margin-top: 10px;
-    width: 138px;
-    height: auto;
-    transition: all 0.3s ease; /* Animación suave */
-  }
-
-  .header.sticky .imagen-pequeña {
-    width: 100px; /* Reducir tamaño del logo */
-    margin-top: 5px;
-  }
-
-  .boton-inicio-seccion {
-    background-color:#ee6f38;
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
-    transition: all 0.3s ease;
-  }
-
-  .boton-inicio-seccion:hover {
-    background-color: white;
-    color: #ee6f38;
-    padding-bottom: 4px;
-  }
-
-  .header.sticky .boton-inicio-seccion {
-    font-size: 12px; /* Reducir tamaño del texto */
-    padding: 4px 8px; /* Reducir el padding del botón */
-  }
-
-  .nav ul {
-    list-style: none;
-    padding: 0;
-    display: flex;
-    gap: 30px;
-    margin: 0;
-    transition: all 0.3s ease;
-    justify-content: center;
-    flex-wrap: nowrap; /* Evita que los elementos se envuelvan, pero puedes cambiar a wrap si prefieres */
-    width: auto; /* Asegura que ocupe el espacio disponible */
-  }
-
-  .header.sticky .nav ul {
-    gap: 20px; /* Reducir aún más el espacio entre enlaces */
-  }
-
-  .nav ul li a {
-    text-decoration: none;
-    color: white;
-    font-weight: bold;
-    transition: all 0.3s ease;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
-    font-size: 17px;
-    padding-bottom: 4px;
-    white-space: nowrap; /* Evita que el texto se envuelva */
-  }
-
-  .header.sticky .nav ul li a {
-    font-size: 15px; /* Reducir tamaño de fuente */
-  }
-
-  .nav ul li a:hover {
-    border-bottom: 2px solid white;
-    color: #ee6f38;
-    padding-left: 12px;
-  }
-
-  .header-actions {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
-
-  /* Estilos para el carrusel */
-  .carousel-container {
-    padding: 0 !important;
-    margin: 0 !important;
-    position: relative; /* Asegura que el contenedor sea un punto de referencia */
-    height: 100vh; /* Mantén la altura para que ocupe la pantalla */
-    overflow: hidden; /* Evita que el carrusel desborde */
-    background: transparent !important;
-  }
-
-  .half-screen-carousel {
-    width: 100vw !important;
-    height: 100vh !important; /* Mitad de la pantalla */
-    position: relative;
-  }
-
-  .carousel-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Asegurar que la imagen se ajuste correctamente */
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
-
+@media (min-width: 1024px) {
   .centered-contend {
     position: absolute;
-    top: 85%;
+    top: 75%;
     left: 50%;
     transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     text-align: center;
-    z-index: 5; /* Asegurarse de que esté por encima del carrusel */
-    color: white;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+    z-index: 11;
+    margin-top: 80px;
+  }
+}
+
+.whatsapp-button { 
+  position: fixed; 
+  bottom: 20px;
+  right: 20px;
+  background-color: #ee6f38; 
+  color: white;
+  width: 240px; 
+  height: 35px;
+  padding: 12px 20px;
+  border-radius: 0px;
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  font-size: 16px;
+  font-weight: bold;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); 
+  transition: transform 0.3s ease;
+  text-decoration: none;
+  padding-left: 1%;
+  z-index: 1000;
+  white-space: nowrap;
+}
+
+.whatsapp-button:hover {
+  transform: scale(1.05);
+}
+
+.whatsapp-button i {
+  font-size: 20px;
+  margin-right: 10px;
+}
+
+/* Media Queries */
+@media (max-width: 767px) {
+  .user-name {
+    display: none;
   }
 
-  .boton-agendar {
-    background-color:#ee6f38;
-    color: white;
-    margin-top: 20px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
-    font-size: 18px
+  .user-info {
+    padding: 8px;
+    gap: 0;
   }
 
-  .boton-agendar:hover {
-    background-color: white;
-    color: #ee6f38;
-    padding-bottom: 4px;
+  .chevron-icon {
+    display: none;
   }
+}
 
-  .flecha-abajo {
-    display: block;
-    font-size: 3rem;
-    color: white;
-    opacity: 0.6;
-    text-align: center;
-    margin-top: 20px;
-    transition: opacity 0.3s, transform 0.3s;
-    animation: bounce 2s infinite;
+@media (min-width: 768px) and (max-width: 1023px) {
+  .user-name {
+    max-width: 100px;
+    font-size: 14px;
   }
-
-  .flecha-abajo:hover {
-    opacity: 2;
-    transform: translateY(4px);
-    cursor: pointer;
-  }
-
-  @keyframes bounce {
-    0%, 100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(8px);
-    }
-  }
-
-  .title {
-    display: inline-block;
-    font-weight: bold;
-    font-size: 2rem;
-    color: white;
-    transition: transform 0.2s ease, text-shadow 0.2s ease;
-  }
-
-  .title:hover {
-    transform: scale(1.02);
-    text-shadow: 0 0 10px black, 0 0 20px black;
-  }
-
-  @media (min-width: 1024px) {
-    .centered-contend {
-      position: absolute;
-      top: 75%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      z-index: 11;
-      margin-top: 80px;
-    }
-  }
-
-  .whatsapp-button { 
-    position: fixed; 
-    bottom: 20px; right: 20px;
-    background-color: #ee6f38; 
-    color: white;
-    width: 240px; 
-    height: 35px;
-    padding: 12px 20px;
-    border-radius: 0px;
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    font-size: 16px;
-    font-weight: bold;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); 
-    transition: transform 0.3s ease;
-    text-decoration: none;
-    padding-left: 1%;
-    z-index: 1000;
-    white-space: nowrap;
-  }
-
-  .whatsapp-button:hover {
-    transform: scale(1.05);
-  }
-
-  .whatsapp-button i {
-    font-size: 20px;
-    margin-right: 10px;
-  }
-
-  /* Media Queries para diferentes tamaños de pantalla */
-  /* Pantallas pequeñas (móviles, menos de 768px) */
-  @media (max-width: 767px) {
-    .header {
-      padding: 0 20px;
-      flex-wrap: wrap;
-      justify-content: space-between;
-    }
-
-    .logo {
-      flex: 1;
-      text-align: center;
-    }
-
-    .imagen-pequeña {
-      width: 100px;
-    }
-
-    .nav {
-      order: 3;
-      width: 100%;
-      margin-top: 10px;
-    }
-
-    .nav ul {
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .nav ul li a {
-      font-size: 14px;
-    }
-
-    .header-actions {
-      gap: 10px;
-      flex: 1;
-      justify-content: flex-end;
-    }
-
-    .boton-inicio-seccion {
-      font-size: 12px;
-      padding: 4px 8px;
-    }
-
-    .header.sticky {
-      padding: 0 20px;
-      height: auto;
-      flex-wrap: wrap;
-    }
-
-    .header.sticky .nav ul {
-      gap: 8px;
-    }
-
-    .header.sticky .boton-inicio-seccion {
-      font-size: 10px;
-      padding: 3px 6px;
-    }
-
-    .centered-contend {
-      top: 70%;
-    }
-
-    .title {
-      font-size: 1.5rem;
-    }
-
-    .boton-agendar {
-      font-size: 14px;
-      margin-top: 10px;
-    }
-
-    .flecha-abajo {
-      font-size: 2rem;
-      margin-top: 10px;
-    }
-
-    .whatsapp-button {
-      width: 200px;
-      height: 40px;
-      font-size: 14px;
-      padding: 8px 16px;
-    }
-
-    .whatsapp-button i {
-      font-size: 16px;
-      margin-right: 8px;
-    }
-  }
-
-  /* Pantallas medianas (tablets, entre 768px y 1023px) */
-  @media (min-width: 768px) and (max-width: 1023px) {
-    .header {
-      padding: 0 30px;
-    }
-
-    .imagen-pequeña {
-      width: 120px;
-    }
-
-    .nav ul {
-      gap: 20px;
-    }
-
-    .nav ul li a {
-      font-size: 16px;
-    }
-
-    .header-actions {
-      gap: 15px;
-    }
-
-    .boton-inicio-seccion {
-      font-size: 14px;
-    }
-
-    .header.sticky {
-      padding: 0 30px;
-    }
-
-    .header.sticky .nav ul {
-      gap: 15px;
-    }
-
-    .header.sticky .boton-inicio-seccion {
-      font-size: 12px;
-    }
-
-    .centered-contend {
-      top: 80%;
-    }
-
-    .title {
-      font-size: 1.8rem;
-    }
-
-    .boton-agendar {
-      font-size: 16px;
-    }
-
-    .flecha-abajo {
-      font-size: 2.5rem;
-    }
-  }
-
-  /* Pantallas grandes (escritorios, 1024px y más) */
-  @media (min-width: 1024px) {
-    .header {
-      padding: 0 55px;
-    }
-
-    .imagen-pequeña {
-      width: 138px;
-    }
-
-    .nav ul {
-      gap: 23px;
-    }
-
-    .nav ul li a {
-      font-size: 17px;
-      /* margin-left: 20%; */
-    }
-
-    .header-actions {
-      gap: 20px;
-    }
-
-    .boton-inicio-seccion {
-      font-size: 16px;
-    }
-
-    .header.sticky {
-      padding: 0 40px;
-    }
-
-    .header.sticky .nav ul {
-      gap: 20px;
-    }
-
-    .header.sticky .boton-inicio-seccion {
-      font-size: 12px;
-    }
-
-    .centered-contend {
-      top: 75%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      z-index: 11;
-      margin-top: 80px;
-    }
-
-    .title {
-      font-size: 2rem;
-    }
-
-    .boton-agendar {
-      font-size: 18px;
-    }
-
-    .flecha-abajo {
-      font-size: 3rem;
-    }
-  }
+}
 </style>
