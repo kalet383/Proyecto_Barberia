@@ -11,10 +11,10 @@
             <span class="mes-anio">{{ mesYAnioActual }}</span>
           </div>
           <div class="d-flex ga-2">
-            <v-btn icon size="small" variant="outlined" color="black"@click="semanaAnterior">
+            <v-btn icon size="small" variant="outlined" color="black" @click="semanaAnterior">
               <i class="fas fa-chevron-left"></i>
             </v-btn>
-            <v-btn icon size="small" variant="outlined" color="black"@click="semanaSiguiente">
+            <v-btn icon size="small" variant="outlined" color="black" @click="semanaSiguiente">
               <i class="fas fa-chevron-right"></i>
             </v-btn>
           </div>
@@ -76,11 +76,10 @@
   import { useReservaStore } from '@/stores/reserva'
 
   const reservaStore = useReservaStore()
-  const emit = defineEmits(['emitFechayHora'])
+  const emit = defineEmits(['emit-fechay-hora', 'estado-fechayhora-siguiente'])
   const fechaSeleccionada = ref(null)
   const horaSeleccionada = ref(null)
   const semanaActual = ref(new Date())
-
   const nombresMeses = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
@@ -109,12 +108,19 @@
     return dias
   })
 
-  // Watch para actualizar cuando cambie la hora
-  watch(horaSeleccionada, (nuevaHora) => {
-    if (nuevaHora && fechaSeleccionada.value) {
+  // ✅ Watch CORRECTO para detectar cambios en fecha Y hora
+  watch([fechaSeleccionada, horaSeleccionada], ([nuevaFecha, nuevaHora]) => {
+    // Verificar si AMBOS valores están presentes y son válidos
+    const ambosSeleccionados = !!(nuevaFecha && nuevaHora && nuevaHora.trim() !== '')
+    
+    // Emitir el estado del botón
+    emit('estado-fechayhora-siguiente', ambosSeleccionados)
+    
+    // Si ambos están seleccionados, actualizar
+    if (ambosSeleccionados) {
       actualizarFechayHora()
     }
-  })
+  }, { deep: true })
 
   // Obtener mes y año actual de la semana visible
   const mesYAnioActual = computed(() => {
@@ -153,7 +159,6 @@
 
   const seleccionarDia = (fecha) => {
     fechaSeleccionada.value = fecha
-    actualizarFechayHora()
   }
 
   const actualizarFechayHora = () => {

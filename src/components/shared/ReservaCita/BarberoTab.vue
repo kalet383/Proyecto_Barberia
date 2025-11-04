@@ -63,7 +63,7 @@
 
     const barberoStore = useBarberStore();
     const reservaStore = useReservaStore();
-    const emit = defineEmits(['emitBarbero'])
+    const emit = defineEmits(['emitBarbero', 'estado-barbero-siguiente'])
     const dialogVisible = ref(false);
     const barberoSeleccionado = ref(null);
     const barberosDisponibles = ref([]);
@@ -110,6 +110,16 @@
             loading.value = false;
         }
     };
+
+    // Watch para emitir si hay barbero o no
+    watch(
+    () => reservaStore.barberoSeleccionado, // Vigila el ID en la store
+    (barberoId) => {
+        const habilitar = barberoId !== null && barberoId !== undefined
+        emit('estado-barbero-siguiente', habilitar)
+    },
+    { immediate: true } // Se ejecuta al montar
+)
 
     // 🔹 Watch para recargar cuando cambie fecha/hora
     watch(

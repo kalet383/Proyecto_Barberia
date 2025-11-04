@@ -67,6 +67,7 @@
         }
         // Emitir los IDs seleccionados al padre
         emit('seleccionados', serviciosSeleccionados.value)
+        console.log('📤 Emit "seleccionados" enviado con:', serviciosSeleccionados.value)
     }
 
     const abrirDialog = (servicio) => {
@@ -76,9 +77,9 @@
 
     // 🔹 Emitir si hay servicios seleccionados o no
     watch(serviciosSeleccionados, (nuevoValor) => {
-        const habilitar = nuevoValor.length > 0
-        emit('estado-siguiente', habilitar)
-    })
+        const habilitarBtnenServicio = nuevoValor.length > 0
+        emit('estado-servicio-siguiente', habilitarBtnenServicio)
+    }, { deep: true })
 
     onMounted(() => {
         ServicioStore.getServices()

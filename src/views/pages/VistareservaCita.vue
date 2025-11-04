@@ -37,23 +37,24 @@
               <v-tabs-window-item value="Servicios">
                 <ServiciosTab
                 @seleccionados="actualizarServicios" 
-                @estado-siguiente="botonActivo = $event"/>
+                @estado-servicio-siguiente="botonActivo = $event"/>
               </v-tabs-window-item>
 
               <!-- TAB: Fecha y Hora -->
               <v-tabs-window-item value="Fecha y Hora">
                 <FechayHoraTab @emit-fechay-hora="actualizarFechayHora" 
-                @estado-siguiente="botonActivo = $event"/>
+                @estado-fechayhora-siguiente="botonActivo = $event"/>
               </v-tabs-window-item>
               
               <!-- TAB: Barberos -->
               <v-tabs-window-item value="Profesional">
-                <BarberoTab @emit-barbero="actualizarBarbero"/>
+                <BarberoTab @emit-barbero="actualizarBarbero"
+                @estado-barbero-siguiente="botonActivo = $event"/>
               </v-tabs-window-item>
 
               <!-- TAB: Confirmacion -->
               <v-tabs-window-item value="Confirmacion">
-                <ConfirmacionTab></ConfirmacionTab>
+                <ConfirmacionTab @estado-confirmacion-agendar="botonActivo = $event"></ConfirmacionTab>
               </v-tabs-window-item>
 
             </v-tabs-window>
@@ -76,7 +77,7 @@
 </template>
 
 <script setup>
-  import { ref, computed } from 'vue'
+  import { ref, computed, watch, nextTick } from 'vue'
   import { useServiceStore } from '@/stores/services'
   import ServiciosTab from '@/components/shared/ReservaCita/ServiciosTab.vue'
   import BarberoTab from '@/components/shared/ReservaCita/BarberoTab.vue'
@@ -98,7 +99,7 @@
 
   // ✅ Estado
   const items = ['Servicios', 'Fecha y Hora', 'Profesional', 'Confirmacion']
-  const currentIndex = ref(0) // indice actual del tab
+  const currentIndex = ref(0)
   const serviciosSeleccionadosIds = ref([])
   const barberoSeleccionado = ref(null)
   const fechayhoraseleccionada = ref({
@@ -111,7 +112,7 @@
     get: () => items[currentIndex.value],
     set: (val) => {
       const index = items.indexOf(val)
-      if (index <= currentIndex.value) currentIndex.value = index // solo permite ir hacia atrás
+      if (index <= currentIndex.value) currentIndex.value = index
     }
   })
 
@@ -125,6 +126,51 @@
     )
   })
 
+  // ✅ Watch para verificar el estado del botón al cambiar de tab
+  watch(currentIndex, async (nuevoIndex) => {
+    // Resetear el botón inicialmente
+    botonActivo.value = false
+    
+    // Esperar a que se monte el nuevo componente
+    await nextTick()
+    
+    // Verificar si el tab actual tiene datos válidos
+    verificarEstadoTabActual()
+  })
+
+  // ✅ Función para verificar si el tab actual debe tener el botón habilitado
+  function verificarEstadoTabActual() {
+    const tabActual = items[currentIndex.value]
+    
+    switch(tabActual) {
+      case 'Servicios':
+        // Si hay servicios seleccionados, habilitar el botón
+        if (serviciosSeleccionadosIds.value.length > 0) {
+          botonActivo.value = true
+        }
+        break
+      
+      case 'Fecha y Hora':
+        // Si hay fecha y hora seleccionadas, habilitar el botón
+        if (fechayhoraseleccionada.value.fecha && fechayhoraseleccionada.value.hora) {
+          botonActivo.value = true
+        }
+        break
+      
+      case 'Profesional':
+        // Si hay barbero seleccionado, habilitar el botón
+        if (barberoSeleccionado.value) {
+          botonActivo.value = true
+        }
+        break
+      
+      case 'Confirmacion':
+        // En confirmación, el botón puede estar siempre habilitado o depender de condiciones finales
+        botonActivo.value = true
+        break
+    }
+  }
+
   // ✅ Métodos
   function closeDialog() {
     emit('update:modelValue', false)
@@ -134,18 +180,19 @@
     serviciosSeleccionadosIds.value = idsSeleccionados
   }
 
+  function actualizarEstadoBoton(estado) {
+    botonActivo.value = estado
+  }
+
   function actualizarBarbero(barbero) {
-    console.log('📥 Padre recibió:', barbero);
-    barberoSeleccionado.value = barbero; // Guarda el objeto completo directamente
-    console.log('💾 Barbero guardado:', barberoSeleccionado.value);
+    barberoSeleccionado.value = barbero
   }
 
   function actualizarFechayHora(data) {
-    console.log('📅 Padre recibió fecha y hora:', data)
     fechayhoraseleccionada.value = data
   }
 
-  // Avanzar al siguiente tab (desde el botón)
+  // Avanzar al siguiente tab
   function avanzarTab() {
     if (currentIndex.value < items.length - 1) {
       currentIndex.value++

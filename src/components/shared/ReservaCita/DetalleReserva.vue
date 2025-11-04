@@ -118,7 +118,7 @@
 
       <!-- 🔹 Botón FIJO en la parte inferior -->
       <v-card-actions class="acciones-fijas">
-        <v-btn block color="#ee6f38" size="large" :disabled="!props.habilitarBoton" elevation="2" @click="emit('siguiente-tab')">
+        <v-btn block color="#ee6f38" size="large" :disabled="!habilitarBoton" elevation="2"       @click="handleSiguiente">
           Siguiente
           <i class="fa-solid fa-arrow-right ml-2"></i>
         </v-btn>
@@ -150,6 +150,11 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['siguiente-tab'])
+
+// 🔹 Manejar click del botón
+function handleSiguiente() {
+  emit('siguiente-tab')
+}
 
 // 🔹 Calcular precio total
 const calcularPrecioTotal = computed(() => {
