@@ -34,7 +34,29 @@ async function validate(values: any, { setErrors }: any) {
     console.log('👤 Usuario después de loadUser:', authStore.user);
     console.log('🔐 Rol del usuario:', (authStore.user as any)?.Role);
     
-    // 🚀 REDIRIGIR SEGÚN EL ROL
+    // 🔍 VERIFICAR SI VIENE DE LA RESERVA
+    const returnToReserva = sessionStorage.getItem('returnToReserva');
+    console.log('🔙 ¿Volver a reserva?', returnToReserva);
+    
+    if (returnToReserva === 'true') {
+      // Limpiar el flag
+      sessionStorage.removeItem('returnToReserva');
+      
+      console.log('📍 Redirigiendo de vuelta a reserva');
+      // Redirigir a la página donde estaba el componente de reserva
+      // Ajusta esta ruta según tu aplicación
+      router.push('/'); // o la ruta que contenga tu dialog de reserva
+      
+      // Opcional: emitir evento para reabrir el dialog
+      setTimeout(() => {
+        const event = new CustomEvent('open-reserva-dialog');
+        window.dispatchEvent(event);
+      }, 100);
+      
+      return; // Terminar aquí
+    }
+    
+    // 🚀 REDIRIGIR SEGÚN EL ROL (solo si NO viene de reserva)
     const userRole = (authStore.user as any)?.Role;
     
     if (userRole === 'cliente') {

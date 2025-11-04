@@ -37,24 +37,24 @@
               <v-tabs-window-item value="Servicios">
                 <ServiciosTab
                 @seleccionados="actualizarServicios" 
-                @estado-servicio-siguiente="botonActivo = $event"/>
+                @estado-servicio-siguiente="actualizarEstadoBoton"/>
               </v-tabs-window-item>
 
               <!-- TAB: Fecha y Hora -->
               <v-tabs-window-item value="Fecha y Hora">
                 <FechayHoraTab @emit-fechay-hora="actualizarFechayHora" 
-                @estado-fechayhora-siguiente="botonActivo = $event"/>
+                @estado-fechayhora-siguiente="actualizarEstadoBoton"/>
               </v-tabs-window-item>
               
               <!-- TAB: Barberos -->
               <v-tabs-window-item value="Profesional">
                 <BarberoTab @emit-barbero="actualizarBarbero"
-                @estado-barbero-siguiente="botonActivo = $event"/>
+                @estado-barbero-siguiente="actualizarEstadoBoton"/>
               </v-tabs-window-item>
 
               <!-- TAB: Confirmacion -->
               <v-tabs-window-item value="Confirmacion">
-                <ConfirmacionTab @estado-confirmacion-agendar="botonActivo = $event"></ConfirmacionTab>
+                <ConfirmacionTab @estado-confirmacion-agendar="actualizarEstadoBoton"></ConfirmacionTab>
               </v-tabs-window-item>
 
             </v-tabs-window>
@@ -77,7 +77,7 @@
 </template>
 
 <script setup>
-  import { ref, computed, watch, nextTick } from 'vue'
+  import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
   import { useServiceStore } from '@/stores/services'
   import ServiciosTab from '@/components/shared/ReservaCita/ServiciosTab.vue'
   import BarberoTab from '@/components/shared/ReservaCita/BarberoTab.vue'
@@ -165,11 +165,30 @@
         break
       
       case 'Confirmacion':
-        // En confirmación, el botón puede estar siempre habilitado o depender de condiciones finales
-        botonActivo.value = true
+        // Este caso se maneja por el emit del ConfirmacionTab
+        // No forzamos true aquí
         break
     }
   }
+
+  // 🔥 LISTENER PARA REABRIR DIALOG DESPUÉS DEL LOGIN
+  const handleOpenReserva = () => {
+    console.log('🔔 Evento recibido: reabrir dialog de reserva')
+    emit('update:modelValue', true)
+    
+    // Ir al tab de Confirmación
+    currentIndex.value = 3 // Índice del tab "Confirmacion"
+  }
+
+  onMounted(() => {
+    console.log('👂 Listener de reserva montado')
+    window.addEventListener('open-reserva-dialog', handleOpenReserva)
+  })
+
+  onUnmounted(() => {
+    console.log('🔇 Listener de reserva desmontado')
+    window.removeEventListener('open-reserva-dialog', handleOpenReserva)
+  })
 
   // ✅ Métodos
   function closeDialog() {

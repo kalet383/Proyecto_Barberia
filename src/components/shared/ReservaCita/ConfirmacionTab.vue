@@ -158,12 +158,13 @@
 </template>
 
 <script setup>
-    import { ref, computed } from 'vue';
+    import { ref, computed, watch } from 'vue';
     import { useRouter } from 'vue-router';
     import { useAuthStore } from '@/stores/auth';
 
     const router = useRouter();
     const authStore = useAuthStore();
+    const emit = defineEmits(['estado-confirmacion-agendar']);
 
     // Estado
     const aceptaTerminos = ref(false);
@@ -179,18 +180,42 @@
         foto: authStore.user?.foto || null
     }));
 
+    // ✅ Watch para habilitar/deshabilitar el botón
+    watch(
+        [isAuthenticated, aceptaTerminos],
+        ([autenticado, terminos]) => {
+            // El botón se habilita solo si:
+            // 1. El usuario está autenticado
+            // 2. Aceptó los términos
+            const habilitar = autenticado && terminos;
+            
+            console.log('🔐 Estado de confirmación:', {
+                autenticado,
+                terminos,
+                habilitar
+            });
+            
+            emit('estado-confirmacion-agendar', habilitar);
+        },
+        { immediate: true }
+    );
+
     // Métodos
     const irALogin = () => {
+        // Guardar la ruta actual para volver después del login
+        sessionStorage.setItem('returnToReserva', 'true');
         router.push('/login1');
     };
 
     const irARegistro = () => {
+        // Guardar la ruta actual para volver después del registro
+        sessionStorage.setItem('returnToReserva', 'true');
         router.push('/register');
     };
 
     const cerrarSesion = async () => {
+        aceptaTerminos.value = false; // Resetear términos al cerrar sesión
         await authStore.logout();
-        router.push('/login1');
     };
 
     // Exponer validación para componente padre
@@ -216,7 +241,7 @@
     };
 
     defineExpose({
-    validarConfirmacion
+        validarConfirmacion
     });
 </script>
 
