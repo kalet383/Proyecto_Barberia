@@ -20,9 +20,9 @@
             </div>
 
             <div v-else class="lista-barberos">
-                <v-card v-for="barbero in barberosDisponibles" :key="barbero.id" class="barbero-card" outlined :class="{ 'barbero-seleccionado': reservaStore.barberoSeleccionado === barbero.id }">
-                    <v-btn size="x-small" variant="outlined" class="btn-seleccionar" :class="{ 'btn-activo': reservaStore.barberoSeleccionado === barbero.id }"@click.stop="seleccionarBarbero(barbero.id)">
-                        {{ reservaStore.barberoSeleccionado === barbero.id ? 'Seleccionado' : 'Seleccionar' }}
+                <v-card v-for="barbero in barberosDisponibles" :key="barbero.id" class="barbero-card" outlined :class="{ 'barbero-seleccionado': reservaStore.barberoSeleccionado?.id === barbero.id }">
+                    <v-btn size="x-small" variant="outlined" class="btn-seleccionar" :class="{ 'btn-activo': reservaStore.barberoSeleccionado?.id === barbero.id }"@click.stop="seleccionarBarbero(barbero)">
+                        {{ reservaStore.barberoSeleccionado?.id === barbero.id ? 'Seleccionado' : 'Seleccionar' }}
                     </v-btn>
                     <v-avatar size="64" class="ma-4">
                         <v-img :src="barbero.foto" />
@@ -63,7 +63,7 @@
 
     const barberoStore = useBarberStore();
     const reservaStore = useReservaStore();
-    const emit = defineEmits(['emitBarbero', 'estado-barbero-siguiente'])
+    const emit = defineEmits(['emit-barbero', 'estado-barbero-siguiente'])
     const dialogVisible = ref(false);
     const barberoSeleccionado = ref(null);
     const barberosDisponibles = ref([]);
@@ -74,18 +74,18 @@
         dialogVisible.value = true;
     };
 
-    const seleccionarBarbero = (id) => {
-        if (reservaStore.barberoSeleccionado === id) {
+    // ✅ CORREGIDO: Ahora recibe y guarda el objeto barbero completo
+    const seleccionarBarbero = (barbero) => {
+        if (reservaStore.barberoSeleccionado?.id === barbero.id) {
+            // Deseleccionar
             reservaStore.setBarbero(null);
             console.log('❌ Deseleccionando barbero');
-            emit('emitBarbero', null);
+            emit('emit-barbero', null);
         } else {
-            reservaStore.setBarbero(id);
-            const barbero = barberosDisponibles.value.find(b => {
-                return b.id === id;
-            });
-            console.log('✅ Barbero encontrado:', barbero);
-            emit('emitBarbero', barbero);
+            // Seleccionar - guardar objeto completo
+            reservaStore.setBarbero(barbero); // ✅ Guardar objeto completo
+            console.log('✅ Barbero seleccionado:', barbero);
+            emit('emit-barbero', barbero);
         }
     };
 
@@ -113,13 +113,13 @@
 
     // Watch para emitir si hay barbero o no
     watch(
-    () => reservaStore.barberoSeleccionado, // Vigila el ID en la store
-    (barberoId) => {
-        const habilitar = barberoId !== null && barberoId !== undefined
-        emit('estado-barbero-siguiente', habilitar)
-    },
-    { immediate: true } // Se ejecuta al montar
-)
+        () => reservaStore.barberoSeleccionado,
+        (barbero) => {
+            const habilitar = barbero !== null && barbero !== undefined
+            emit('estado-barbero-siguiente', habilitar)
+        },
+        { immediate: true }
+    )
 
     // 🔹 Watch para recargar cuando cambie fecha/hora
     watch(

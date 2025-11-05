@@ -64,8 +64,8 @@
           <div style="width: 600px; padding: 16px; overflow-y: auto; border-left: 2px solid #e0e0e0;">
             <DetalleReserva
             :servicios="serviciosSeleccionados"
-            :barbero="barberoSeleccionado"
-            :-fechay-hora="fechayhoraseleccionada"
+            :barbero="reservaStore.barberoSeleccionado"
+            :-fechay-hora="reservaStore.fechaYHoraObj"
             :habilitar-boton="botonActivo"
             @siguiente-tab="avanzarTab"/>
           </div>
@@ -79,6 +79,7 @@
 <script setup>
   import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
   import { useServiceStore } from '@/stores/services'
+  import { useReservaStore } from '@/stores/reserva'
   import ServiciosTab from '@/components/shared/ReservaCita/ServiciosTab.vue'
   import BarberoTab from '@/components/shared/ReservaCita/BarberoTab.vue'
   import FechayHoraTab from '@/components/shared/ReservaCita/FechayHoraTab.vue'
@@ -86,6 +87,7 @@
   import DetalleReserva from '@/components/shared/ReservaCita/DetalleReserva.vue'
 
   const ServicioStore = useServiceStore()
+  const reservaStore = useReservaStore()
 
   // ✅ Props y emits
   const props = defineProps({
@@ -99,76 +101,42 @@
 
   // ✅ Estado
   const items = ['Servicios', 'Fecha y Hora', 'Profesional', 'Confirmacion']
-  const currentIndex = ref(0)
-  const serviciosSeleccionadosIds = ref([])
-  const barberoSeleccionado = ref(null)
-  const fechayhoraseleccionada = ref({
-    fecha: null,
-    hora: null
-  })
+  const currentIndex = ref(reservaStore.currentTab) // ✅ Obtener de la store
   const botonActivo = ref(false)
 
   const currentTab = computed({
     get: () => items[currentIndex.value],
     set: (val) => {
       const index = items.indexOf(val)
-      if (index <= currentIndex.value) currentIndex.value = index
+      if (index <= currentIndex.value) {
+        currentIndex.value = index
+        reservaStore.setCurrentTab(index) // ✅ Sincronizar con store
+      }
     }
   })
 
   // ✅ Función para controlar qué tabs están activos
   const isTabEnabled = (index) => index <= currentIndex.value
 
-  // ✅ Computed para obtener los objetos completos de los servicios
+  // ✅ Computed para obtener los objetos completos de los servicios DESDE LA STORE
   const serviciosSeleccionados = computed(() => {
     return ServicioStore.services.filter(servicio => 
-      serviciosSeleccionadosIds.value.includes(servicio.id)
+      reservaStore.serviciosSeleccionados.includes(servicio.id)
     )
   })
 
   // ✅ Watch para verificar el estado del botón al cambiar de tab
   watch(currentIndex, async (nuevoIndex) => {
-    // Resetear el botón inicialmente
+    reservaStore.setCurrentTab(nuevoIndex) // ✅ Sincronizar con store
     botonActivo.value = false
-    
-    // Esperar a que se monte el nuevo componente
     await nextTick()
-    
-    // Verificar si el tab actual tiene datos válidos
     verificarEstadoTabActual()
   })
 
   // ✅ Función para verificar si el tab actual debe tener el botón habilitado
   function verificarEstadoTabActual() {
-    const tabActual = items[currentIndex.value]
-    
-    switch(tabActual) {
-      case 'Servicios':
-        // Si hay servicios seleccionados, habilitar el botón
-        if (serviciosSeleccionadosIds.value.length > 0) {
-          botonActivo.value = true
-        }
-        break
-      
-      case 'Fecha y Hora':
-        // Si hay fecha y hora seleccionadas, habilitar el botón
-        if (fechayhoraseleccionada.value.fecha && fechayhoraseleccionada.value.hora) {
-          botonActivo.value = true
-        }
-        break
-      
-      case 'Profesional':
-        // Si hay barbero seleccionado, habilitar el botón
-        if (barberoSeleccionado.value) {
-          botonActivo.value = true
-        }
-        break
-      
-      case 'Confirmacion':
-        // Este caso se maneja por el emit del ConfirmacionTab
-        // No forzamos true aquí
-        break
-    }
+    // ✅ Usar el getter de la store que ya tiene esta lógica
+    botonActivo.value = reservaStore.botonHabilitadoPorTab
   }
 
   // 🔥 LISTENER PARA REABRIR DIALOG DESPUÉS DEL LOGIN
@@ -176,13 +144,21 @@
     console.log('🔔 Evento recibido: reabrir dialog de reserva')
     emit('update:modelValue', true)
     
-    // Ir al tab de Confirmación
-    currentIndex.value = 3 // Índice del tab "Confirmacion"
+    // ✅ Restaurar el tab desde la store
+    currentIndex.value = reservaStore.currentTab
+    
+    // ✅ Verificar estado del botón
+    nextTick(() => {
+      verificarEstadoTabActual()
+    })
   }
 
   onMounted(() => {
     console.log('👂 Listener de reserva montado')
     window.addEventListener('open-reserva-dialog', handleOpenReserva)
+    
+    // ✅ Al montar, verificar estado del tab actual
+    verificarEstadoTabActual()
   })
 
   onUnmounted(() => {
@@ -190,13 +166,13 @@
     window.removeEventListener('open-reserva-dialog', handleOpenReserva)
   })
 
-  // ✅ Métodos
+  // ✅ Métodos - AHORA ACTUALIZAN LA STORE
   function closeDialog() {
     emit('update:modelValue', false)
   }
 
   function actualizarServicios(idsSeleccionados) {
-    serviciosSeleccionadosIds.value = idsSeleccionados
+    reservaStore.setServicios(idsSeleccionados) // ✅ Guardar en store
   }
 
   function actualizarEstadoBoton(estado) {
@@ -204,11 +180,11 @@
   }
 
   function actualizarBarbero(barbero) {
-    barberoSeleccionado.value = barbero
+    reservaStore.setBarbero(barbero) // ✅ Guardar en store
   }
 
   function actualizarFechayHora(data) {
-    fechayhoraseleccionada.value = data
+    reservaStore.setFechaHora(data.fecha, data.hora) // ✅ Guardar en store
   }
 
   // Avanzar al siguiente tab

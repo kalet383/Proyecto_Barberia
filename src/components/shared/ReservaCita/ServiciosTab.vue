@@ -51,8 +51,10 @@
 <script setup>
     import { ref, onMounted, watch } from 'vue'
     import { useServiceStore } from '@/stores/services'
+    import { useReservaStore } from '@/stores/reserva'
 
     const ServicioStore = useServiceStore()
+    const ReservaStore = useReservaStore()
     const emit = defineEmits(['seleccionados', 'estado-siguiente'])
     const dialog = ref(false)
     const servicioSeleccionado = ref(null)
@@ -83,6 +85,11 @@
 
     onMounted(() => {
         ServicioStore.getServices()
+
+        // ✅ Cargar servicios previamente seleccionados desde la store
+        if (ReservaStore.serviciosSeleccionados.length > 0) {
+            serviciosSeleccionados.value = [...ReservaStore.serviciosSeleccionados]
+        }
     })
 </script>
 
