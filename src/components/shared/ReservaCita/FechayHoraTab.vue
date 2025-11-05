@@ -88,7 +88,12 @@
   // Cargar valores previos si existen
   onMounted(() => {
     if (reservaStore.fechaSeleccionada) {
-      fechaSeleccionada.value = reservaStore.fechaSeleccionada
+      const f = reservaStore.fechaSeleccionada
+      fechaSeleccionada.value = typeof f === 'string' ? new Date(f + 'T00:00:00') : f
+      semanaActual.value = new Date(fechaSeleccionada.value)
+    }
+    if (fechaSeleccionada.value) {
+      semanaActual.value = new Date(fechaSeleccionada.value)
     }
     if (reservaStore.horaSeleccionada) {
       horaSeleccionada.value = reservaStore.horaSeleccionada
@@ -162,31 +167,95 @@
   }
 
   const actualizarFechayHora = () => {
-    if (fechaSeleccionada.value && horaSeleccionada.value) {
-      // Guardar en la store
-      reservaStore.setFechaHora(fechaSeleccionada.value, horaSeleccionada.value)
+    if (!fechaSeleccionada.value || !horaSeleccionada.value) return
 
-      // Emitir al padre
-      emit('emit-fechay-hora', {
-        fecha: formatearFecha(fechaSeleccionada.value),
-        hora: formatearHora(horaSeleccionada.value)
-      })
+    let fechaISO = ''
+
+    // ✅ Si es objeto Date
+    if (fechaSeleccionada.value instanceof Date && !isNaN(fechaSeleccionada.value)) {
+      fechaISO = fechaSeleccionada.value.toISOString().split('T')[0]
+    } 
+    // ✅ Si es string tipo "lunes, 10 de noviembre de 2025"
+    else if (typeof fechaSeleccionada.value === 'string') {
+      const partes = fechaSeleccionada.value.match(/(\d{1,2}) de (\w+) de (\d{4})/)
+      if (partes) {
+        const [_, dia, mesTexto, año] = partes
+        const meses = {
+          enero: 0, febrero: 1, marzo: 2, abril: 3, mayo: 4, junio: 5,
+          julio: 6, agosto: 7, septiembre: 8, octubre: 9, noviembre: 10, diciembre: 11
+        }
+        const fecha = new Date(año, meses[mesTexto.toLowerCase()], dia)
+        fechaISO = fecha.toISOString().split('T')[0]
+      }
     }
+
+    console.log('Guardando en store:', {
+      fecha: fechaISO,
+      hora: horaSeleccionada.value
+    })
+    reservaStore.setFechaHora(fechaISO, horaSeleccionada.value)
   }
+
 
   const formatearFecha = (fecha) => {
     if (!fecha) return ''
+
+    let dateObj = null
+
+    // Si ya es Date válido
+    if (fecha instanceof Date && !isNaN(fecha)) {
+      dateObj = fecha
+    } else if (typeof fecha === 'string') {
+      // 1) Formato ISO "YYYY-MM-DD"
+      if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+        dateObj = new Date(fecha + 'T00:00:00')
+      } else {
+        // 2) Formato "10 de noviembre de 2025" o "lunes, 10 de noviembre de 2025"
+        const partes = fecha.match(/(\d{1,2})\s+de\s+([a-zA-Záéíóúñ]+)\s+de\s+(\d{4})/i)
+        if (partes) {
+          const [, dia, mesTexto, anio] = partes
+          const meses = {
+            enero: 0, febrero: 1, marzo: 2, abril: 3, mayo: 4, junio: 5,
+            julio: 6, agosto: 7, septiembre: 8, octubre: 9, noviembre: 10, diciembre: 11
+          }
+          const mesIndex = meses[mesTexto.toLowerCase()]
+          if (mesIndex !== undefined) {
+            dateObj = new Date(Number(anio), mesIndex, Number(dia))
+          }
+        } else {
+          // 3) Intento con constructor Date por si fuera un string parseable
+          const intento = new Date(fecha)
+          if (!isNaN(intento)) dateObj = intento
+        }
+      }
+    }
+
+    if (!dateObj || isNaN(dateObj)) return 'Invalid Date' // o '' si prefieres ocultarlo
+
     const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
-    return new Date(fecha).toLocaleDateString('es-ES', opciones)
+    return dateObj.toLocaleDateString('es-ES', opciones)
   }
+
 
   const formatearHora = (hora) => {
     if (!hora) return ''
-    const [hours, minutes] = hora.split(':')
-    const h = parseInt(hours)
-    const ampm = h >= 12 ? 'PM' : 'AM'
-    const h12 = h % 12 || 12
-    return `${h12}:${minutes} ${ampm}`
+
+    // Si ya viene en formato "HH:MM" (24h), convertir a 12h con AM/PM
+    if (/^\d{1,2}:\d{2}$/.test(hora)) {
+      const [hoursStr, minutes] = hora.split(':')
+      const h = parseInt(hoursStr, 10)
+      const ampm = h >= 12 ? 'PM' : 'AM'
+      const h12 = h % 12 || 12
+      return `${h12}:${minutes} ${ampm}`
+    }
+
+    // Si ya viene como "7:23 AM" o "07:23 AM" — normalizar espacios y mayúsculas
+    if (typeof hora === 'string') {
+      const normalized = hora.replace(/\./g, '').trim() // quita puntos si hay "a.m."
+      return normalized.toUpperCase()
+    }
+
+    return String(hora)
   }
 </script>
 

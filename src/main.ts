@@ -11,6 +11,7 @@ import print from 'vue3-print-nb'
 
 // 📦 Estilos globales
 import '@fortawesome/fontawesome-free/css/all.css'
+import '@mdi/font/css/materialdesignicons.css'
 import '@/scss/style.scss'
 
 // 📦 Configuración de Axios (plugin)

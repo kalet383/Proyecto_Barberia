@@ -29,19 +29,11 @@ export const useReservaStore = defineStore('reserva', {
     diaSemana: (state) => {
       if (!state.fechaSeleccionada) return null
       
-      const diasSemana: Record<number, string> = {
-        0: 'domingo',
-        1: 'lunes',
-        2: 'martes',
-        3: 'miercoles',
-        4: 'jueves',
-        5: 'viernes',
-        6: 'sabado'
-      }
-      
-      const fecha = new Date(state.fechaSeleccionada)
+      const diasSemana = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado']
+      const fecha = new Date(state.fechaSeleccionada + 'T00:00:00')
       return diasSemana[fecha.getDay()]
     },
+
 
     // Verificar si hay fecha y hora seleccionadas
     tieneFechaYHora: (state) => {
@@ -78,10 +70,18 @@ export const useReservaStore = defineStore('reserva', {
     },
 
     // ✅ Actualizar fecha y hora
-    setFechaHora(fecha: string, hora: string) {
-      this.fechaSeleccionada = fecha
+    setFechaHora(fecha: Date | string, hora: string) {
+      // Asegúrate de guardar una fecha válida en formato ISO
+      if (fecha instanceof Date) {
+        // Guarda como YYYY-MM-DD local
+        this.fechaSeleccionada = fecha.toISOString().split('T')[0]
+      } else {
+        this.fechaSeleccionada = fecha
+      }
       this.horaSeleccionada = hora
+      console.log('Guardando en store:', { fecha: this.fechaSeleccionada, hora: this.horaSeleccionada })
     },
+
 
     // ✅ Actualizar barbero (ahora guarda el objeto completo)
     setBarbero(barbero: Barbero | null) {

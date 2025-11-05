@@ -15,7 +15,7 @@
             </div>
 
             <div v-else-if="barberosDisponibles.length === 0" class="text-center py-8">
-                <v-icon size="64" color="grey-lighten-1">mdi-account-off-outline</v-icon>
+                <i class="fas fa-user-slash" style="font-size: 64px; color: #bdbdbd;"></i>
                 <p class="mt-4 text-grey">No hay barberos disponibles para esta fecha y hora</p>
             </div>
 
@@ -98,13 +98,21 @@
 
         loading.value = true;
         try {
+            console.log('🔍 Buscando barberos con:', {
+                dia: reservaStore.diaSemana,
+                hora: reservaStore.horaSeleccionada,
+                fecha: reservaStore.fechaSeleccionada
+            });
+
             const barberos = await barberoStore.getBarberosDisponibles(
                 reservaStore.diaSemana,
                 reservaStore.horaSeleccionada
             );
+            
+            console.log('✅ Barberos encontrados:', barberos);
             barberosDisponibles.value = barberos;
         } catch (error) {
-            console.error('Error cargando barberos:', error);
+            console.error('❌ Error cargando barberos:', error);
             barberosDisponibles.value = [];
         } finally {
             loading.value = false;
