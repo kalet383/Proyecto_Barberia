@@ -67,7 +67,8 @@
             :barbero="reservaStore.barberoSeleccionado"
             :-fechay-hora="reservaStore.fechaYHoraObj"
             :habilitar-boton="botonActivo"
-            @siguiente-tab="avanzarTab"/>
+            @siguiente-tab="avanzarTab"
+            :ultimo-tab="currentIndex === items.length - 1"/>
           </div>
 
         </div>
@@ -80,6 +81,8 @@
   import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
   import { useServiceStore } from '@/stores/services'
   import { useReservaStore } from '@/stores/reserva'
+  import { useCitaStore } from '@/stores/cita'
+  import { useAuthStore } from '@/stores/auth'
   import ServiciosTab from '@/components/shared/ReservaCita/ServiciosTab.vue'
   import BarberoTab from '@/components/shared/ReservaCita/BarberoTab.vue'
   import FechayHoraTab from '@/components/shared/ReservaCita/FechayHoraTab.vue'
@@ -88,6 +91,8 @@
 
   const ServicioStore = useServiceStore()
   const reservaStore = useReservaStore()
+  const citaStore = useCitaStore()
+  const authStore = useAuthStore()
 
   // ✅ Props y emits
   const props = defineProps({
@@ -188,9 +193,87 @@
   }
 
   // Avanzar al siguiente tab
-  function avanzarTab() {
-    if (currentIndex.value < items.length - 1) {
+  async function avanzarTab() {
+    // Si es el último tab (Confirmación), agendar la cita
+    if (currentIndex.value === items.length - 1) {
+      await agendarCita()
+    } else {
+      // Si no, avanzar al siguiente tab
       currentIndex.value++
+    }
+  }
+
+  async function agendarCita() {
+    try {
+      console.log('🎯 Iniciando proceso de agendado...')
+      
+      // Validaciones
+      if (!reservaStore.serviciosSeleccionados || reservaStore.serviciosSeleccionados.length === 0) {
+        alert('❌ Debes seleccionar al menos un servicio')
+        return
+      }
+      
+      if (!reservaStore.barberoSeleccionado) {
+        alert('❌ Debes seleccionar un barbero')
+        return
+      }
+      
+      if (!reservaStore.fechaSeleccionada || !reservaStore.horaSeleccionada) {
+        alert('❌ Debes seleccionar fecha y hora')
+        return
+      }
+      
+      if (!authStore.isAuthenticated) {
+        alert('❌ Debes iniciar sesión para agendar')
+        return
+      }
+
+      // Preparar datos
+      const datosReserva = {
+        clienteId: authStore.user.id,
+        barberoId: reservaStore.barberoSeleccionado.id,
+        servicioId: reservaStore.serviciosSeleccionados, // Array de IDs
+        hora: reservaStore.horaSeleccionada + ':00', // Asegurar formato HH:MM:SS
+        fecha: reservaStore.fechaSeleccionada // Formato YYYY-MM-DD
+      }
+
+      console.log('📋 Datos a enviar:', datosReserva)
+
+      // Llamar al store
+      const resultado = await citaStore.crearCita(datosReserva)
+
+      if (resultado.success) {
+        // ✅ ÉXITO
+        alert(`✅ ${resultado.mensaje}`)
+        
+        console.log('✅ Citas creadas:', resultado.citas)
+        
+        // Limpiar la reserva
+        reservaStore.resetReserva()
+        
+        // Cerrar el dialog
+        closeDialog()
+        
+        // Opcional: Redirigir a mis citas
+        // router.push('/mis-citas')
+      } else {
+        // ❌ ERROR - Barbero no disponible
+        alert(`❌ ${resultado.mensaje}`)
+        
+        if (resultado.horariosAlternativos.length > 0) {
+          console.log('🕐 Horarios alternativos:', resultado.horariosAlternativos)
+          // Aquí puedes mostrar los horarios alternativos en un modal
+        }
+        
+        if (resultado.barberosAlternativos.length > 0) {
+          console.log('💈 Barberos alternativos:', resultado.barberosAlternativos)
+          // Aquí puedes mostrar los barberos alternativos
+        }
+      }
+
+    } catch (error) {
+      console.error('💥 Error inesperado:', error)
+      alert('💥 Ocurrió un error inesperado al agendar la cita')
     }
   }
 </script>

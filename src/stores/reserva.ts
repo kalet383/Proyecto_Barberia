@@ -54,13 +54,7 @@ export const useReservaStore = defineStore('reserva', {
         default:
           return false
       }
-    },
-
-    // ✅ NUEVO: Objeto con fecha y hora para pasar a DetalleReserva
-    fechaYHoraObj: (state) => ({
-      fecha: state.fechaSeleccionada,
-      hora: state.horaSeleccionada
-    })
+    }
   },
 
   actions: {
@@ -95,10 +89,10 @@ export const useReservaStore = defineStore('reserva', {
 
     // ✅ Resetear toda la reserva
     resetReserva() {
+      this.serviciosSeleccionados = []
+      this.barberoSeleccionado = null
       this.fechaSeleccionada = null
       this.horaSeleccionada = null
-      this.barberoSeleccionado = null
-      this.serviciosSeleccionados = []
       this.currentTab = 0
     }
   }

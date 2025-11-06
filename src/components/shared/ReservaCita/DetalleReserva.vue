@@ -118,9 +118,10 @@
 
       <!-- 🔹 Botón FIJO en la parte inferior -->
       <v-card-actions class="acciones-fijas">
-        <v-btn block color="#ee6f38" size="large" :disabled="!habilitarBoton" elevation="2"       @click="handleSiguiente">
-          Siguiente
-          <i class="fa-solid fa-arrow-right ml-2"></i>
+        <v-btn block color="#ee6f38" size="large" :disabled="!habilitarBoton" elevation="2" @click="handleSiguiente" class="boton-accion">
+          {{  TextoBtn  }}
+          <!-- Siguiente -->
+          <i :class="`fa-solid ${ IconoBtn } ml-2`"></i>
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -146,6 +147,10 @@ const props = defineProps({
   habilitarBoton: {
     type: Boolean,
     default: false
+  },
+  ultimoTab: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -155,6 +160,16 @@ const emit = defineEmits(['siguiente-tab'])
 function handleSiguiente() {
   emit('siguiente-tab')
 }
+
+// 🔹 Texto dinámico del botón
+const TextoBtn = computed(() => {
+  return props.ultimoTab ? 'Agendar cita' : 'Siguiente'
+})
+
+// 🔹 Ícono dinámico del botón
+const IconoBtn = computed(() => {
+  return props.ultimoTab ? 'fa-check' : 'fa-arrow-right'
+})
 
 // 🔹 Calcular precio total
 const calcularPrecioTotal = computed(() => {
@@ -239,6 +254,17 @@ const calcularDuracionTotal = computed(() => {
   border-top: 1px solid #e0e0e0;
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
   z-index: 10;
+}
+
+.boton-accion {
+  transition: all 0.3s ease;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.boton-accion:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(238, 111, 56, 0.4) !important;
 }
 
 /* 🔹 Lista de servicios más compacta */

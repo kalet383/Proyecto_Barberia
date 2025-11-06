@@ -118,6 +118,7 @@
     <HomeBarberos></HomeBarberos>
     <HomeProductos></HomeProductos>
     <HomeUbicacion></HomeUbicacion>
+    <FooterPagina></FooterPagina>
 
     <!-- API whatsapp -->
     <a href="https://api.whatsapp.com/send?phone=TU_NUMERO&text=Hola%20quiero%20más%20información" class="whatsapp-button" target="_blank">
@@ -136,6 +137,7 @@ import HomeBarberos from '@/views/pages/HomeBarberos.vue';
 import HomeProductos from '@/views/pages/HomeProductos.vue';
 import HomeUbicacion from './HomeUbicacion.vue';
 import CarritoCompra from '@/components/shared/CarritoCompra.vue';
+import FooterPagina from './FooterPagina.vue';
 
 const authStore = useAuthStore();
 const router = useRouter();
