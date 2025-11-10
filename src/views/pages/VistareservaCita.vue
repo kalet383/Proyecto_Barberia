@@ -65,7 +65,8 @@
             <DetalleReserva
             :servicios="serviciosSeleccionados"
             :barbero="reservaStore.barberoSeleccionado"
-            :-fechay-hora="reservaStore.fechaYHoraObj"
+            :fecha="fechaFormateada"
+            :hora="horaFormateada"
             :habilitar-boton="botonActivo"
             @siguiente-tab="avanzarTab"
             :ultimo-tab="currentIndex === items.length - 1"/>
@@ -128,6 +129,26 @@
     return ServicioStore.services.filter(servicio => 
       reservaStore.serviciosSeleccionados.includes(servicio.id)
     )
+  })
+
+  // ✅ NUEVO: Formatear la fecha para mostrar en DetalleReserva
+  const fechaFormateada = computed(() => {
+    if (!reservaStore.fechaSeleccionada) return null
+    
+    const fecha = new Date(reservaStore.fechaSeleccionada + 'T00:00:00')
+    const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
+    return fecha.toLocaleDateString('es-ES', opciones)
+  })
+
+  // ✅ NUEVO: Formatear la hora para mostrar en DetalleReserva
+  const horaFormateada = computed(() => {
+    if (!reservaStore.horaSeleccionada) return null
+    
+    const [hoursStr, minutes] = reservaStore.horaSeleccionada.split(':')
+    const h = parseInt(hoursStr, 10)
+    const ampm = h >= 12 ? 'PM' : 'AM'
+    const h12 = h % 12 || 12
+    return `${h12}:${minutes} ${ampm}`
   })
 
   // ✅ Watch para verificar el estado del botón al cambiar de tab

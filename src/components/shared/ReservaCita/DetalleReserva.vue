@@ -103,15 +103,16 @@
             <i class="fa-regular fa-calendar-days mr-2"></i>
             Fecha y Hora
           </h4>
-          <!-- Si hay barbero seleccionado -->
-          <div v-if="FechayHora && FechayHora.fecha && FechayHora.hora">
+          <!-- Si hay fecha y hora -->
+          <div v-if="fecha && hora">
             <p class="text-body-2">
-              <i class="fa-regular fa-calendar mr-2"></i>{{ FechayHora.fecha }}
+              <i class="fa-regular fa-calendar mr-2"></i>{{ fecha }}
             </p>
             <p class="text-body-2">
-              <i class="fa-regular fa-clock mr-2"></i>{{ FechayHora.hora }}
+              <i class="fa-regular fa-clock mr-2"></i>{{ hora }}
             </p>
           </div>
+          <!-- Si NO hay fecha/hora -->
           <p v-else class="text-body-2 text-grey">Por seleccionar</p>
         </div>
       </v-card-text>
@@ -140,9 +141,13 @@ const props = defineProps({
     type: Object,
     default: null
   },
-  FechayHora: {
-    type: Object,
-    default: () => ({ fecha: null, hora: null })
+  fecha: {
+    type: String,
+    default: null
+  },
+  hora: {
+    type: String,
+    default: null
   },
   habilitarBoton: {
     type: Boolean,

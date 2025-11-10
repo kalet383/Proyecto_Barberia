@@ -25,7 +25,8 @@
           <div v-for="(date, index) in diasVisibles" :key="index" class="dia-card"
             :class="{ 
               'dia-seleccionado': esMismaFecha(date, fechaSeleccionada),
-              'dia-hoy': esHoy(date) && !esMismaFecha(date, fechaSeleccionada)
+              'dia-hoy': esHoy(date) && !esMismaFecha(date, fechaSeleccionada),
+              'dia-deshabilitado': esDiaPasado(date)
             }"
             @click="seleccionarDia(date)"
           >
@@ -35,7 +36,7 @@
         </div>
       </v-card>
 
-      <!-- 🔹 Selector de hora -->
+      <!-- 🔹 Selector de hora con input type="time" -->
       <v-card class="pa-4" elevation="2" rounded="lg">
         <v-label class="text-subtitle-1 mb-2">
           <i class="fas fa-clock mr-2"></i>
@@ -48,16 +49,39 @@
         </div>
         
         <div v-else class="hora-selector">
-          <v-text-field v-model="horaSeleccionada" type="time" variant="outlined" density="comfortable" placeholder="HH:MM" hide-details class="time-input">
+          <v-text-field 
+            v-model="horaSeleccionada" 
+            type="time" 
+            variant="outlined" 
+            density="comfortable" 
+            placeholder="HH:MM" 
+            hide-details
+            class="time-input"
+            :min="horaMinima"
+            :class="{ 'hora-invalida': esHoraInvalida }"
+            @blur="validarHora"
+          >
             <template v-slot:prepend-inner>
               <i class="fas fa-clock" style="color: #666; font-size: 18px;"></i>
             </template>
           </v-text-field>
+          
+          <!-- Mensaje de ayuda/error -->
+          <div v-if="esHoy(fechaSeleccionada)" class="mt-2">
+            <div v-if="esHoraInvalida" class="text-caption error-text">
+              <i class="fas fa-exclamation-circle mr-1"></i>
+              No puedes seleccionar una hora que ya pasó. Hora mínima: {{ formatearHoraMinima }}
+            </div>
+            <div v-else class="text-caption text-grey">
+              <i class="fas fa-info-circle mr-1"></i>
+              Puedes seleccionar desde las {{ formatearHoraMinima }} en adelante
+            </div>
+          </div>
         </div>
       </v-card>
 
       <!-- 🔹 Resumen temporal -->
-      <div v-if="fechaSeleccionada && horaSeleccionada" class="resumen-seleccion mt-6">
+      <div v-if="fechaSeleccionada && horaSeleccionada && !esHoraInvalida" class="resumen-seleccion mt-6">
         <v-alert type="success" border="start" color="#ee6f38" variant="tonal">
           <div class="d-flex align-center mb-2">
             <i class="fas fa-check-circle mr-2"></i>
@@ -84,6 +108,58 @@
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
   ]
+
+  // 🆕 Computed para obtener la hora mínima permitida
+  const horaMinima = computed(() => {
+    if (!fechaSeleccionada.value) return '00:00'
+    
+    if (esHoy(fechaSeleccionada.value)) {
+      const ahora = new Date()
+      const horas = String(ahora.getHours()).padStart(2, '0')
+      const minutos = String(ahora.getMinutes()).padStart(2, '0')
+      return `${horas}:${minutos}`
+    }
+    
+    return '00:00'
+  })
+
+  // 🆕 Computed para formatear la hora mínima en formato legible
+  const formatearHoraMinima = computed(() => {
+    if (!horaMinima.value) return ''
+    const [h, m] = horaMinima.value.split(':').map(Number)
+    const ampm = h >= 12 ? 'PM' : 'AM'
+    const h12 = h % 12 || 12
+    return `${h12}:${m.toString().padStart(2, '0')} ${ampm}`
+  })
+
+  // 🆕 Computed para verificar si la hora seleccionada es inválida
+  const esHoraInvalida = computed(() => {
+    if (!fechaSeleccionada.value || !horaSeleccionada.value) return false
+    
+    // Solo validar si es hoy
+    if (esHoy(fechaSeleccionada.value)) {
+      return horaSeleccionada.value < horaMinima.value
+    }
+    
+    return false
+  })
+
+  // 🆕 Función para validar la hora cuando el usuario termina de editarla
+  const validarHora = () => {
+    if (esHoraInvalida.value) {
+      // Opcional: puedes limpiar la hora o dejarla para que el usuario vea el error
+      // horaSeleccionada.value = null
+    }
+  }
+
+  // 🆕 Función para verificar si un día ya pasó
+  const esDiaPasado = (fecha) => {
+    const hoy = new Date()
+    hoy.setHours(0, 0, 0, 0)
+    const fechaComparar = new Date(fecha)
+    fechaComparar.setHours(0, 0, 0, 0)
+    return fechaComparar < hoy
+  }
 
   // Cargar valores previos si existen
   onMounted(() => {
@@ -113,19 +189,28 @@
     return dias
   })
 
-  // ✅ Watch CORRECTO para detectar cambios en fecha Y hora
+  // ✅ Watch para detectar cambios y validar
   watch([fechaSeleccionada, horaSeleccionada], ([nuevaFecha, nuevaHora]) => {
-    // Verificar si AMBOS valores están presentes y son válidos
     const ambosSeleccionados = !!(nuevaFecha && nuevaHora && nuevaHora.trim() !== '')
     
-    // Emitir el estado del botón
-    emit('estado-fechayhora-siguiente', ambosSeleccionados)
+    // Solo habilitar el botón si ambos están seleccionados Y la hora es válida
+    const esValido = ambosSeleccionados && !esHoraInvalida.value
     
-    // Si ambos están seleccionados, actualizar
-    if (ambosSeleccionados) {
+    emit('estado-fechayhora-siguiente', esValido)
+    
+    if (esValido) {
       actualizarFechayHora()
     }
   }, { deep: true })
+
+  // 🆕 Watch para limpiar hora si cambia la fecha y la hora ya no es válida
+  watch(fechaSeleccionada, (nuevaFecha) => {
+    if (nuevaFecha && horaSeleccionada.value) {
+      if (esHoy(nuevaFecha) && horaSeleccionada.value < horaMinima.value) {
+        horaSeleccionada.value = null
+      }
+    }
+  })
 
   // Obtener mes y año actual de la semana visible
   const mesYAnioActual = computed(() => {
@@ -163,6 +248,9 @@
   }
 
   const seleccionarDia = (fecha) => {
+    if (esDiaPasado(fecha)) {
+      return
+    }
     fechaSeleccionada.value = fecha
   }
 
@@ -171,11 +259,9 @@
 
     let fechaISO = ''
 
-    // ✅ Si es objeto Date
     if (fechaSeleccionada.value instanceof Date && !isNaN(fechaSeleccionada.value)) {
       fechaISO = fechaSeleccionada.value.toISOString().split('T')[0]
     } 
-    // ✅ Si es string tipo "lunes, 10 de noviembre de 2025"
     else if (typeof fechaSeleccionada.value === 'string') {
       const partes = fechaSeleccionada.value.match(/(\d{1,2}) de (\w+) de (\d{4})/)
       if (partes) {
@@ -196,21 +282,17 @@
     reservaStore.setFechaHora(fechaISO, horaSeleccionada.value)
   }
 
-
   const formatearFecha = (fecha) => {
     if (!fecha) return ''
 
     let dateObj = null
 
-    // Si ya es Date válido
     if (fecha instanceof Date && !isNaN(fecha)) {
       dateObj = fecha
     } else if (typeof fecha === 'string') {
-      // 1) Formato ISO "YYYY-MM-DD"
       if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
         dateObj = new Date(fecha + 'T00:00:00')
       } else {
-        // 2) Formato "10 de noviembre de 2025" o "lunes, 10 de noviembre de 2025"
         const partes = fecha.match(/(\d{1,2})\s+de\s+([a-zA-Záéíóúñ]+)\s+de\s+(\d{4})/i)
         if (partes) {
           const [, dia, mesTexto, anio] = partes
@@ -223,24 +305,21 @@
             dateObj = new Date(Number(anio), mesIndex, Number(dia))
           }
         } else {
-          // 3) Intento con constructor Date por si fuera un string parseable
           const intento = new Date(fecha)
           if (!isNaN(intento)) dateObj = intento
         }
       }
     }
 
-    if (!dateObj || isNaN(dateObj)) return 'Invalid Date' // o '' si prefieres ocultarlo
+    if (!dateObj || isNaN(dateObj)) return 'Invalid Date'
 
     const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
     return dateObj.toLocaleDateString('es-ES', opciones)
   }
 
-
   const formatearHora = (hora) => {
     if (!hora) return ''
 
-    // Si ya viene en formato "HH:MM" (24h), convertir a 12h con AM/PM
     if (/^\d{1,2}:\d{2}$/.test(hora)) {
       const [hoursStr, minutes] = hora.split(':')
       const h = parseInt(hoursStr, 10)
@@ -249,9 +328,8 @@
       return `${h12}:${minutes} ${ampm}`
     }
 
-    // Si ya viene como "7:23 AM" o "07:23 AM" — normalizar espacios y mayúsculas
     if (typeof hora === 'string') {
-      const normalized = hora.replace(/\./g, '').trim() // quita puntos si hay "a.m."
+      const normalized = hora.replace(/\./g, '').trim()
       return normalized.toUpperCase()
     }
 
@@ -285,7 +363,6 @@
   background-color: #8c8c8c;
 }
 
-/* Mes y año */
 .mes-anio {
   font-size: 0.95rem;
   font-weight: 600;
@@ -318,10 +395,22 @@
   transform: translateY(-2px);
 }
 
+.dia-deshabilitado {
+  background-color: #fafafa;
+  color: #bdbdbd;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.dia-deshabilitado:hover {
+  background-color: #fafafa;
+  transform: none;
+}
+
 .dia-seleccionado {
   background: linear-gradient(135deg, #ee6f38 0%, #ee6f38 100%);
   color: white;
-  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+  box-shadow: 0 4px 12px rgba(238, 111, 56, 0.3);
   transform: scale(1.05);
 }
 
@@ -356,6 +445,7 @@
   font-weight: 700;
 }
 
+/* Selector de hora */
 .hora-selector {
   margin-top: 12px;
 }
@@ -380,12 +470,26 @@
   opacity: 1;
 }
 
+/* 🆕 Estilo para hora inválida */
+.hora-invalida :deep(.v-field) {
+  border: 2px solid #d32f2f !important;
+  background-color: #ffebee;
+}
+
+.hora-invalida :deep(input) {
+  color: #d32f2f;
+}
+
+.error-text {
+  color: #d32f2f;
+  font-weight: 500;
+}
+
 .text-grey {
   color: #757575;
   font-size: 0.95rem;
 }
 
-/* Font Awesome icons styling */
 .fas {
   vertical-align: middle;
 }
