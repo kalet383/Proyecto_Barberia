@@ -23,11 +23,7 @@
         <!-- Días en formato horizontal -->
         <div class="dias-horizontales">
           <div v-for="(date, index) in diasVisibles" :key="index" class="dia-card"
-            :class="{ 
-              'dia-seleccionado': esMismaFecha(date, fechaSeleccionada),
-              'dia-hoy': esHoy(date) && !esMismaFecha(date, fechaSeleccionada),
-              'dia-deshabilitado': esDiaPasado(date)
-            }"
+            :class="{ 'dia-seleccionado': esMismaFecha(date, fechaSeleccionada),'dia-hoy': esHoy(date) && !esMismaFecha(date, fechaSeleccionada),'dia-deshabilitado': esDiaPasado(date)}"
             @click="seleccionarDia(date)"
           >
             <span class="dia-nombre">{{ obtenerNombreDia(date) }}</span>
@@ -96,7 +92,7 @@
 </template>
 
 <script setup>
-  import { ref, computed, onMounted, watch } from 'vue'
+  import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
   import { useReservaStore } from '@/stores/reserva'
 
   const reservaStore = useReservaStore()
@@ -104,26 +100,28 @@
   const fechaSeleccionada = ref(null)
   const horaSeleccionada = ref(null)
   const semanaActual = ref(new Date())
+  const horaActual = ref(new Date()) // 🆕 Ref para la hora actual que se actualiza
+  const intervalId = ref(null) // 🆕 Para guardar el ID del intervalo
+  
   const nombresMeses = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
   ]
 
-  // 🆕 Computed para obtener la hora mínima permitida
+  // 🆕 Computed reactivo que usa horaActual en lugar de new Date()
   const horaMinima = computed(() => {
     if (!fechaSeleccionada.value) return '00:00'
     
     if (esHoy(fechaSeleccionada.value)) {
-      const ahora = new Date()
-      const horas = String(ahora.getHours()).padStart(2, '0')
-      const minutos = String(ahora.getMinutes()).padStart(2, '0')
+      const horas = String(horaActual.value.getHours()).padStart(2, '0')
+      const minutos = String(horaActual.value.getMinutes()).padStart(2, '0')
       return `${horas}:${minutos}`
     }
     
     return '00:00'
   })
 
-  // 🆕 Computed para formatear la hora mínima en formato legible
+  // Computed para formatear la hora mínima en formato legible
   const formatearHoraMinima = computed(() => {
     if (!horaMinima.value) return ''
     const [h, m] = horaMinima.value.split(':').map(Number)
@@ -132,7 +130,7 @@
     return `${h12}:${m.toString().padStart(2, '0')} ${ampm}`
   })
 
-  // 🆕 Computed para verificar si la hora seleccionada es inválida
+  // Computed para verificar si la hora seleccionada es inválida
   const esHoraInvalida = computed(() => {
     if (!fechaSeleccionada.value || !horaSeleccionada.value) return false
     
@@ -144,15 +142,15 @@
     return false
   })
 
-  // 🆕 Función para validar la hora cuando el usuario termina de editarla
+  // Función para validar la hora cuando el usuario termina de editarla
   const validarHora = () => {
     if (esHoraInvalida.value) {
-      // Opcional: puedes limpiar la hora o dejarla para que el usuario vea el error
-      // horaSeleccionada.value = null
+      // Limpiar la hora si es inválida
+      horaSeleccionada.value = null
     }
   }
 
-  // 🆕 Función para verificar si un día ya pasó
+  // Función para verificar si un día ya pasó
   const esDiaPasado = (fecha) => {
     const hoy = new Date()
     hoy.setHours(0, 0, 0, 0)
@@ -161,8 +159,50 @@
     return fechaComparar < hoy
   }
 
+  // 🆕 Iniciar intervalo para actualizar la hora sincronizado con el reloj del sistema
+  const iniciarActualizacionHora = () => {
+    // Actualizar inmediatamente
+    horaActual.value = new Date()
+    
+    // Función que actualiza la hora y valida
+    const actualizarYValidar = () => {
+      horaActual.value = new Date()
+      console.log('⏰ Hora actualizada:', horaActual.value.toLocaleTimeString())
+      
+      // Si hay una hora seleccionada y ahora es inválida, limpiarla
+      if (horaSeleccionada.value && esHoraInvalida.value) {
+        console.log('⚠️ La hora seleccionada ahora es inválida. Limpiando...')
+        horaSeleccionada.value = null
+      }
+    }
+    
+    // Calcular cuántos milisegundos faltan para el próximo minuto
+    const ahora = new Date()
+    const segundosRestantes = 60 - ahora.getSeconds()
+    const milisegundosRestantes = (segundosRestantes * 1000) - ahora.getMilliseconds()
+    
+    // Programar la primera actualización exactamente cuando cambie el minuto
+    setTimeout(() => {
+      actualizarYValidar()
+      
+      // Después de la primera sincronización, actualizar cada minuto exacto
+      intervalId.value = setInterval(actualizarYValidar, 60000)
+    }, milisegundosRestantes)
+  }
+
+  // 🆕 Detener el intervalo cuando el componente se desmonte
+  const detenerActualizacionHora = () => {
+    if (intervalId.value) {
+      clearInterval(intervalId.value)
+      intervalId.value = null
+    }
+  }
+
   // Cargar valores previos si existen
   onMounted(() => {
+    // Iniciar actualización de hora
+    iniciarActualizacionHora()
+    
     if (reservaStore.fechaSeleccionada) {
       const f = reservaStore.fechaSeleccionada
       fechaSeleccionada.value = typeof f === 'string' ? new Date(f + 'T00:00:00') : f
@@ -174,6 +214,11 @@
     if (reservaStore.horaSeleccionada) {
       horaSeleccionada.value = reservaStore.horaSeleccionada
     }
+  })
+
+  // 🆕 Limpiar intervalo al desmontar
+  onUnmounted(() => {
+    detenerActualizacionHora()
   })
 
   // Generar 7 días visibles desde la semana actual
@@ -189,7 +234,7 @@
     return dias
   })
 
-  // ✅ Watch para detectar cambios y validar
+  // Watch para detectar cambios y validar
   watch([fechaSeleccionada, horaSeleccionada], ([nuevaFecha, nuevaHora]) => {
     const ambosSeleccionados = !!(nuevaFecha && nuevaHora && nuevaHora.trim() !== '')
     
@@ -203,7 +248,7 @@
     }
   }, { deep: true })
 
-  // 🆕 Watch para limpiar hora si cambia la fecha y la hora ya no es válida
+  // Watch para limpiar hora si cambia la fecha y la hora ya no es válida
   watch(fechaSeleccionada, (nuevaFecha) => {
     if (nuevaFecha && horaSeleccionada.value) {
       if (esHoy(nuevaFecha) && horaSeleccionada.value < horaMinima.value) {
@@ -274,11 +319,6 @@
         fechaISO = fecha.toISOString().split('T')[0]
       }
     }
-
-    console.log('Guardando en store:', {
-      fecha: fechaISO,
-      hora: horaSeleccionada.value
-    })
     reservaStore.setFechaHora(fechaISO, horaSeleccionada.value)
   }
 
@@ -470,7 +510,7 @@
   opacity: 1;
 }
 
-/* 🆕 Estilo para hora inválida */
+/* Estilo para hora inválida */
 .hora-invalida :deep(.v-field) {
   border: 2px solid #d32f2f !important;
   background-color: #ffebee;
