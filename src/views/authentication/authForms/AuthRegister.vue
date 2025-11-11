@@ -56,12 +56,12 @@ async function handleRegister() {
 <template>
   <v-btn block color="primary" variant="outlined" class="text-lightText googleBtn">
     <img :src="Google" alt="google" />
-    <span class="ml-2">Registrate con Google</span></v-btn
+    <span class="ml-2">Registrate con tu cuenta de Google</span></v-btn
   >
   <v-row>
     <v-col class="d-flex align-center">
       <v-divider class="custom-devider" />
-      <v-btn variant="outlined" class="orbtn" rounded="md" size="small">O</v-btn>
+      <p class="orbtn" rounded="md" size="small"> O </p>
       <v-divider class="custom-devider" />
     </v-col>
   </v-row>
@@ -74,7 +74,7 @@ async function handleRegister() {
           density="comfortable"
           hide-details="auto"
           variant="outlined"
-          color="primary"
+          color="#ee6f38"
           label="Nombre"
         ></v-text-field>
       </v-col>
@@ -84,7 +84,7 @@ async function handleRegister() {
           density="comfortable"
           hide-details="auto"
           variant="outlined"
-          color="primary"
+          color="#ee6f38"
           label="Apellido"
         ></v-text-field>
       </v-col>
@@ -98,7 +98,7 @@ async function handleRegister() {
       density="comfortable"
       hide-details="auto"
       variant="outlined"
-      color="primary"
+      color="#ee6f38"
     ></v-text-field>
 
     <v-text-field
@@ -108,7 +108,7 @@ async function handleRegister() {
       required
       density="comfortable"
       variant="outlined"
-      color="primary"
+      color="#ee6f38"
       hide-details="auto"
       :append-icon="show1 ? '$eye' : '$eyeOff'"
       :type="show1 ? 'text' : 'password'"
@@ -123,7 +123,7 @@ async function handleRegister() {
       required
       density="comfortable"
       variant="outlined"
-      color="primary"
+      color="#ee6f38"
       hide-details="auto"
       :type="show1 ? 'text' : 'telefono'"
       @click:append="show1 = !show1"
@@ -136,13 +136,13 @@ async function handleRegister() {
         :rules="[(v: any) => !!v || 'You must agree to continue!']"
         label="¿Estas de acuerdo con?"
         required
-        color="primary"
+        color="#ee6f38"
         class="ms-n2"
         hide-details
       ></v-checkbox>
       <a href="#" class="ml-1 text-lightText">Terminos y condiciones</a>
     </div>
-    <v-btn color="secondary" block class="mt-2" variant="flat" size="large" @click="handleRegister()">Registrarse</v-btn>
+    <v-btn color="#ee6f38" block class="mt-2" variant="flat" size="large" @click="handleRegister()"> Registrarse </v-btn>
   </v-form>
   <div class="mt-5 text-right">
     <v-divider />
@@ -162,9 +162,7 @@ async function handleRegister() {
   box-shadow: none;
 }
 .orbtn {
-  padding: 2px 40px;
-  border-color: rgba(0, 0, 0, 0.08);
-  margin: 20px 15px;
+  padding: 2px 15px;
 }
 .pwdInput {
   position: relative;

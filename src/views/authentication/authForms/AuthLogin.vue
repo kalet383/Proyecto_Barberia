@@ -81,12 +81,12 @@ async function validate(values: any, { setErrors }: any) {
 <template>
   <v-btn block color="primary" variant="outlined" class="text-lightText googleBtn">
     <img :src="Google" alt="google" />
-    <span class="ml-2">Inicia sesion con Google</span></v-btn
+    <span class="ml-2">Inicia sesion con tu cuenta de Google</span></v-btn
   >
   <v-row>
     <v-col class="d-flex align-center">
       <v-divider class="custom-devider" />
-      <v-btn variant="outlined" class="orbtn" rounded="md" size="small">O</v-btn>
+      <p rounded="md" size="small" class="orbtn"> O </p>
       <v-divider class="custom-devider" />
     </v-col>
   </v-row>
@@ -101,7 +101,7 @@ async function validate(values: any, { setErrors }: any) {
       density="comfortable"
       hide-details="auto"
       variant="outlined"
-      color="primary"
+      color="#ee6f38"
     ></v-text-field>
     <v-text-field
       v-model="password"
@@ -110,7 +110,7 @@ async function validate(values: any, { setErrors }: any) {
       required
       density="comfortable"
       variant="outlined"
-      color="primary"
+      color="#ee6f38"
       hide-details="auto"
       :append-icon="show1 ? '$eye' : '$eyeOff'"
       :type="show1 ? 'text' : 'password'"
@@ -124,7 +124,7 @@ async function validate(values: any, { setErrors }: any) {
         :rules="[(v: any) => !!v || 'You must agree to continue!']"
         label="¿Acuerdate de mi?"
         required
-        color="primary"
+        color="#ee6f38"
         class="ms-n2"
         hide-details
       ></v-checkbox>
@@ -132,9 +132,7 @@ async function validate(values: any, { setErrors }: any) {
         <a href="javascript:void(0)" class="text-primary text-decoration-none">¿Has olvidado tu contraseña?</a>
       </div>
     </div>
-    <v-btn color="secondary" :loading="isSubmitting" block class="mt-2" variant="flat" size="large" :disabled="valid" type="submit">
-      Iniciar sesion</v-btn
-    >
+    <v-btn color="#ee6f38" :loading="isSubmitting" block class="mt-2" variant="flat" size="large" :disabled="valid" type="submit"> Iniciar sesion </v-btn>
     <div v-if="errors.apiError" class="mt-2">
       <v-alert color="error">{{ errors.apiError }}</v-alert>
     </div>
@@ -145,34 +143,34 @@ async function validate(values: any, { setErrors }: any) {
   </div>
 </template>
 <style lang="scss">
-.custom-devider {
-  border-color: rgba(0, 0, 0, 0.08) !important;
-}
-.googleBtn {
-  border-color: rgba(0, 0, 0, 0.08);
-  margin: 30px 0 20px 0;
-}
-.outlinedInput .v-field {
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: none;
-}
-.orbtn {
-  padding: 2px 40px;
-  border-color: rgba(0, 0, 0, 0.08);
-  margin: 20px 15px;
-}
-.pwdInput {
-  position: relative;
-  .v-input__append {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
+  .custom-devider {
+    border-color: rgba(0, 0, 0, 0.08) !important;
   }
-}
-.loginForm {
-  .v-text-field .v-field--active input {
-    font-weight: 500;
+  .googleBtn {
+    border-color: rgba(0, 0, 0, 0.08);
+    margin: 30px 0 20px 0;
   }
-}
+  .outlinedInput .v-field {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: none;
+  }
+
+  .orbtn {
+    padding: 2px 15px;
+  } 
+
+  .pwdInput {
+    position: relative;
+    .v-input__append {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+  }
+  .loginForm {
+    .v-text-field .v-field--active input {
+      font-weight: 500;
+    }
+  }
 </style>

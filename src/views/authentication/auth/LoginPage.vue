@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import Logo from '@/layouts/full/logo/LogoDark.vue';
+// import Logo from '@/layouts/full/logo/LogoDark.vue';
+import Logo2 from '../../../../public/imagenes/logo/logo2.png';
 import AuthLogin from '../authForms/AuthLogin.vue';
 </script>
 
@@ -17,8 +18,11 @@ import AuthLogin from '../authForms/AuthLogin.vue';
                     <!---Left Part Logo -->
                     <v-row>
                       <v-col cols="12" class="text-center">
-                        <Logo />
-                        <h2 class="text-secondary text-h2 mt-8">Hola, Bienvenido de nuevo</h2>
+                        <a href="/">
+                          <img :src="Logo2" alt="Logo2" width="150" />
+                        </a>
+                        <!-- <Logo /> -->
+                        <h2 class="text-h2 mt-8">Hola, Bienvenido de nuevo</h2>
                         <h4 class="text-disabled text-h4 mt-3">Ingrese sus credenciales para continuar</h4>
                       </v-col>
                     </v-row>

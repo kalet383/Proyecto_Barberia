@@ -1,4 +1,4 @@
-<!-- <script setup lang="ts">
+<script setup lang="ts">
 import { ref, computed } from 'vue';
 
 const select = ref({ state: 'Today', abbr: 'FL' });
@@ -129,4 +129,4 @@ const lineChart1 = {
       </v-card-text>
     </v-card>
   </v-card>
-</template> -->
+</template>
