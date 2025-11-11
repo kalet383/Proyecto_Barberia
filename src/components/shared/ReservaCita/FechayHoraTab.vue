@@ -10,7 +10,22 @@
             <v-label class="text-subtitle-1 d-block mb-1">Selecciona un día</v-label>
             <span class="mes-anio">{{ mesYAnioActual }}</span>
           </div>
-          <div class="d-flex ga-2">
+          <div class="d-flex ga-2 align-center position-relative">
+            <!-- 🆕 Botón para abrir calendario completo con v-menu -->
+            <v-menu v-model="mostrarCalendario" :close-on-content-click="false" location="bottom end" offset="8">
+              <template v-slot:activator="{ props }">
+                <v-btn icon size="small" variant="outlined" color="#ee6f38"v-bind="props"title="Ver calendario completo">
+                  <i class="fas fa-calendar-alt"></i>
+                </v-btn>
+              </template>
+
+              <v-card min-width="320">
+                <v-card-text class="pa-0">
+                  <v-date-picker v-model="fechaCalendario" :min="fechaMinima" color="#ee6f38" show-adjacent-months hide-header elevation="0" @update:model-value="aplicarFechaCalendario"></v-date-picker>
+                </v-card-text>
+              </v-card>
+            </v-menu>
+            
             <v-btn icon size="small" variant="outlined" color="black" @click="semanaAnterior">
               <i class="fas fa-chevron-left"></i>
             </v-btn>
@@ -23,7 +38,11 @@
         <!-- Días en formato horizontal -->
         <div class="dias-horizontales">
           <div v-for="(date, index) in diasVisibles" :key="index" class="dia-card"
-            :class="{ 'dia-seleccionado': esMismaFecha(date, fechaSeleccionada),'dia-hoy': esHoy(date) && !esMismaFecha(date, fechaSeleccionada),'dia-deshabilitado': esDiaPasado(date)}"
+            :class="{ 
+              'dia-seleccionado': esMismaFecha(date, fechaSeleccionada),
+              'dia-hoy': esHoy(date) && !esMismaFecha(date, fechaSeleccionada),
+              'dia-deshabilitado': esDiaPasado(date)
+            }"
             @click="seleccionarDia(date)"
           >
             <span class="dia-nombre">{{ obtenerNombreDia(date) }}</span>
@@ -102,11 +121,34 @@
   const semanaActual = ref(new Date())
   const horaActual = ref(new Date()) // 🆕 Ref para la hora actual que se actualiza
   const intervalId = ref(null) // 🆕 Para guardar el ID del intervalo
+  const mostrarCalendario = ref(false) // 🆕 Para controlar el diálogo del calendario
+  const fechaCalendario = ref(null) // 🆕 Para el v-date-picker
   
   const nombresMeses = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
   ]
+
+  // 🆕 Computed para la fecha mínima (hoy)
+  const fechaMinima = computed(() => {
+    const hoy = new Date()
+    return hoy.toISOString().split('T')[0]
+  })
+
+  // 🆕 Función para aplicar la fecha seleccionada del calendario
+  const aplicarFechaCalendario = (fecha) => {
+    if (fecha) {
+      // Convertir la fecha del calendario a objeto Date
+      const fechaObj = new Date(fecha)
+      fechaSeleccionada.value = fechaObj
+      
+      // Actualizar la semana visible para que incluya esta fecha
+      semanaActual.value = new Date(fechaObj)
+      
+      // Cerrar el menú
+      mostrarCalendario.value = false
+    }
+  }
 
   // 🆕 Computed reactivo que usa horaActual en lugar de new Date()
   const horaMinima = computed(() => {
@@ -181,6 +223,8 @@
     const segundosRestantes = 60 - ahora.getSeconds()
     const milisegundosRestantes = (segundosRestantes * 1000) - ahora.getMilliseconds()
     
+    console.log(`🕐 Sincronizando... próxima actualización en ${segundosRestantes} segundos`)
+    
     // Programar la primera actualización exactamente cuando cambie el minuto
     setTimeout(() => {
       actualizarYValidar()
@@ -195,7 +239,10 @@
     if (intervalId.value) {
       clearInterval(intervalId.value)
       intervalId.value = null
+      console.log('🛑 Intervalo de actualización detenido')
     }
+    // También limpiar cualquier setTimeout pendiente si existe
+    // (aunque el setTimeout se ejecuta una sola vez, es buena práctica)
   }
 
   // Cargar valores previos si existen
@@ -207,6 +254,8 @@
       const f = reservaStore.fechaSeleccionada
       fechaSeleccionada.value = typeof f === 'string' ? new Date(f + 'T00:00:00') : f
       semanaActual.value = new Date(fechaSeleccionada.value)
+      // 🆕 También actualizar fechaCalendario
+      fechaCalendario.value = reservaStore.fechaSeleccionada
     }
     if (fechaSeleccionada.value) {
       semanaActual.value = new Date(fechaSeleccionada.value)
@@ -378,170 +427,170 @@
 </script>
 
 <style scoped>
-.fecha-hora-container {
-  max-width: 700px;
-  margin-left: 40px;
-  text-align: left;
-}
-
-.scroll-fecha-hora {
-  max-height: 600px;
-  overflow-y: auto;
-  padding-right: 8px;
-}
-
-.scroll-fecha-hora::-webkit-scrollbar {
-  width: 8px;
-}
-
-.scroll-fecha-hora::-webkit-scrollbar-thumb {
-  background-color: #b0b0b0;
-  border-radius: 10px;
-}
-
-.scroll-fecha-hora::-webkit-scrollbar-thumb:hover {
-  background-color: #8c8c8c;
-}
-
-.mes-anio {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: black;
-  text-transform: capitalize;
-}
-
-/* Diseño horizontal de días */
-.dias-horizontales {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 12px;
-}
-
-.dia-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 16px 8px;
-  background-color: #f5f5f5;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  user-select: none;
-}
-
-.dia-card:hover {
-  background-color: #e0e0e0;
-  transform: translateY(-2px);
-}
-
-.dia-deshabilitado {
-  background-color: #fafafa;
-  color: #bdbdbd;
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.dia-deshabilitado:hover {
-  background-color: #fafafa;
-  transform: none;
-}
-
-.dia-seleccionado {
-  background: linear-gradient(135deg, #ee6f38 0%, #ee6f38 100%);
-  color: white;
-  box-shadow: 0 4px 12px rgba(238, 111, 56, 0.3);
-  transform: scale(1.05);
-}
-
-.dia-hoy {
-  border: 2px solid #ee6f38;
-}
-
-.dia-hoy::after {
-  content: '';
-  position: absolute;
-  bottom: 4px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: #ee6f38;
-}
-
-.dia-seleccionado.dia-hoy::after {
-  background-color: white;
-}
-
-.dia-nombre {
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  margin-bottom: 4px;
-  opacity: 0.8;
-}
-
-.dia-numero {
-  font-size: 1.5rem;
-  font-weight: 700;
-}
-
-/* Selector de hora */
-.hora-selector {
-  margin-top: 12px;
-}
-
-.time-input {
-  max-width: 250px;
-}
-
-.time-input :deep(input[type="time"]) {
-  font-size: 1.1rem;
-  font-weight: 500;
-}
-
-.time-input :deep(input[type="time"]::-webkit-calendar-picker-indicator) {
-  cursor: pointer;
-  font-size: 1.2rem;
-  opacity: 0.6;
-  transition: opacity 0.2s;
-}
-
-.time-input :deep(input[type="time"]::-webkit-calendar-picker-indicator:hover) {
-  opacity: 1;
-}
-
-/* Estilo para hora inválida */
-.hora-invalida :deep(.v-field) {
-  border: 2px solid #d32f2f !important;
-  background-color: #ffebee;
-}
-
-.hora-invalida :deep(input) {
-  color: #d32f2f;
-}
-
-.error-text {
-  color: #d32f2f;
-  font-weight: 500;
-}
-
-.text-grey {
-  color: #757575;
-  font-size: 0.95rem;
-}
-
-.fas {
-  vertical-align: middle;
-}
-
-/* Responsive */
-@media (max-width: 600px) {
-  .dias-horizontales {
-    grid-template-columns: repeat(4, 1fr);
-  }
-  
   .fecha-hora-container {
-    margin-left: 0;
+    max-width: 700px;
+    margin-left: 40px;
+    text-align: left;
   }
-}
+
+  .scroll-fecha-hora {
+    max-height: 600px;
+    overflow-y: auto;
+    padding-right: 8px;
+  }
+
+  .scroll-fecha-hora::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .scroll-fecha-hora::-webkit-scrollbar-thumb {
+    background-color: #b0b0b0;
+    border-radius: 10px;
+  }
+
+  .scroll-fecha-hora::-webkit-scrollbar-thumb:hover {
+    background-color: #8c8c8c;
+  }
+
+  .mes-anio {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: black;
+    text-transform: capitalize;
+  }
+
+  /* Diseño horizontal de días */
+  .dias-horizontales {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 12px;
+  }
+
+  .dia-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 8px;
+    background-color: #f5f5f5;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    user-select: none;
+  }
+
+  .dia-card:hover {
+    background-color: #e0e0e0;
+    transform: translateY(-2px);
+  }
+
+  .dia-deshabilitado {
+    background-color: #fafafa;
+    color: #bdbdbd;
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .dia-deshabilitado:hover {
+    background-color: #fafafa;
+    transform: none;
+  }
+
+  .dia-seleccionado {
+    background: linear-gradient(135deg, #ee6f38 0%, #ee6f38 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(238, 111, 56, 0.3);
+    transform: scale(1.05);
+  }
+
+  .dia-hoy {
+    border: 2px solid #ee6f38;
+  }
+
+  .dia-hoy::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #ee6f38;
+  }
+
+  .dia-seleccionado.dia-hoy::after {
+    background-color: white;
+  }
+
+  .dia-nombre {
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    opacity: 0.8;
+  }
+
+  .dia-numero {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  /* Selector de hora */
+  .hora-selector {
+    margin-top: 12px;
+  }
+
+  .time-input {
+    max-width: 250px;
+  }
+
+  .time-input :deep(input[type="time"]) {
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+
+  .time-input :deep(input[type="time"]::-webkit-calendar-picker-indicator) {
+    cursor: pointer;
+    font-size: 1.2rem;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+  }
+
+  .time-input :deep(input[type="time"]::-webkit-calendar-picker-indicator:hover) {
+    opacity: 1;
+  }
+
+  /* Estilo para hora inválida */
+  .hora-invalida :deep(.v-field) {
+    border: 2px solid #d32f2f !important;
+    background-color: #ffebee;
+  }
+
+  .hora-invalida :deep(input) {
+    color: #d32f2f;
+  }
+
+  .error-text {
+    color: #d32f2f;
+    font-weight: 500;
+  }
+
+  .text-grey {
+    color: #757575;
+    font-size: 0.95rem;
+  }
+
+  .fas {
+    vertical-align: middle;
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .dias-horizontales {
+      grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .fecha-hora-container {
+      margin-left: 0;
+    }
+  }
 </style>
