@@ -259,7 +259,7 @@
     try {
       console.log('🎯 Iniciando proceso de agendado...')
       
-      // Validaciones con notificaciones bonitas
+      // Validaciones
       if (!reservaStore.serviciosSeleccionados || reservaStore.serviciosSeleccionados.length === 0) {
         mensajeNotificacion.value = 'Debes seleccionar al menos un servicio'
         mostrarNotificacionError.value = true
@@ -301,21 +301,34 @@
       if (resultado.success) {
         // ✅ ÉXITO
         mensajeNotificacion.value = resultado.mensaje
+        
+        // ⭐ IMPORTANTE: Primero cerrar el modal de confirmación
         mostrarModalConfirmacion.value = false
+        
+        // ⭐ Esperar un poco para que el modal se cierre completamente
+        await nextTick()
+        
+        // ⭐ Luego limpiar la reserva (esto resetea los datos)
+        reservaStore.resetReserva()
+        
+        // ⭐ Resetear el índice del tab
+        currentIndex.value = 0
+        
+        // ⭐ Mostrar notificación de éxito
         mostrarNotificacionExito.value = true
         
         console.log('✅ Citas creadas:', resultado.citas)
-        
-        // Limpiar la reserva
-        reservaStore.resetReserva()
-        
-        // Cerrar el dialog principal
-        // closeDialog()
+
       } else {
         // ❌ ERROR
         mensajeNotificacion.value = resultado.mensaje
         horariosAlternativos.value = resultado.horariosAlternativos || []
         barberosAlternativos.value = resultado.barberosAlternativos || []
+        
+        // Cerrar modal de confirmación
+        mostrarModalConfirmacion.value = false
+        
+        // Mostrar notificación de error
         mostrarNotificacionError.value = true
         
         console.log('🕐 Horarios alternativos:', resultado.horariosAlternativos)
@@ -325,6 +338,11 @@
     } catch (error) {
       console.error('💥 Error inesperado:', error)
       mensajeNotificacion.value = 'Ocurrió un error inesperado al agendar la cita'
+      
+      // Cerrar modal de confirmación si está abierto
+      mostrarModalConfirmacion.value = false
+      
+      // Mostrar notificación de error
       mostrarNotificacionError.value = true
     }
   }
