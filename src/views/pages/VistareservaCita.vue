@@ -74,6 +74,28 @@
 
         </div>
       </v-card>
+      <!-- Modales de notificación -->
+      <ModalConfirmacionCita
+        v-model="mostrarModalConfirmacion"
+        :servicios="serviciosSeleccionados"
+        :barbero="reservaStore.barberoSeleccionado"
+        :fecha="fechaFormateada"
+        :hora="horaFormateada"
+        @confirmar="agendarCita"
+      />
+
+      <NotificacionExito
+        v-model="mostrarNotificacionExito"
+        :mensaje="mensajeNotificacion"
+        @cerrar-todo="closeDialog"
+      />
+
+      <NotificacionError
+        v-model="mostrarNotificacionError"
+        :mensaje="mensajeNotificacion"
+        :horarios-alternativos="horariosAlternativos"
+        :barberos-alternativos="barberosAlternativos"
+      />
     </v-dialog>
   </div>
 </template>
@@ -89,6 +111,9 @@
   import FechayHoraTab from '@/components/shared/ReservaCita/FechayHoraTab.vue'
   import ConfirmacionTab from '@/components/shared/ReservaCita/ConfirmacionTab.vue'
   import DetalleReserva from '@/components/shared/ReservaCita/DetalleReserva.vue'
+  import ModalConfirmacionCita from '@/components/shared/ReservaCita/ModalConfirmacionCita.vue'
+  import NotificacionExito from '@/components/shared/ReservaCita/NotificacionExito.vue'
+  import NotificacionError from '@/components/shared/ReservaCita/NotificacionError.vue'
 
   const ServicioStore = useServiceStore()
   const reservaStore = useReservaStore()
@@ -109,6 +134,13 @@
   const items = ['Servicios', 'Fecha y Hora', 'Profesional', 'Confirmacion']
   const currentIndex = ref(reservaStore.currentTab) // ✅ Obtener de la store
   const botonActivo = ref(false)
+  // Estados para los modales
+  const mostrarModalConfirmacion = ref(false)
+  const mostrarNotificacionExito = ref(false)
+  const mostrarNotificacionError = ref(false)
+  const mensajeNotificacion = ref('')
+  const horariosAlternativos = ref([])
+  const barberosAlternativos = ref([])
 
   const currentTab = computed({
     get: () => items[currentIndex.value],
@@ -167,7 +199,6 @@
 
   // 🔥 LISTENER PARA REABRIR DIALOG DESPUÉS DEL LOGIN
   const handleOpenReserva = () => {
-    console.log('🔔 Evento recibido: reabrir dialog de reserva')
     emit('update:modelValue', true)
     
     // ✅ Restaurar el tab desde la store
@@ -215,9 +246,9 @@
 
   // Avanzar al siguiente tab
   async function avanzarTab() {
-    // Si es el último tab (Confirmación), agendar la cita
+    // Si es el último tab (Confirmación), mostrar modal de confirmación
     if (currentIndex.value === items.length - 1) {
-      await agendarCita()
+      mostrarModalConfirmacion.value = true
     } else {
       // Si no, avanzar al siguiente tab
       currentIndex.value++
@@ -228,24 +259,28 @@
     try {
       console.log('🎯 Iniciando proceso de agendado...')
       
-      // Validaciones
+      // Validaciones con notificaciones bonitas
       if (!reservaStore.serviciosSeleccionados || reservaStore.serviciosSeleccionados.length === 0) {
-        alert('❌ Debes seleccionar al menos un servicio')
+        mensajeNotificacion.value = 'Debes seleccionar al menos un servicio'
+        mostrarNotificacionError.value = true
         return
       }
       
       if (!reservaStore.barberoSeleccionado) {
-        alert('❌ Debes seleccionar un barbero')
+        mensajeNotificacion.value = 'Debes seleccionar un barbero'
+        mostrarNotificacionError.value = true
         return
       }
       
       if (!reservaStore.fechaSeleccionada || !reservaStore.horaSeleccionada) {
-        alert('❌ Debes seleccionar fecha y hora')
+        mensajeNotificacion.value = 'Debes seleccionar fecha y hora'
+        mostrarNotificacionError.value = true
         return
       }
       
       if (!authStore.isAuthenticated) {
-        alert('❌ Debes iniciar sesión para agendar')
+        mensajeNotificacion.value = 'Debes iniciar sesión para agendar'
+        mostrarNotificacionError.value = true
         return
       }
 
@@ -253,9 +288,9 @@
       const datosReserva = {
         clienteId: authStore.user.id,
         barberoId: reservaStore.barberoSeleccionado.id,
-        servicioId: reservaStore.serviciosSeleccionados, // Array de IDs
-        hora: reservaStore.horaSeleccionada + ':00', // Asegurar formato HH:MM:SS
-        fecha: reservaStore.fechaSeleccionada // Formato YYYY-MM-DD
+        servicioId: reservaStore.serviciosSeleccionados,
+        hora: reservaStore.horaSeleccionada + ':00',
+        fecha: reservaStore.fechaSeleccionada
       }
 
       console.log('📋 Datos a enviar:', datosReserva)
@@ -265,36 +300,32 @@
 
       if (resultado.success) {
         // ✅ ÉXITO
-        alert(`✅ ${resultado.mensaje}`)
+        mensajeNotificacion.value = resultado.mensaje
+        mostrarModalConfirmacion.value = false
+        mostrarNotificacionExito.value = true
         
         console.log('✅ Citas creadas:', resultado.citas)
         
         // Limpiar la reserva
         reservaStore.resetReserva()
         
-        // Cerrar el dialog
-        closeDialog()
-        
-        // Opcional: Redirigir a mis citas
-        // router.push('/mis-citas')
+        // Cerrar el dialog principal
+        // closeDialog()
       } else {
-        // ❌ ERROR - Barbero no disponible
-        alert(`❌ ${resultado.mensaje}`)
+        // ❌ ERROR
+        mensajeNotificacion.value = resultado.mensaje
+        horariosAlternativos.value = resultado.horariosAlternativos || []
+        barberosAlternativos.value = resultado.barberosAlternativos || []
+        mostrarNotificacionError.value = true
         
-        if (resultado.horariosAlternativos.length > 0) {
-          console.log('🕐 Horarios alternativos:', resultado.horariosAlternativos)
-          // Aquí puedes mostrar los horarios alternativos en un modal
-        }
-        
-        if (resultado.barberosAlternativos.length > 0) {
-          console.log('💈 Barberos alternativos:', resultado.barberosAlternativos)
-          // Aquí puedes mostrar los barberos alternativos
-        }
+        console.log('🕐 Horarios alternativos:', resultado.horariosAlternativos)
+        console.log('💈 Barberos alternativos:', resultado.barberosAlternativos)
       }
 
     } catch (error) {
       console.error('💥 Error inesperado:', error)
-      alert('💥 Ocurrió un error inesperado al agendar la cita')
+      mensajeNotificacion.value = 'Ocurrió un error inesperado al agendar la cita'
+      mostrarNotificacionError.value = true
     }
   }
 </script>

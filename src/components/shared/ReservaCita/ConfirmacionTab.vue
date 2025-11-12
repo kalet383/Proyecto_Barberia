@@ -188,13 +188,6 @@
             // 1. El usuario está autenticado
             // 2. Aceptó los términos
             const habilitar = autenticado && terminos;
-            
-            console.log('🔐 Estado de confirmación:', {
-                autenticado,
-                terminos,
-                habilitar
-            });
-            
             emit('estado-confirmacion-agendar', habilitar);
         },
         { immediate: true }
