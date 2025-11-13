@@ -10,11 +10,7 @@
             <p class="text-body-2 mt-1" style="opacity: 0.9;">Revisa los detalles de tu cita</p>
           </div>
         </div>
-        <v-btn icon variant="text" color="white" size="small" 
-               style="position: absolute; top: 16px; right: 16px;" 
-               @click="$emit('update:modelValue', false)">
-               <i class="fa-solid fa-xmark" style="font-size: 20px;"></i>
-        </v-btn>
+        <v-btn icon variant="text" color="white" size="small" style="position: absolute; top: 16px; right: 16px;" @click="$emit('update:modelValue', false)"><i class="fa-solid fa-xmark" style="font-size: 20px;"></i></v-btn>
       </v-card-title>
 
       <!-- Contenido -->
@@ -27,9 +23,7 @@
             <v-chip size="small" color="orange-darken-1" class="ml-2">{{ servicios.length }}</v-chip>
           </div>
 
-          <div v-for="servicio in servicios" :key="servicio.id" 
-               class="mb-2 pa-3 rounded-lg" 
-               style="background-color: #f5f5f5; border-left: 4px solid #ff6f00;">
+          <div v-for="servicio in servicios" :key="servicio.id" class="mb-2 pa-3 rounded-lg" style="background-color: #f5f5f5; border-left: 4px solid #ff6f00;">
             <div class="d-flex justify-space-between align-start">
               <div>
                 <p class="font-weight-bold">{{ servicio.nombre }}</p>
@@ -97,12 +91,10 @@
 
       <!-- Footer con botones -->
       <v-card-actions class="pa-6 bg-grey-lighten-5">
-        <v-btn variant="outlined" color="grey-darken-2" size="large" 
-               class="flex-1 text-none" @click="$emit('update:modelValue', false)">
+        <v-btn variant="outlined" color="grey-darken-2" size="large" class="flex-1 text-none" @click="$emit('update:modelValue', false)">
           Editar Reserva
         </v-btn>
-        <v-btn color="orange-darken-1" size="large" 
-               class="flex-1 text-none" @click="$emit('confirmar')">
+        <v-btn color="orange-darken-1" size="large" class="flex-1 text-none" @click="$emit('confirmar')">
           Confirmar Cita
         </v-btn>
       </v-card-actions>
@@ -111,51 +103,51 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+  import { computed } from 'vue'
 
-const props = defineProps({
-  modelValue: Boolean,
-  servicios: Array,
-  barbero: Object,
-  fecha: String,
-  hora: String
-})
+  const props = defineProps({
+    modelValue: Boolean,
+    servicios: Array,
+    barbero: Object,
+    fecha: String,
+    hora: String
+  })
 
-defineEmits(['update:modelValue', 'confirmar'])
+  defineEmits(['update:modelValue', 'confirmar'])
 
-const calcularPrecioTotal = computed(() => {
-  if (!props.servicios || props.servicios.length === 0) return '$0.00'
-  
-  const total = props.servicios.reduce((sum, servicio) => {
-    const precio = parseFloat(servicio.precio.replace(/[^0-9.-]+/g, '')) || 0
-    return sum + precio
-  }, 0)
-  
-  return new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP'
-  }).format(total)
-})
+  const calcularPrecioTotal = computed(() => {
+    if (!props.servicios || props.servicios.length === 0) return '$0.00'
+    
+    const total = props.servicios.reduce((sum, servicio) => {
+      const precio = parseFloat(servicio.precio.replace(/[^0-9.-]+/g, '')) || 0
+      return sum + precio
+    }, 0)
+    
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP'
+    }).format(total)
+  })
 
-const calcularDuracionTotal = computed(() => {
-  if (!props.servicios || props.servicios.length === 0) return '0 min'
-  
-  const totalMinutos = props.servicios.reduce((sum, servicio) => {
-    const match = servicio.duracionAprox.match(/(\d+):(\d+):(\d+)/)
-    if (match) {
-      const horas = parseInt(match[1])
-      const minutos = parseInt(match[2])
-      return sum + (horas * 60) + minutos
+  const calcularDuracionTotal = computed(() => {
+    if (!props.servicios || props.servicios.length === 0) return '0 min'
+    
+    const totalMinutos = props.servicios.reduce((sum, servicio) => {
+      const match = servicio.duracionAprox.match(/(\d+):(\d+):(\d+)/)
+      if (match) {
+        const horas = parseInt(match[1])
+        const minutos = parseInt(match[2])
+        return sum + (horas * 60) + minutos
+      }
+      return sum
+    }, 0)
+    
+    const horas = Math.floor(totalMinutos / 60)
+    const minutos = totalMinutos % 60
+    
+    if (horas > 0) {
+      return `${horas}h ${minutos}min`
     }
-    return sum
-  }, 0)
-  
-  const horas = Math.floor(totalMinutos / 60)
-  const minutos = totalMinutos % 60
-  
-  if (horas > 0) {
-    return `${horas}h ${minutos}min`
-  }
-  return `${minutos}min`
-})
+    return `${minutos}min`
+  })
 </script>

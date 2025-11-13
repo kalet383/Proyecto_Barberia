@@ -36,12 +36,9 @@ export const useAuthStore = defineStore('auth', {
         if (this.user && (this.user as any).Role == 'Administrador') {
           this.menu = 0;
         }
-        // 🔥 AGREGA ESTO (por si tienes barberos)
         if (this.user && (this.user as any).Role == 'Barbero') {
           this.menu = 1;
         }
-        
-        console.log("datos usuarios:", res.data);
         
         // 🎯 RETORNAR EL ROL
         return {
@@ -70,7 +67,6 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async loadUser() {
-      console.log('EJECUTANDO LOADUSER');
       try {
         const { data: profile } = await api.get('/auth/profile', {
           withCredentials: true,

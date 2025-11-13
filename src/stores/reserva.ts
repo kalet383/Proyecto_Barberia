@@ -73,7 +73,6 @@ export const useReservaStore = defineStore('reserva', {
         this.fechaSeleccionada = fecha
       }
       this.horaSeleccionada = hora
-      console.log('Guardando en store:', { fecha: this.fechaSeleccionada, hora: this.horaSeleccionada })
     },
 
 

@@ -209,11 +209,9 @@
     // Función que actualiza la hora y valida
     const actualizarYValidar = () => {
       horaActual.value = new Date()
-      console.log('⏰ Hora actualizada:', horaActual.value.toLocaleTimeString())
       
       // Si hay una hora seleccionada y ahora es inválida, limpiarla
       if (horaSeleccionada.value && esHoraInvalida.value) {
-        console.log('⚠️ La hora seleccionada ahora es inválida. Limpiando...')
         horaSeleccionada.value = null
       }
     }
@@ -222,8 +220,6 @@
     const ahora = new Date()
     const segundosRestantes = 60 - ahora.getSeconds()
     const milisegundosRestantes = (segundosRestantes * 1000) - ahora.getMilliseconds()
-    
-    console.log(`🕐 Sincronizando... próxima actualización en ${segundosRestantes} segundos`)
     
     // Programar la primera actualización exactamente cuando cambie el minuto
     setTimeout(() => {
@@ -239,7 +235,6 @@
     if (intervalId.value) {
       clearInterval(intervalId.value)
       intervalId.value = null
-      console.log('🛑 Intervalo de actualización detenido')
     }
     // También limpiar cualquier setTimeout pendiente si existe
     // (aunque el setTimeout se ejecuta una sola vez, es buena práctica)

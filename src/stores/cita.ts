@@ -38,8 +38,6 @@ export const useCitaStore = defineStore('cita', {
       this.barberosAlternativos = [];
 
       try {
-        console.log('📤 Enviando datos de cita:', datosReserva);
-
         const citaData = {
           clienteId: datosReserva.clienteId,
           barberoId: datosReserva.barberoId,
@@ -50,8 +48,6 @@ export const useCitaStore = defineStore('cita', {
         };
 
         const response = await axios.post(API_URL, citaData);
-
-        console.log('📥 Respuesta del servidor:', response.data);
 
         // Verificar si hubo conflictos
         if (response.data.disponible === false) {

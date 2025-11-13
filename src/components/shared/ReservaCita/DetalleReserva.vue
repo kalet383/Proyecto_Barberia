@@ -130,185 +130,185 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+  import { computed } from 'vue'
 
-const props = defineProps({
-  servicios: {
-    type: Array,
-    default: () => []
-  },
-  barbero: {
-    type: Object,
-    default: null
-  },
-  fecha: {
-    type: String,
-    default: null
-  },
-  hora: {
-    type: String,
-    default: null
-  },
-  habilitarBoton: {
-    type: Boolean,
-    default: false
-  },
-  ultimoTab: {
-    type: Boolean,
-    default: false
-  }
-})
-
-const emit = defineEmits(['siguiente-tab'])
-
-// 🔹 Manejar click del botón
-function handleSiguiente() {
-  emit('siguiente-tab')
-}
-
-// 🔹 Texto dinámico del botón
-const TextoBtn = computed(() => {
-  return props.ultimoTab ? 'Agendar cita' : 'Siguiente'
-})
-
-// 🔹 Ícono dinámico del botón
-const IconoBtn = computed(() => {
-  return props.ultimoTab ? 'fa-check' : 'fa-arrow-right'
-})
-
-// 🔹 Calcular precio total
-const calcularPrecioTotal = computed(() => {
-  if (!props.servicios || props.servicios.length === 0) return '$0.00'
-  
-  const total = props.servicios.reduce((sum, servicio) => {
-    const precio = parseFloat(servicio.precio.replace(/[^0-9.-]+/g, '')) || 0
-    return sum + precio
-  }, 0)
-  
-  return new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP'
-  }).format(total)
-})
-
-// 🔹 Calcular duración total
-const calcularDuracionTotal = computed(() => {
-  if (!props.servicios || props.servicios.length === 0) return '0 min'
-  
-  const totalMinutos = props.servicios.reduce((sum, servicio) => {
-    const match = servicio.duracionAprox.match(/(\d+):(\d+):(\d+)/)
-    if (match) {
-      const horas = parseInt(match[1])
-      const minutos = parseInt(match[2])
-      return sum + (horas * 60) + minutos
+  const props = defineProps({
+    servicios: {
+      type: Array,
+      default: () => []
+    },
+    barbero: {
+      type: Object,
+      default: null
+    },
+    fecha: {
+      type: String,
+      default: null
+    },
+    hora: {
+      type: String,
+      default: null
+    },
+    habilitarBoton: {
+      type: Boolean,
+      default: false
+    },
+    ultimoTab: {
+      type: Boolean,
+      default: false
     }
-    return sum
-  }, 0)
-  
-  const horas = Math.floor(totalMinutos / 60)
-  const minutos = totalMinutos % 60
-  
-  if (horas > 0) {
-    return `${horas}h ${minutos}min`
+  })
+
+  const emit = defineEmits(['siguiente-tab'])
+
+  // 🔹 Manejar click del botón
+  function handleSiguiente() {
+    emit('siguiente-tab')
   }
-  return `${minutos}min`
-})
+
+  // 🔹 Texto dinámico del botón
+  const TextoBtn = computed(() => {
+    return props.ultimoTab ? 'Agendar cita' : 'Siguiente'
+  })
+
+  // 🔹 Ícono dinámico del botón
+  const IconoBtn = computed(() => {
+    return props.ultimoTab ? 'fa-check' : 'fa-arrow-right'
+  })
+
+  // 🔹 Calcular precio total
+  const calcularPrecioTotal = computed(() => {
+    if (!props.servicios || props.servicios.length === 0) return '$0.00'
+    
+    const total = props.servicios.reduce((sum, servicio) => {
+      const precio = parseFloat(servicio.precio.replace(/[^0-9.-]+/g, '')) || 0
+      return sum + precio
+    }, 0)
+    
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP'
+    }).format(total)
+  })
+
+  // 🔹 Calcular duración total
+  const calcularDuracionTotal = computed(() => {
+    if (!props.servicios || props.servicios.length === 0) return '0 min'
+    
+    const totalMinutos = props.servicios.reduce((sum, servicio) => {
+      const match = servicio.duracionAprox.match(/(\d+):(\d+):(\d+)/)
+      if (match) {
+        const horas = parseInt(match[1])
+        const minutos = parseInt(match[2])
+        return sum + (horas * 60) + minutos
+      }
+      return sum
+    }, 0)
+    
+    const horas = Math.floor(totalMinutos / 60)
+    const minutos = totalMinutos % 60
+    
+    if (horas > 0) {
+      return `${horas}h ${minutos}min`
+    }
+    return `${minutos}min`
+  })
 </script>
 
 <style scoped>
-/* 🔹 Card con flexbox para mantener estructura */
-.detalle-card {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
+  /* 🔹 Card con flexbox para mantener estructura */
+  .detalle-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
 
-/* 🔹 Contenido con scroll */
-.contenido-scroll {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 16px;
-}
+  /* 🔹 Contenido con scroll */
+  .contenido-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 16px;
+  }
 
-/* 🔹 Estilo del scrollbar */
-.contenido-scroll::-webkit-scrollbar {
-  width: 8px;
-}
+  /* 🔹 Estilo del scrollbar */
+  .contenido-scroll::-webkit-scrollbar {
+    width: 8px;
+  }
 
-.contenido-scroll::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
+  .contenido-scroll::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
 
-.contenido-scroll::-webkit-scrollbar-thumb {
-  background: #1976d2;
-  border-radius: 10px;
-}
+  .contenido-scroll::-webkit-scrollbar-thumb {
+    background: #1976d2;
+    border-radius: 10px;
+  }
 
-.contenido-scroll::-webkit-scrollbar-thumb:hover {
-  background: #1565c0;
-}
+  .contenido-scroll::-webkit-scrollbar-thumb:hover {
+    background: #1565c0;
+  }
 
-/* 🔹 Botón fijo en la parte inferior */
-.acciones-fijas {
-  position: sticky;
-  bottom: 0;
-  background: white;
-  padding: 16px;
-  border-top: 1px solid #e0e0e0;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
-  z-index: 10;
-}
+  /* 🔹 Botón fijo en la parte inferior */
+  .acciones-fijas {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    padding: 16px;
+    border-top: 1px solid #e0e0e0;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+  }
 
-.boton-accion {
-  transition: all 0.3s ease;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-}
+  .boton-accion {
+    transition: all 0.3s ease;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
 
-.boton-accion:not(:disabled):hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(238, 111, 56, 0.4) !important;
-}
+  .boton-accion:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(238, 111, 56, 0.4) !important;
+  }
 
-/* 🔹 Lista de servicios más compacta */
-.servicios-list {
-  background: transparent;
-  padding: 0;
-}
+  /* 🔹 Lista de servicios más compacta */
+  .servicios-list {
+    background: transparent;
+    padding: 0;
+  }
 
-.servicio-item {
-  border-left: 3px solid #ee6f38;
-  margin-bottom: 8px;
-  background-color: #f5f5f5;
-  border-radius: 4px;
-  padding: 8px !important;
-  min-height: auto !important;
-}
+  .servicio-item {
+    border-left: 3px solid #ee6f38;
+    margin-bottom: 8px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    padding: 8px !important;
+    min-height: auto !important;
+  }
 
-.servicio-item:hover {
-  background-color: #e3f2fd;
-}
+  .servicio-item:hover {
+    background-color: #e3f2fd;
+  }
 
-/* 🔹 Resumen más compacto y visual */
-.resumen-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px;
-  background: rgb(231, 230, 230);
-  border-radius: 8px;
-  margin-top: 8px;
-}
+  /* 🔹 Resumen más compacto y visual */
+  .resumen-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: rgb(231, 230, 230);
+    border-radius: 8px;
+    margin-top: 8px;
+  }
 
-.resumen-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
+  .resumen-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
 
-.precio-total {
-  font-weight: bold;
-}
+  .precio-total {
+    font-weight: bold;
+  }
 </style>

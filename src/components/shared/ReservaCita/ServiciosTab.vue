@@ -69,7 +69,6 @@
         }
         // Emitir los IDs seleccionados al padre
         emit('seleccionados', serviciosSeleccionados.value)
-        console.log('📤 Emit "seleccionados" enviado con:', serviciosSeleccionados.value)
     }
 
     const abrirDialog = (servicio) => {

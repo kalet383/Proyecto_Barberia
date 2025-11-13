@@ -98,12 +98,6 @@
 
         loading.value = true;
         try {
-            console.log('🔍 Buscando barberos con:', {
-                dia: reservaStore.diaSemana,
-                hora: reservaStore.horaSeleccionada,
-                fecha: reservaStore.fechaSeleccionada
-            });
-
             const barberos = await barberoStore.getBarberosDisponibles(
                 reservaStore.diaSemana,
                 reservaStore.horaSeleccionada
