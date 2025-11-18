@@ -104,14 +104,31 @@ const commonItems = {
     to: '/categorias-productos',
     children: [
       {
-        title: 'Lista de Categorias',
+        title: 'Lista de Categorias productos',
         icon: CircleIcon,
-        to: '/lista-categorias'
+        to: '/lista-categorias-producto'
       },
       {
-        title: 'Crear Categoria',
+        title: 'Crear Categoria producto',
         icon: CircleIcon,
         to: '/crear-categoria-producto'
+      }
+    ]
+  },
+  categoriasServicios: {
+    title: 'Categorias de servicios',
+    icon: KeyIcon,
+    to: '/categorias-servicios',
+    children: [
+      {
+        title: 'Lista de Categorias servicios',
+        icon: CircleIcon,
+        to: '/lista-categorias-servicio'
+      },
+      {
+        title: 'Crear Categoria servicio',
+        icon: CircleIcon,
+        to: '/crear-categoria-servicio'
       }
     ]
   },
@@ -180,6 +197,7 @@ export default {
         commonItems.servicios,
         commonItems.productos,
         commonItems.categoriasProductos,
+        commonItems.categoriasServicios,
         { divider: true },
         { header: 'Pages' },
         commonItems.authentication,

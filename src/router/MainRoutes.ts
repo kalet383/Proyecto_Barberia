@@ -1,9 +1,11 @@
 import CrearBarbero from '@/views/dashboards/default/components/administrador/CrearBarbero.vue';
 import CrearCategoriaproducto from '@/views/dashboards/default/components/administrador/CrearCategoriaproducto.vue';
+import CrearCategoriaservicio from '@/views/dashboards/default/components/administrador/CrearCategoriaservicio.vue';
 import CrearProducto from '@/views/dashboards/default/components/administrador/CrearProducto.vue';
 import CrearServicio from '@/views/dashboards/default/components/administrador/CrearServicio.vue';
 import ListaBarberos from '@/views/dashboards/default/components/administrador/ListaBarberos.vue';
-import ListaCategorias from '@/views/dashboards/default/components/administrador/ListaCategorias.vue';
+import ListaCategoriasproducto from '@/views/dashboards/default/components/administrador/ListaCategoriasproducto.vue';
+import ListaCategoriasservicio from '@/views/dashboards/default/components/administrador/ListaCategoriasservicio.vue';
 import ListaClientes from '@/views/dashboards/default/components/administrador/ListaClientes.vue';
 import ListaProductos from '@/views/dashboards/default/components/administrador/ListaProductos.vue';
 import ListaServicios from '@/views/dashboards/default/components/administrador/ListaServicios.vue';
@@ -48,6 +50,11 @@ const MainRoutes = {
       component: CrearCategoriaproducto
     },
     {
+      path: '/crear-categoria-servicio',
+      name: 'CrearCategoriaservicio',
+      component: CrearCategoriaservicio
+    },
+    {
       path: '/crear-producto',
       name: 'CrearProducto',
       component: CrearProducto
@@ -73,9 +80,14 @@ const MainRoutes = {
       component: ListaProductos
     },
     {
-      path: '/lista-categorias',
-      name: 'ListaCategorias',
-      component: ListaCategorias
+      path: '/lista-categorias-producto',
+      name: 'ListaCategoriasproducto',
+      component: ListaCategoriasproducto
+    },
+    {
+      path: '/lista-categorias-servicio',
+      name: 'ListaCategoriasservicio',
+      component: ListaCategoriasservicio
     },
     {
       name: 'Starter',

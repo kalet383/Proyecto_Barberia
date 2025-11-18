@@ -24,7 +24,10 @@
                     </v-card-title>
                     <v-card-subtitle>
                         <div>{{ servicio.descripcion }}</div>
-                        <div><strong>Precio: </strong> {{ servicio.precio || 'No registrado' }} <strong>- Duracion Aproximada: </strong>  {{  servicio.duracionAprox  }}</div>
+                        <div><strong>Precio: </strong> {{ servicio.precio || 'No registrado' }} 
+                            <strong>- Duracion Aproximada: </strong>  {{  servicio.duracionAprox  }}
+                        <strong>Categoria: </strong> {{ servicio.categoriaServicio ? servicio.categoriaServicio.nombre : 'No registrada' }}
+                        </div>
                     </v-card-subtitle>
                 </v-card>
             </v-col>
