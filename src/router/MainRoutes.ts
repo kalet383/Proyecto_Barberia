@@ -9,6 +9,7 @@ import ListaCategoriasservicio from '@/views/dashboards/default/components/admin
 import ListaClientes from '@/views/dashboards/default/components/administrador/ListaClientes.vue';
 import ListaProductos from '@/views/dashboards/default/components/administrador/ListaProductos.vue';
 import ListaServicios from '@/views/dashboards/default/components/administrador/ListaServicios.vue';
+import VistaCitasActuales from '@/views/dashboards/default/components/cliente/VistaCitasActuales.vue';
 import DefaultDashboard from '@/views/dashboards/default/DefaultDashboard.vue';
 
 const MainRoutes = {
@@ -118,8 +119,13 @@ const MainRoutes = {
       name: 'Colors',
       path: '/utils/colors',
       component: () => import('@/views/utilities/colors/ColorPage.vue')
+    },
+    {
+      path: '/mis-citas',
+      name: 'VistaCitasActuales',
+      component: VistaCitasActuales
     }
-  ]
+  ],
 };
 
 export default MainRoutes;

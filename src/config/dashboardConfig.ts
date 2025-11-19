@@ -18,119 +18,158 @@ const commonItems = {
     icon: DashboardIcon,
     to: '/dashboard/default'
   },
-  authentication: {
-    title: 'Authentication',
-    icon: KeyIcon,
-    to: '/auth',
-    children: [
-      {
-        title: 'Login',
-        icon: CircleIcon,
-        to: '/login1'
-      },
-      {
-        title: 'Register',
-        icon: CircleIcon,
-        to: '/register'
-      }
-    ]
+  administrador: {
+    authentication: {
+      title: 'Authentication',
+      icon: KeyIcon,
+      to: '/auth',
+      children: [
+        {
+          title: 'Login',
+          icon: CircleIcon,
+          to: '/login1'
+        },
+        {
+          title: 'Register',
+          icon: CircleIcon,
+          to: '/register'
+        }
+      ]
+    },
+    clientes: {
+      title: 'Clientes',
+      icon: KeyIcon,
+      to: '/clientes',
+      children: [
+        {
+          title: 'Lista de Clientes',
+          icon: CircleIcon,
+          to: '/lista-clientes'
+        },
+      ]
+    },
+    barberos: {
+      title: 'Barberos',
+      icon: KeyIcon,
+      to: '/barberos',
+      children: [
+        {
+          title: 'Lista de Barberos',
+          icon: CircleIcon,
+          to: '/lista-barberos'
+        },
+        {
+          title: 'Crear Barbero',
+          icon: CircleIcon,
+          to: '/crear-barbero'
+        }
+      ]
+    },
+    servicios: {
+      title: 'Servicios',
+      icon: KeyIcon,
+      to: '/servicios',
+      children: [
+        {
+          title: 'Lista de Servicios',
+          icon: CircleIcon,
+          to: '/lista-servicios'
+        },
+        {
+          title: 'Crear Servicio',
+          icon: CircleIcon,
+          to: '/crear-servicio'
+        }
+      ]
+    },
+    productos: {
+      title: 'Productos',
+      icon: KeyIcon,
+      to: '/productos',
+      children: [
+        {
+          title: 'Lista de Productos',
+          icon: CircleIcon,
+          to: '/lista-productos'
+        },
+        {
+          title: 'Crear Producto',
+          icon: CircleIcon,
+          to: '/crear-producto'
+        }
+      ]
+    },
+    categoriasProductos: {
+      title: 'Categorias de productos',
+      icon: KeyIcon,
+      to: '/categorias-productos',
+      children: [
+        {
+          title: 'Lista de Categorias productos',
+          icon: CircleIcon,
+          to: '/lista-categorias-producto'
+        },
+        {
+          title: 'Crear Categoria producto',
+          icon: CircleIcon,
+          to: '/crear-categoria-producto'
+        }
+      ]
+    },
+    categoriasServicios: {
+      title: 'Categorias de servicios',
+      icon: KeyIcon,
+      to: '/categorias-servicios',
+      children: [
+        {
+          title: 'Lista de Categorias servicios',
+          icon: CircleIcon,
+          to: '/lista-categorias-servicio'
+        },
+        {
+          title: 'Crear Categoria servicio',
+          icon: CircleIcon,
+          to: '/crear-categoria-servicio'
+        }
+      ]
+    },
   },
-  clientes: {
-    title: 'Clientes',
-    icon: KeyIcon,
-    to: '/clientes',
-    children: [
-      {
-        title: 'Lista de Clientes',
-        icon: CircleIcon,
-        to: '/lista-clientes'
-      },
-    ]
-  },
-  barberos: {
-    title: 'Barberos',
-    icon: KeyIcon,
-    to: '/barberos',
-    children: [
-      {
-        title: 'Lista de Barberos',
-        icon: CircleIcon,
-        to: '/lista-barberos'
-      },
-      {
-        title: 'Crear Barbero',
-        icon: CircleIcon,
-        to: '/crear-barbero'
-      }
-    ]
-  },
-  servicios: {
-    title: 'Servicios',
-    icon: KeyIcon,
-    to: '/servicios',
-    children: [
-      {
-        title: 'Lista de Servicios',
-        icon: CircleIcon,
-        to: '/lista-servicios'
-      },
-      {
-        title: 'Crear Servicio',
-        icon: CircleIcon,
-        to: '/crear-servicio'
-      }
-    ]
-  },
-  productos: {
-    title: 'Productos',
-    icon: KeyIcon,
-    to: '/productos',
-    children: [
-      {
-        title: 'Lista de Productos',
-        icon: CircleIcon,
-        to: '/lista-productos'
-      },
-      {
-        title: 'Crear Producto',
-        icon: CircleIcon,
-        to: '/crear-producto'
-      }
-    ]
-  },
-  categoriasProductos: {
-    title: 'Categorias de productos',
-    icon: KeyIcon,
-    to: '/categorias-productos',
-    children: [
-      {
-        title: 'Lista de Categorias productos',
-        icon: CircleIcon,
-        to: '/lista-categorias-producto'
-      },
-      {
-        title: 'Crear Categoria producto',
-        icon: CircleIcon,
-        to: '/crear-categoria-producto'
-      }
-    ]
-  },
-  categoriasServicios: {
-    title: 'Categorias de servicios',
-    icon: KeyIcon,
-    to: '/categorias-servicios',
-    children: [
-      {
-        title: 'Lista de Categorias servicios',
-        icon: CircleIcon,
-        to: '/lista-categorias-servicio'
-      },
-      {
-        title: 'Crear Categoria servicio',
-        icon: CircleIcon,
-        to: '/crear-categoria-servicio'
-      }
-    ]
+  cliente: {
+    authentication: {
+      title: 'Authentication',
+      icon: KeyIcon,
+      to: '/auth',
+      children: [
+        {
+          title: 'Login',
+          icon: CircleIcon,
+          to: '/login1'
+        },
+        {
+          title: 'Register',
+          icon: CircleIcon,
+          to: '/register'
+        }
+      ]
+    },
+    // agendarCita: {
+
+    // },
+    citas: {
+      title: 'Mis Citas',
+      icon: KeyIcon,
+      to: '/mis-citas',
+      children: [
+        {
+          title: 'Citas actuales',
+          icon: CircleIcon,
+          to: '/mis-citas'
+        },
+        {
+          title: 'Historial de citas'
+        }
+      ]
+    }
   },
   error404: {
     title: 'Error 404',
@@ -192,15 +231,15 @@ export default {
         },
         { divider: true },
         { header: 'Administración' },
-        commonItems.clientes,
-        commonItems.barberos,
-        commonItems.servicios,
-        commonItems.productos,
-        commonItems.categoriasProductos,
-        commonItems.categoriasServicios,
+        commonItems.administrador.clientes,
+        commonItems.administrador.barberos,
+        commonItems.administrador.servicios,
+        commonItems.administrador.productos,
+        commonItems.administrador.categoriasProductos,
+        commonItems.administrador.categoriasServicios,
         { divider: true },
         { header: 'Pages' },
-        commonItems.authentication,
+        commonItems.administrador.authentication,
         commonItems.error404,
         { divider: true },
         { header: 'Utilities' },
@@ -250,11 +289,7 @@ export default {
         icon: "mdi-calendar-plus",
         to: "/login1"
         },
-        {
-        title: "Mis Citas",
-        icon: "mdi-calendar-account",
-        to: "/mis-citas"
-        },
+        commonItems.cliente.citas,
         {
         title: "Historial",
         icon: "mdi-history",

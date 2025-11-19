@@ -107,16 +107,38 @@ export const useCitaStore = defineStore('cita', {
     },
 
     /**
-     * Obtener todas las citas
+     * Obtener todas las citas - CORREGIDO
      */
     async obtenerCitas() {
       this.cargando = true;
       try {
         const response = await axios.get(API_URL);
-        this.citas = response.data;
-        return response.data;
+        
+        console.log('📡 Respuesta del backend:', response.data);
+        
+        // Verificar si la respuesta es un array directamente
+        if (Array.isArray(response.data)) {
+          this.citas = response.data;
+        } 
+        // Si viene dentro de una propiedad 'data' o 'citas'
+        else if (response.data.data && Array.isArray(response.data.data)) {
+          this.citas = response.data.data;
+        } 
+        else if (response.data.citas && Array.isArray(response.data.citas)) {
+          this.citas = response.data.citas;
+        }
+        // Si no es ninguno de los anteriores, inicializar como array vacío
+        else {
+          console.warn('⚠️ La respuesta no contiene un array de citas:', response.data);
+          this.citas = [];
+        }
+        
+        console.log('✅ Citas cargadas en el store:', this.citas);
+        return this.citas;
       } catch (error: any) {
+        console.error('❌ Error al obtener citas:', error);
         this.error = error.response?.data?.message || 'Error al cargar citas';
+        this.citas = []; // Asegurar que sea un array
         throw error;
       } finally {
         this.cargando = false;
