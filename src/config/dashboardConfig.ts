@@ -14,9 +14,14 @@ import {
 // Opciones comunes que pueden usar todos los roles
 const commonItems = {
   dashboard: {
-    title: 'Dashboard',
+    title: 'Dashboard Principal',
     icon: DashboardIcon,
     to: '/dashboard/default'
+  },
+  PaginaPrincipal: {
+    title: 'Pagina Principal',
+    icon: DashboardIcon,
+    to: '/pages/pagina-principal'
   },
   administrador: {
     authentication: {
@@ -133,6 +138,16 @@ const commonItems = {
         }
       ]
     },
+    dashboardCita: {
+      title: 'Dashboard Citas',
+      icon: KeyIcon,
+      to: '/dashboard-citas'
+    },
+    gestionCitas: {
+      title: 'Gestionar Citas',
+      icon: KeyIcon,
+      to: '/gestion-citas'
+    }
   },
   cliente: {
     authentication: {
@@ -166,7 +181,9 @@ const commonItems = {
           to: '/mis-citas'
         },
         {
-          title: 'Historial de citas'
+          title: 'Historial de citas',
+          icon: CircleIcon,
+          to: '/historial-citas'
         }
       ]
     }
@@ -238,15 +255,9 @@ export default {
         commonItems.administrador.categoriasProductos,
         commonItems.administrador.categoriasServicios,
         { divider: true },
-        { header: 'Pages' },
-        commonItems.administrador.authentication,
-        commonItems.error404,
-        { divider: true },
-        { header: 'Utilities' },
-        commonItems.typography,
-        commonItems.shadows,
-        commonItems.colors,
-        commonItems.icons,
+        { header: 'Gestion de citas' },
+        commonItems.administrador.dashboardCita,
+        commonItems.administrador.gestionCitas,
         { divider: true },
         commonItems.samplePage,
         commonItems.documentation
@@ -282,6 +293,7 @@ export default {
     "menucliente": [
         { header: 'Menu Cliente' },
         commonItems.dashboard,
+        commonItems.PaginaPrincipal,
         { divider: true },
         { header: 'Servicios' },
         {

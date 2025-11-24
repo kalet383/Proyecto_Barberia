@@ -4,37 +4,14 @@
     <div class="mb-8">
       <h1 class="text-h4 font-weight-bold mb-2">
         <i class="fas fa-calendar-check mr-3" style="color: #1976d2;"></i>
-        Mis Citas
+        Mis Citas Agendadas
       </h1>
       <p class="text-subtitle-1 text-grey-darken-1">
-        Gestiona tus reservaciones en la barbería
+        Visualiza y administra tus próximas citas
       </p>
     </div>
 
-    <!-- Filtros -->
-    <v-card class="mb-6 elevation-2" rounded="lg">
-      <v-card-text>
-        <v-chip-group v-model="filtroEstado" mandatory color="primary">
-          <v-chip value="todas" variant="outlined">
-            <i class="fas fa-list mr-2"></i>
-            Todas
-          </v-chip>
-          <v-chip value="agendada" variant="outlined">
-            <i class="fas fa-clock mr-2"></i>
-            Agendadas
-          </v-chip>
-          <v-chip value="completada" variant="outlined">
-            <i class="fas fa-check-circle mr-2"></i>
-            Completadas
-          </v-chip>
-          <v-chip value="cancelada" variant="outlined">
-            <i class="fas fa-times-circle mr-2"></i>
-            Canceladas
-          </v-chip>
-        </v-chip-group>
-      </v-card-text>
-    </v-card>
-
+    <!-- Sin filtros - Solo muestra citas agendadas -->
     <!-- Loading -->
     <div v-if="cargando" class="text-center py-12">
       <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
@@ -44,8 +21,12 @@
     <!-- Sin citas -->
     <v-card v-else-if="citasFiltradas.length === 0" class="text-center py-12 elevation-2" rounded="lg">
       <i class="fas fa-calendar-times fa-4x text-grey mb-4"></i>
-      <h3 class="text-h5 mb-2">No tienes citas {{ filtroEstado !== 'todas' ? filtroEstado + 's' : '' }}</h3>
-      <p class="text-grey">{{ getMensajeSinCitas() }}</p>
+      <h3 class="text-h5 mb-2">No tienes citas agendadas</h3>
+      <p class="text-grey mb-4">¡Agenda tu próxima cita con nosotros!</p>
+      <v-btn color="primary" size="large" rounded="lg" to="/reservar-cita">
+        <i class="fas fa-plus mr-2"></i>
+        Agendar Cita
+      </v-btn>
     </v-card>
 
     <!-- Lista de Citas -->
@@ -133,7 +114,7 @@
           </v-card-text>
 
           <!-- Botón Cancelar -->
-          <v-card-actions v-if="cita.estado === 'agendada'" class="px-4 pb-4">
+          <v-card-actions class="px-4 pb-4">
             <v-btn
               block
               color="error"
@@ -144,19 +125,6 @@
               <i class="fas fa-times-circle mr-2"></i>
               Cancelar Cita
             </v-btn>
-          </v-card-actions>
-
-          <!-- Info adicional para citas completadas/canceladas -->
-          <v-card-actions v-else class="px-4 pb-4">
-            <v-chip
-              block
-              :color="cita.estado === 'completada' ? 'success' : 'error'"
-              variant="flat"
-              class="justify-center"
-            >
-              <i :class="getEstadoIcon(cita.estado)" class="mr-2"></i>
-              {{ cita.estado === 'completada' ? 'Servicio Completado' : 'Cita Cancelada' }}
-            </v-chip>
           </v-card-actions>
         </v-card>
       </v-col>
@@ -239,12 +207,12 @@
   </v-container>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useCitaStore } from '@/stores/cita'
 import { useBarberStore } from '@/stores/barber'
 import { useServiceStore } from '@/stores/services'
-import { useAuthStore } from '@/stores/auth' // Asume que tienes un store de auth con el usuario actual
+import { useAuthStore } from '@/stores/auth'
 
 const citaStore = useCitaStore()
 const barberStore = useBarberStore()
@@ -252,11 +220,10 @@ const serviceStore = useServiceStore()
 const authStore = useAuthStore()
 
 // Estado
-const filtroEstado = ref('todas')
 const cargando = ref(false)
 const cargandoCancelacion = ref(false)
 const modalCancelar = ref(false)
-const citaSeleccionada = ref<any>(null)
+const citaSeleccionada = ref(null)
 
 // Snackbar
 const snackbar = ref(false)
@@ -264,7 +231,7 @@ const snackbarText = ref('')
 const snackbarColor = ref('success')
 const snackbarIcon = ref('fas fa-check-circle')
 
-// Computed
+// Computed - Solo citas agendadas
 const citasFiltradas = computed(() => {
   // Validar que citas sea un array
   if (!Array.isArray(citaStore.citas)) {
@@ -276,25 +243,19 @@ const citasFiltradas = computed(() => {
   console.log('🔍 Citas completas:', citaStore.citas)
   console.log('👤 Usuario actual ID:', authStore.user?.id)
 
-  let citas = citaStore.citas.filter(
-    (cita: any) => {
-      console.log('Comparando - Cliente ID:', cita.cliente?.id, 'con Usuario ID:', authStore.user?.id)
-      return cita.cliente?.id === authStore.user?.id
-    }
-  )
+  // Filtrar solo citas agendadas del usuario actual
+  let citas = citaStore.citas.filter(cita => {
+    console.log('Comparando - Cliente ID:', cita.cliente?.id, 'con Usuario ID:', authStore.user?.id, 'Estado:', cita.estado)
+    return cita.cliente?.id === authStore.user?.id && cita.estado === 'agendada'
+  })
 
-  console.log('✅ Citas del usuario filtradas:', citas.length)
+  console.log('✅ Citas agendadas del usuario:', citas.length)
 
-  if (filtroEstado.value !== 'todas') {
-    citas = citas.filter((cita: any) => cita.estado === filtroEstado.value)
-    console.log(`🎯 Citas con estado "${filtroEstado.value}":`, citas.length)
-  }
-
-  // Ordenar por fecha y hora (más recientes primero)
-  return citas.sort((a: any, b: any) => {
+  // Ordenar por fecha y hora (más cercanas primero)
+  return citas.sort((a, b) => {
     const fechaA = new Date(`${a.fecha} ${a.hora}`)
     const fechaB = new Date(`${b.fecha} ${b.hora}`)
-    return fechaB.getTime() - fechaA.getTime()
+    return fechaA.getTime() - fechaB.getTime()
   })
 })
 
@@ -314,9 +275,13 @@ const cargarDatos = async () => {
   }
 }
 
-const formatearFecha = (fecha: string) => {
-  const date = new Date(fecha)
-  const opciones: Intl.DateTimeFormatOptions = { 
+const formatearFecha = (fecha) => {
+  // Crear fecha sin problema de zona horaria
+  const fechaSinHora = fecha.split('T')[0] // Obtener solo YYYY-MM-DD
+  const [year, month, day] = fechaSinHora.split('-')
+  const date = new Date(year, month - 1, day)
+  
+  const opciones = { 
     weekday: 'long', 
     year: 'numeric', 
     month: 'long', 
@@ -325,7 +290,7 @@ const formatearFecha = (fecha: string) => {
   return date.toLocaleDateString('es-ES', opciones)
 }
 
-const formatearHora = (hora: string) => {
+const formatearHora = (hora) => {
   // Convierte "14:30:00" a "2:30 PM"
   const [hours, minutes] = hora.split(':')
   const date = new Date()
@@ -337,24 +302,24 @@ const formatearHora = (hora: string) => {
   })
 }
 
-const getNombreBarbero = (barbero: any) => {
+const getNombreBarbero = (barbero) => {
   if (!barbero) return 'Barbero no asignado'
   return `${barbero.nombre} ${barbero.apellido}`
 }
 
-const getNombreServicio = (servicio: any) => {
+const getNombreServicio = (servicio) => {
   if (!servicio) return 'Servicio no disponible'
   return servicio.nombre
 }
 
-const getPrecioServicio = (servicio: any) => {
+const getPrecioServicio = (servicio) => {
   if (!servicio || !servicio.precio) return '0.00'
   // Convertir a número por si viene como string
   const precio = parseFloat(servicio.precio)
   return isNaN(precio) ? '0.00' : precio.toFixed(2)
 }
 
-const getCardClass = (estado: string) => {
+const getCardClass = (estado) => {
   return {
     'border-left-agendada': estado === 'agendada',
     'border-left-completada': estado === 'completada',
@@ -362,7 +327,7 @@ const getCardClass = (estado: string) => {
   }
 }
 
-const getEstadoClass = (estado: string) => {
+const getEstadoClass = (estado) => {
   return {
     'estado-agendada': estado === 'agendada',
     'estado-completada': estado === 'completada',
@@ -370,8 +335,8 @@ const getEstadoClass = (estado: string) => {
   }
 }
 
-const getEstadoIcon = (estado: string) => {
-  const icons: Record<string, string> = {
+const getEstadoIcon = (estado) => {
+  const icons = {
     agendada: 'fas fa-clock',
     completada: 'fas fa-check-circle',
     cancelada: 'fas fa-times-circle'
@@ -379,17 +344,7 @@ const getEstadoIcon = (estado: string) => {
   return icons[estado] || 'fas fa-question-circle'
 }
 
-const getMensajeSinCitas = () => {
-  const mensajes: Record<string, string> = {
-    todas: '¡Agenda tu primera cita con nosotros!',
-    agendada: 'No tienes citas agendadas. ¡Reserva una ahora!',
-    completada: 'Aún no has completado ninguna cita.',
-    cancelada: 'No tienes citas canceladas.'
-  }
-  return mensajes[filtroEstado.value] || ''
-}
-
-const abrirModalCancelar = (cita: any) => {
+const abrirModalCancelar = (cita) => {
   citaSeleccionada.value = cita
   modalCancelar.value = true
 }
@@ -404,19 +359,25 @@ const confirmarCancelacion = async () => {
 
   cargandoCancelacion.value = true
   try {
-    await citaStore.eliminarCita(citaSeleccionada.value.id_cita)
-    mostrarNotificacion('Cita cancelada exitosamente', 'success')
-    cerrarModalCancelar()
-    // Recargar citas
-    await citaStore.obtenerCitas()
+    const resultado = await citaStore.cancelarCita(citaSeleccionada.value.id_cita)
+    
+    if (resultado.success) {
+      mostrarNotificacion('Cita cancelada exitosamente', 'success')
+      cerrarModalCancelar()
+      // Recargar citas para actualizar la vista
+      await citaStore.obtenerCitas()
+    } else {
+      mostrarNotificacion(resultado.mensaje || 'Error al cancelar la cita', 'error')
+    }
   } catch (error) {
-    mostrarNotificacion('Error al cancelar la cita. Intenta nuevamente.', 'error')
+    const mensaje = error.response?.data?.message || 'Error al cancelar la cita. Intenta nuevamente.'
+    mostrarNotificacion(mensaje, 'error')
   } finally {
     cargandoCancelacion.value = false
   }
 }
 
-const mostrarNotificacion = (texto: string, tipo: 'success' | 'error') => {
+const mostrarNotificacion = (texto, tipo) => {
   snackbarText.value = texto
   snackbarColor.value = tipo
   snackbarIcon.value = tipo === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'

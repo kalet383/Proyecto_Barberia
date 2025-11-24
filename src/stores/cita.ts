@@ -163,6 +163,40 @@ export const useCitaStore = defineStore('cita', {
     },
 
     /**
+     * Cancelar cita (cambia el estado a 'cancelada')
+     */
+    async cancelarCita(id: any) {
+      this.cargando = true;
+      this.error = null;
+      
+      try {
+        const response = await axios.patch(`${API_URL}/${id}/cancelar`);
+        
+        // Actualizar la cita en el array local
+        const index = this.citas.findIndex(cita => cita.id_cita === id);
+        if (index !== -1) {
+          this.citas[index] = response.data.cita;
+        }
+        
+        return {
+          success: true,
+          mensaje: response.data.mensaje || 'Cita cancelada exitosamente',
+          cita: response.data.cita
+        };
+      } catch (error: any) {
+        console.error('❌ Error al cancelar cita:', error);
+        this.error = error.response?.data?.message || 'Error al cancelar la cita';
+        
+        return {
+          success: false,
+          mensaje: this.error
+        };
+      } finally {
+        this.cargando = false;
+      }
+    },
+
+    /**
      * Eliminar cita
      */
     async eliminarCita(id: any) {

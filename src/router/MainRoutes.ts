@@ -1,16 +1,20 @@
-import CrearBarbero from '@/views/dashboards/default/components/administrador/CrearBarbero.vue';
-import CrearCategoriaproducto from '@/views/dashboards/default/components/administrador/CrearCategoriaproducto.vue';
-import CrearCategoriaservicio from '@/views/dashboards/default/components/administrador/CrearCategoriaservicio.vue';
-import CrearProducto from '@/views/dashboards/default/components/administrador/CrearProducto.vue';
-import CrearServicio from '@/views/dashboards/default/components/administrador/CrearServicio.vue';
-import ListaBarberos from '@/views/dashboards/default/components/administrador/ListaBarberos.vue';
-import ListaCategoriasproducto from '@/views/dashboards/default/components/administrador/ListaCategoriasproducto.vue';
-import ListaCategoriasservicio from '@/views/dashboards/default/components/administrador/ListaCategoriasservicio.vue';
-import ListaClientes from '@/views/dashboards/default/components/administrador/ListaClientes.vue';
-import ListaProductos from '@/views/dashboards/default/components/administrador/ListaProductos.vue';
-import ListaServicios from '@/views/dashboards/default/components/administrador/ListaServicios.vue';
+import CrearBarbero from '@/views/dashboards/default/components/administrador/administracion/CrearBarbero.vue';
+import CrearCategoriaproducto from '@/views/dashboards/default/components/administrador/administracion/CrearCategoriaproducto.vue';
+import CrearCategoriaservicio from '@/views/dashboards/default/components/administrador/administracion/CrearCategoriaservicio.vue';
+import CrearProducto from '@/views/dashboards/default/components/administrador/administracion/CrearProducto.vue';
+import CrearServicio from '@/views/dashboards/default/components/administrador/administracion/CrearServicio.vue';
+import ListaBarberos from '@/views/dashboards/default/components/administrador/administracion/ListaBarberos.vue';
+import ListaCategoriasproducto from '@/views/dashboards/default/components/administrador/administracion/ListaCategoriasproducto.vue';
+import ListaCategoriasservicio from '@/views/dashboards/default/components/administrador/administracion/ListaCategoriasservicio.vue';
+import ListaClientes from '@/views/dashboards/default/components/administrador/administracion/ListaClientes.vue';
+import ListaProductos from '@/views/dashboards/default/components/administrador/administracion/ListaProductos.vue';
+import ListaServicios from '@/views/dashboards/default/components/administrador/administracion/ListaServicios.vue';
+import DashboardCitas from '@/views/dashboards/default/components/administrador/gestion-de-citas/DashboardCitas.vue';
+import GestionarCitas from '@/views/dashboards/default/components/administrador/gestion-de-citas/GestionarCitas.vue';
 import VistaCitasActuales from '@/views/dashboards/default/components/cliente/VistaCitasActuales.vue';
+import VistaHistorialCitas from '@/views/dashboards/default/components/cliente/VistaHistorialCitas.vue';
 import DefaultDashboard from '@/views/dashboards/default/DefaultDashboard.vue';
+import PaginaPrincipal from '@/views/pages/PaginaPrincipal.vue';
 
 const MainRoutes = {
   path: '/dashboard',
@@ -29,6 +33,11 @@ const MainRoutes = {
       name: 'Default',
       path: '/dashboard/default',
       component: () => import('@/views/dashboards/default/DefaultDashboard.vue')
+    },
+    {
+      path: '/pages/pagina-principal',
+      name: 'PaginaPrincipal',
+      component: PaginaPrincipal
     },
     {
       path: '/inicio-dashboard',
@@ -91,6 +100,16 @@ const MainRoutes = {
       component: ListaCategoriasservicio
     },
     {
+      path: '/dashboard-citas',
+      name: 'DashboardCitas',
+      component: DashboardCitas
+    },
+    {
+      path: '/gestion-citas',
+      name: 'GestionarCitas',
+      component: GestionarCitas
+    },
+    {
       name: 'Starter',
       path: '/starter',
       component: () => import('@/views/StarterPage.vue')
@@ -124,6 +143,11 @@ const MainRoutes = {
       path: '/mis-citas',
       name: 'VistaCitasActuales',
       component: VistaCitasActuales
+    },
+    {
+      path: '/historial-citas',
+      name: 'VistaHistorialCitas',
+      component: VistaHistorialCitas
     }
   ],
 };
