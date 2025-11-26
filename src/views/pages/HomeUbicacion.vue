@@ -429,6 +429,12 @@
         border-radius: 10px;
     }
 
+    #ubicacion-section {
+        margin-top: 120px;
+        position: relative;
+        z-index: 1;
+    }
+
     /* Controles flotantes */
     .map-controls {
         position: absolute;
