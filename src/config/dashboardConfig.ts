@@ -188,6 +188,30 @@ const commonItems = {
       ]
     }
   },
+  barbero: {
+    authentication: {
+      title: 'Authentication',
+      icon: KeyIcon,
+      to: '/auth',
+      children: [
+        {
+          title: 'Login',
+          icon: CircleIcon,
+          to: '/login1'
+        },
+        {
+          title: 'Register',
+          icon: CircleIcon,
+          to: '/register'
+        }
+      ]
+    },
+    agendaCitas: {
+      title: 'Mi agenda',
+      icon: KeyIcon,
+      to: '/agenda-citas'
+    }
+  },
   error404: {
     title: 'Error 404',
     icon: BugIcon,
@@ -272,11 +296,7 @@ export default {
         },
         { divider: true },
         { header: 'Trabajo' },
-        {
-        title: "Mis Citas",
-        icon: "mdi-calendar-clock",
-        to: "/mis-citas"
-        },
+        commonItems.barbero.agendaCitas,
         {
         title: "Clientes",
         icon: "mdi-account-multiple",

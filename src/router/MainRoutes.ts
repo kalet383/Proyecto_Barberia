@@ -11,6 +11,7 @@ import ListaProductos from '@/views/dashboards/default/components/administrador/
 import ListaServicios from '@/views/dashboards/default/components/administrador/administracion/ListaServicios.vue';
 import DashboardCitas from '@/views/dashboards/default/components/administrador/gestion-de-citas/DashboardCitas.vue';
 import GestionarCitas from '@/views/dashboards/default/components/administrador/gestion-de-citas/GestionarCitas.vue';
+import VistaAgenda from '@/views/dashboards/default/components/barbero/VistaAgenda.vue';
 import VistaCitasActuales from '@/views/dashboards/default/components/cliente/VistaCitasActuales.vue';
 import VistaHistorialCitas from '@/views/dashboards/default/components/cliente/VistaHistorialCitas.vue';
 import DefaultDashboard from '@/views/dashboards/default/DefaultDashboard.vue';
@@ -148,6 +149,11 @@ const MainRoutes = {
       path: '/historial-citas',
       name: 'VistaHistorialCitas',
       component: VistaHistorialCitas
+    },
+    {
+      path: '/agenda-citas',
+      name: 'VistaAgenda',
+      component: VistaAgenda
     }
   ],
 };
