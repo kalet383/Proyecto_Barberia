@@ -2,22 +2,53 @@
     <div>
         <section id="barberos-section">
             <v-container class="py-10" fluid>
-                <h2 class="tituloseccion">NUESTROS EQUIPO | Barberos profesionales</h2>
-                <p>“En StyleHub, nuestros barberos son artistas del estilo. No solo dominan las tijeras y las máquinas, 
+                <h2 class="tituloseccion">NUESTRO EQUIPO | Barberos profesionales</h2>
+                <p>"En StyleHub, nuestros barberos son artistas del estilo. No solo dominan las tijeras y las máquinas, 
                     también entienden que tu imagen habla por ti. Déjalo en manos de quienes viven para transformar tu look 
-                    en una declaración de actitud.”
+                    en una declaración de actitud."
                 </p>
-                <v-row dense justify="center" align="stretch" class="espaciocards">
-                    <v-col v-for="(barbero, index) in barberos" :key="index" cols="12" sm="6" md="3" lg="3" class="d-flex">
-                        <v-card class="mx-auto" max-width="330">
-                            <v-img height="340px" :src="barbero.foto" cover></v-img>
-                            <v-card-title> {{ barbero.nombre }} </v-card-title>
-                            <v-card-text> {{ barbero.descripcion }} </v-card-text>
+                
+                <!-- Mostrar loading mientras cargan los barberos -->
+                <v-row v-if="barberStore.loading" justify="center" class="my-5">
+                    <v-progress-circular indeterminate color="orange"></v-progress-circular>
+                </v-row>
+
+                <!-- Mostrar barberos cuando ya estén cargados -->
+                <v-row v-else dense justify="center" align="stretch" class="espaciocards">
+                    <v-col v-for="barbero in barberStore.barbers" :key="barbero.id" cols="12" sm="6" md="3" lg="3" class="d-flex">
+                        <v-card class="mx-auto card-barbero" max-width="330">
+                            <v-img 
+                                height="340px" 
+                                :src="barbero.foto || barbero.photo || '/imagenes/barberos/default.png'" 
+                                cover
+                                class="imagen-barbero"
+                            >
+                                <!-- Fallback si no hay imagen -->
+                                <template v-slot:error>
+                                    <div class="imagen-placeholder">
+                                        <i class="fas fa-user-circle" style="font-size: 100px; color: #666;"></i>
+                                    </div>
+                                </template>
+                            </v-img>
+                            <v-card-title> 
+                                {{ barbero.nombre || 'Barbero' }}
+                                {{ barbero.apellido || '' }} 
+                            </v-card-title>
+                            <v-card-text> 
+                                {{ 'Barbero profesional - Especialista en cualquier tipo de corte, en barba y masajes - 5 años de experiencia' }} 
+                            </v-card-text>
                             <v-card-actions>
-                                <v-btn> {{ barbero.boton }} </v-btn>
+                                <v-btn @click="agendarCon(barbero)"> 
+                                    AGENDAR CON {{ (barbero.nombre || 'BARBERO').split(' ')[0].toUpperCase() }} 
+                                </v-btn>
                             </v-card-actions>
                         </v-card>
                     </v-col>
+                </v-row>
+
+                <!-- Mostrar mensaje si no hay barberos -->
+                <v-row v-if="!barberStore.loading && barberStore.barbers?.length === 0" justify="center" class="my-5">
+                    <p style="color: #ee6f38;">No hay barberos disponibles en este momento.</p>
                 </v-row>
             </v-container>
         </section>
@@ -25,37 +56,23 @@
 </template>
 
 <script setup>
-    import { ref } from 'vue'
-    const barberos = ref([
-        {
-            nombre : 'JUAN PEREZ | Juancho',
-            foto : '/imagenes/barberos/barberoJUAN.png',
-            descripcion : 'Barbero - Especialista en cualquier tipo de corte, en barba y masajes - 5 años de experiencia',
-            boton : 'AGENDAR CON JUAN'
-        },
-        {
-            nombre : 'ANDREW GOMEZ | Drew',
-            foto : '/imagenes/barberos/barberoANDREW.jpg',
-            descripcion : 'Barbero - Especialista en cualquier tipo de corte, en barba y masajes - 5 años de experiencia',
-            boton : 'AGENDAR CON ANDREW'
-        },
-        {
-            nombre : 'ENRIQUE LOPEZ | Kike',
-            foto : '/imagenes/barberos/barberoENRIQUE.jpg',
-            descripcion : 'Barbero - Especialista en cualquier tipo de corte, en barba y masajes - 5 años de experiencia',
-            boton : 'AGENDAR CON ENRIQUE'
-        },
-        {
-            nombre : 'JAKE MARQUEZ | Jay',
-            foto : '/imagenes/barberos/barberoJAKE.jpg',
-            descripcion : 'Barbero - Especialista en cualquier tipo de corte, en barba y masajes - 5 años de experiencia',
-            boton : 'AGENDAR CON JAKE'
-        }
-    ])
+    import { onMounted } from 'vue'
+    import { useBarberStore } from '@/stores/barber';
+
+    const barberStore = useBarberStore();
+
+    // Función para agendar cita con un barbero específico
+    const agendarCon = (barbero) => {
+        console.log('Agendar con:', barbero);
+        // Aquí puedes implementar la lógica de agendamiento
+    }
+
+    onMounted(async () => {
+        await barberStore.getBarbers()
+    })
 </script>
 
 <style scoped>
-
     #barberos-section {
         background-color: #000;
     }
@@ -97,16 +114,37 @@
         margin-bottom: 2%;
     }
 
-    .v-card {
-        height: auto !important;
+    /* ESTILOS PARA LAS TARJETAS - MANTENER DISEÑO ORIGINAL */
+    .card-barbero {
+        height: 100% !important;
+        min-height: 580px; /* Altura mínima para mantener consistencia */
+        display: flex;
+        flex-direction: column;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
         border: 2px solid transparent;
     }
 
-    .v-card:hover {
+    .card-barbero:hover {
         transform: scale(1.03);
         box-shadow: 0 0 20px #ee6f38;
-        border-color:#ee6f38;
+        border-color: #ee6f38;
+    }
+
+    /* Asegurar que la imagen siempre tenga el mismo tamaño */
+    .imagen-barbero {
+        min-height: 340px !important;
+        max-height: 340px !important;
+        background-color: #1a1a1a;
+    }
+
+    /* Placeholder para cuando no hay imagen */
+    .imagen-placeholder {
+        width: 100%;
+        height: 340px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
     }
 
     .espaciocards {
@@ -118,26 +156,51 @@
     .v-card-title {
         text-align: center;
         font-weight: bold;
+        font-size: 1.4rem !important; /* Aumentado el tamaño del nombre */
+        min-height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px 16px !important; /* Más espacio arriba y abajo */
     }
 
     .v-card-text {
         font-weight: bold;
         white-space: normal;
         text-align: start;
+        flex-grow: 1; /* Ocupa el espacio disponible */
+        min-height: 80px; /* Altura mínima para la descripción */
     }
 
     .v-card-actions {
         color: #ee6f38;
-        transition: background-color 0.3s ease;
+        transition: all 0.3s ease;
         justify-content: center;
+        margin-top: auto; /* Empuja el botón al fondo */
+        padding: 16px;
+    }
+
+    .v-card-actions .v-btn {
+        transition: all 0.3s ease;
     }
 
     .v-card-actions:hover {
         background-color: #ff7043;
+    }
+
+    .v-card-actions:hover .v-btn {
         color: white;
-        padding-left: 60px;
-        padding-right: 60px;
-        transform: scale(1.1);
+        transform: scale(1.05);
         box-shadow: 0 5px 13px rgba(255, 87, 34, 0.4);
+    }
+
+    /* Asegurar que todas las columnas tengan la misma altura */
+    .d-flex {
+        display: flex !important;
+    }
+
+    .v-col {
+        display: flex;
+        flex-direction: column;
     }
 </style>

@@ -107,7 +107,7 @@
       </v-carousel>
       <div class="centered-contend">
         <h1 class="title">ESTILO SIN LIMITES, BIENVENIDO A STYLEHUB.</h1>
-        <v-btn class="boton-agendar" to="/login1">¡AGENDA YA!</v-btn>
+        <v-btn class="boton-agendar" @click="abrirModal()">¡AGENDA YA!</v-btn>
         <a href="#servicios-section" class="flecha-abajo">
           <i class="fa-solid fa-angle-down"></i>
         </a>
@@ -118,6 +118,7 @@
     <HomeBarberos></HomeBarberos>
     <HomeProductos></HomeProductos>
     <HomeUbicacion></HomeUbicacion>
+    <VistareservaCita v-model="showModal"></VistareservaCita>
     <FooterPagina></FooterPagina>
 
     <!-- API whatsapp -->
@@ -137,6 +138,7 @@ import HomeBarberos from '@/views/pages/HomeBarberos.vue';
 import HomeProductos from '@/views/pages/HomeProductos.vue';
 import HomeUbicacion from './HomeUbicacion.vue';
 import CarritoCompra from '@/components/shared/CarritoCompra.vue';
+import VistareservaCita from './VistareservaCita.vue';
 import FooterPagina from './FooterPagina.vue';
 
 const authStore = useAuthStore();
@@ -151,6 +153,7 @@ const images = [
 ];
 
 const headerRef = ref(null);
+const showModal = ref(false);
 
 onMounted(async () => {
   window.addEventListener('scroll', handleScroll);
@@ -196,6 +199,10 @@ const cerrarSesion = async () => {
   await authStore.logout();
   window.location.href = '/';
 };
+
+function abrirModal() {
+  showModal.value = true;
+}
 </script>
 
 <style scoped>

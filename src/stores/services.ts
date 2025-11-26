@@ -8,6 +8,7 @@ interface Service {
     descripcion: string
     precio: number
     duracionAprox: string
+    categoria: string
 }
 
 interface ServiceState {

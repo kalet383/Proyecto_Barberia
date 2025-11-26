@@ -26,7 +26,7 @@
                         <div>{{ servicio.descripcion }}</div>
                         <div><strong>Precio: </strong> {{ servicio.precio || 'No registrado' }} 
                             <strong>- Duracion Aproximada: </strong>  {{  servicio.duracionAprox  }}
-                        <strong>Categoria: </strong> {{ servicio.categoriaServicio ? servicio.categoriaServicio.nombre : 'No registrada' }}
+                        <strong>Categoria: </strong> {{ servicio.categoria || 'No registrada' }}
                         </div>
                     </v-card-subtitle>
                 </v-card>
@@ -37,11 +37,14 @@
 
 <script setup>
     import { useServiceStore } from '@/stores/services';
+    import { useCategoriaServicioStore } from '@/stores/CategoriaServicio';
     import { onMounted } from 'vue';
 
     const ServicioStore = useServiceStore()
+    const CategoriaServicioStore = useCategoriaServicioStore()
 
     onMounted(() => {
         ServicioStore.getServices()
+        CategoriaServicioStore.getCategoriasServicio()
     })
 </script>
