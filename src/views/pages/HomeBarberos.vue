@@ -13,38 +13,47 @@
                     <v-progress-circular indeterminate color="orange"></v-progress-circular>
                 </v-row>
 
-                <!-- Mostrar barberos cuando ya estén cargados -->
-                <v-row v-else dense justify="center" align="stretch" class="espaciocards">
-                    <v-col v-for="barbero in barberStore.barbers" :key="barbero.id" cols="12" sm="6" md="3" lg="3" class="d-flex">
-                        <v-card class="mx-auto card-barbero" max-width="330">
-                            <v-img 
-                                height="340px" 
-                                :src="barbero.foto || barbero.photo || '/imagenes/barberos/default.png'" 
-                                cover
-                                class="imagen-barbero"
-                            >
-                                <!-- Fallback si no hay imagen -->
-                                <template v-slot:error>
-                                    <div class="imagen-placeholder">
-                                        <i class="fas fa-user-circle" style="font-size: 100px; color: #666;"></i>
-                                    </div>
-                                </template>
-                            </v-img>
-                            <v-card-title> 
-                                {{ barbero.nombre || 'Barbero' }}
-                                {{ barbero.apellido || '' }} 
-                            </v-card-title>
-                            <v-card-text> 
-                                {{ 'Barbero profesional - Especialista en cualquier tipo de corte, en barba y masajes - 5 años de experiencia' }} 
-                            </v-card-text>
-                            <v-card-actions>
-                                <v-btn @click="agendarCon(barbero)"> 
-                                    AGENDAR CON {{ (barbero.nombre || 'BARBERO').split(' ')[0].toUpperCase() }} 
-                                </v-btn>
-                            </v-card-actions>
-                        </v-card>
-                    </v-col>
-                </v-row>
+                <!-- Contenedor con scroll horizontal cuando hay más de 4 barberos -->
+                <div v-else :class="{ 'scroll-container': barberStore.barbers?.length > 4 }">
+                    <v-row dense justify="center" align="stretch" class="espaciocards" :class="{ 'scroll-content': barberStore.barbers?.length > 4 }">
+                        <v-col v-for="barbero in barberStore.barbers" :key="barbero.id" cols="12" sm="6" md="3" lg="3" class="d-flex">
+                            <v-card class="mx-auto card-barbero" max-width="330">
+                                <v-img 
+                                    height="340px" 
+                                    :src="barbero.foto || barbero.photo || '/imagenes/barberos/default.png'" 
+                                    cover
+                                    class="imagen-barbero"
+                                >
+                                    <!-- Fallback si no hay imagen -->
+                                    <template v-slot:error>
+                                        <div class="imagen-placeholder">
+                                            <i class="fas fa-user-circle" style="font-size: 100px; color: #666;"></i>
+                                        </div>
+                                    </template>
+                                </v-img>
+                                <v-card-title> 
+                                    {{ barbero.nombre || 'Barbero' }}
+                                    {{ barbero.apellido || '' }} 
+                                </v-card-title>
+                                <v-card-text> 
+                                    {{ 'Barbero profesional - Especialista en cualquier tipo de corte, en barba y masajes - 5 años de experiencia' }} 
+                                </v-card-text>
+                                <v-card-actions>
+                                    <v-btn @click="agendarCon(barbero)"> 
+                                        AGENDAR CON {{ (barbero.nombre || 'BARBERO').split(' ')[0].toUpperCase() }} 
+                                    </v-btn>
+                                </v-card-actions>
+                            </v-card>
+                        </v-col>
+                    </v-row>
+                </div>
+
+                <!-- Indicador de scroll solo cuando hay más de 4 barberos -->
+                <div v-if="barberStore.barbers?.length > 4" class="scroll-indicator">
+                    <i class="fas fa-chevron-left"></i>
+                    <span>Desliza para ver más barberos</span>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
 
                 <!-- Mostrar mensaje si no hay barberos -->
                 <v-row v-if="!barberStore.loading && barberStore.barbers?.length === 0" justify="center" class="my-5">
@@ -114,10 +123,73 @@
         margin-bottom: 2%;
     }
 
+    /* SCROLL HORIZONTAL - Solo cuando hay más de 4 barberos */
+    .scroll-container {
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+    }
+
+    .scroll-container::-webkit-scrollbar {
+        height: 10px;
+    }
+
+    .scroll-container::-webkit-scrollbar-track {
+        background: #1a1a1a;
+        border-radius: 5px;
+    }
+
+    .scroll-container::-webkit-scrollbar-thumb {
+        background: #ee6f38;
+        border-radius: 5px;
+        transition: background 0.3s ease;
+    }
+
+    .scroll-container::-webkit-scrollbar-thumb:hover {
+        background: #ff7043;
+    }
+
+    .scroll-content {
+        flex-wrap: nowrap !important;
+        width: max-content;
+    }
+
+    .scroll-content .v-col {
+        flex: 0 0 auto;
+        max-width: none;
+    }
+
+    /* Indicador de scroll */
+    .scroll-indicator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        color: #ee6f38;
+        font-weight: bold;
+        margin-top: 10px;
+        margin-bottom: 30px;
+        animation: pulse 2s infinite;
+    }
+
+    .scroll-indicator i {
+        font-size: 20px;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+    }
+
     /* ESTILOS PARA LAS TARJETAS - MANTENER DISEÑO ORIGINAL */
     .card-barbero {
         height: 100% !important;
-        min-height: 580px; /* Altura mínima para mantener consistencia */
+        min-height: 580px;
         display: flex;
         flex-direction: column;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -156,27 +228,27 @@
     .v-card-title {
         text-align: center;
         font-weight: bold;
-        font-size: 1.4rem !important; /* Aumentado el tamaño del nombre */
+        font-size: 1.4rem !important;
         min-height: 60px;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 20px 16px !important; /* Más espacio arriba y abajo */
+        padding: 20px 16px !important;
     }
 
     .v-card-text {
         font-weight: bold;
         white-space: normal;
         text-align: start;
-        flex-grow: 1; /* Ocupa el espacio disponible */
-        min-height: 80px; /* Altura mínima para la descripción */
+        flex-grow: 1;
+        min-height: 80px;
     }
 
     .v-card-actions {
         color: #ee6f38;
         transition: all 0.3s ease;
         justify-content: center;
-        margin-top: auto; /* Empuja el botón al fondo */
+        margin-top: auto;
         padding: 16px;
     }
 
