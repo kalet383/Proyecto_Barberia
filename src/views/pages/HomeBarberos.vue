@@ -39,7 +39,7 @@
                                     {{ 'Barbero profesional - Especialista en cualquier tipo de corte, en barba y masajes - 5 años de experiencia' }} 
                                 </v-card-text>
                                 <v-card-actions>
-                                    <v-btn @click="agendarCon(barbero)"> 
+                                    <v-btn @click="abrirModal(); agendarCon(barbero)"> 
                                         AGENDAR CON {{ (barbero.nombre || 'BARBERO').split(' ')[0].toUpperCase() }} 
                                     </v-btn>
                                 </v-card-actions>
@@ -60,20 +60,27 @@
                     <p style="color: #ee6f38;">No hay barberos disponibles en este momento.</p>
                 </v-row>
             </v-container>
+            <vistareservacita-barbero v-model="showModal"></vistareservacita-barbero>
         </section>
     </div>
 </template>
 
 <script setup>
-    import { onMounted } from 'vue'
+    import { ref, onMounted } from 'vue'
     import { useBarberStore } from '@/stores/barber';
+    import VistareservacitaBarbero from './VistareservacitaBarbero.vue';
 
     const barberStore = useBarberStore();
+    const showModal = ref(false);
 
     // Función para agendar cita con un barbero específico
     const agendarCon = (barbero) => {
         console.log('Agendar con:', barbero);
         // Aquí puedes implementar la lógica de agendamiento
+    }
+
+    function abrirModal() {
+        showModal.value = true
     }
 
     onMounted(async () => {
