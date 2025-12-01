@@ -63,20 +63,58 @@
             <vistareservacita-barbero v-model="showModal"></vistareservacita-barbero>
         </section>
     </div>
+    <!-- Snackbar de error -->
+    <v-snackbar v-model="mostrarError" color="error" :timeout="4000" location="top">
+        <div class="d-flex align-center">
+        <i class="fas fa-exclamation-circle mr-2"></i>
+        {{ mensajeError }}
+        </div>
+    </v-snackbar>
 </template>
 
 <script setup>
     import { ref, onMounted } from 'vue'
     import { useBarberStore } from '@/stores/barber';
+    import { useReservaBarberoStore } from '@/stores/reservaBarbero';
     import VistareservacitaBarbero from './VistareservacitaBarbero.vue';
 
     const barberStore = useBarberStore();
+    const reservaBarberoStore = useReservaBarberoStore();
     const showModal = ref(false);
+    const cargandoHorarios = ref(null)
+    const mostrarError = ref(false)
+    const mensajeError = ref('')    
 
     // Función para agendar cita con un barbero específico
-    const agendarCon = (barbero) => {
-        console.log('Agendar con:', barbero);
-        // Aquí puedes implementar la lógica de agendamiento
+    const agendarCon = async (barbero) => {
+        try {
+            cargandoHorarios.value = barbero.id
+            console.log('🔍 Obteniendo horarios del barbero:', barbero.nombre)
+            const horarios = await barberStore.getHorariosBarbero(barbero.id)
+            
+            if (!horarios || horarios.length === 0) {
+                mensajeError.value = `${barbero.nombre} no tiene horarios disponibles`
+                mostrarError.value = true
+                return
+            }
+            
+            console.log('📅 Horarios obtenidos:', horarios)
+            
+            // Inicializar la reserva con el barbero y sus horarios
+            reservaBarberoStore.inicializarConBarbero(barbero, horarios)
+            
+            // Abrir el modal
+            showModal.value = true
+            
+            console.log('✅ Modal de reserva abierto con barbero:', barbero)
+            
+        } catch (error) {
+            console.error('❌ Error al cargar horarios del barbero:', error)
+            mensajeError.value = 'Error al cargar los horarios disponibles. Intenta nuevamente.'
+            mostrarError.value = true
+        } finally {
+            cargandoHorarios.value = null
+        }
     }
 
     function abrirModal() {
