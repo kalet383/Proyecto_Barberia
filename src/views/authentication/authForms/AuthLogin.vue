@@ -34,26 +34,38 @@ async function validate(values: any, { setErrors }: any) {
     console.log('👤 Usuario después de loadUser:', authStore.user);
     console.log('🔐 Rol del usuario:', (authStore.user as any)?.Role);
     
-    // 🔍 VERIFICAR SI VIENE DE LA RESERVA
+    // 🔍 VERIFICAR SI VIENE DE LA RESERVA DESDE SERVICIOS
     const returnToReserva = sessionStorage.getItem('returnToReserva');
-    console.log('🔙 ¿Volver a reserva?', returnToReserva);
+    console.log('🔙 ¿Volver a reserva desde servicios?', returnToReserva);
     
     if (returnToReserva === 'true') {
-      // Limpiar el flag
       sessionStorage.removeItem('returnToReserva');
+      console.log('📍 Redirigiendo de vuelta a reserva desde servicios');
+      router.push('/');
       
-      console.log('📍 Redirigiendo de vuelta a reserva');
-      // Redirigir a la página donde estaba el componente de reserva
-      // Ajusta esta ruta según tu aplicación
-      router.push('/'); // o la ruta que contenga tu dialog de reserva
-      
-      // Opcional: emitir evento para reabrir el dialog
       setTimeout(() => {
         const event = new CustomEvent('open-reserva-dialog');
         window.dispatchEvent(event);
       }, 100);
       
-      return; // Terminar aquí
+      return;
+    }
+    
+    // ⭐ NUEVO: VERIFICAR SI VIENE DE LA RESERVA DESDE BARBEROS
+    const returnToReservaBarbero = sessionStorage.getItem('returnToReservaBarbero');
+    console.log('🔙 ¿Volver a reserva desde barbero?', returnToReservaBarbero);
+    
+    if (returnToReservaBarbero === 'true') {
+      sessionStorage.removeItem('returnToReservaBarbero');
+      console.log('📍 Redirigiendo de vuelta a reserva desde barbero');
+      router.push('/'); // O la ruta donde está la sección de barberos
+      
+      setTimeout(() => {
+        const event = new CustomEvent('open-reserva-barbero-dialog');
+        window.dispatchEvent(event);
+      }, 100);
+      
+      return;
     }
     
     // 🚀 REDIRIGIR SEGÚN EL ROL (solo si NO viene de reserva)
@@ -66,7 +78,6 @@ async function validate(values: any, { setErrors }: any) {
       console.log('📍 Admin/Barbero - Redirigiendo a dashboard');
       router.push('/dashboard');
     } else {
-      // Por defecto, dashboard
       console.log('📍 Rol desconocido - Redirigiendo a dashboard');
       router.push('/dashboard');
     }

@@ -132,9 +132,11 @@
   import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
   import { useReservaBarberoStore } from '@/stores/reservaBarbero'
   import { useServiceStore } from '@/stores/services'
+  import { useCitaStore } from '@/stores/cita'
 
   const reservaBarberoStore = useReservaBarberoStore()
   const serviceStore = useServiceStore()
+  const citaStore = useCitaStore()
   const emit = defineEmits(['emit-fechay-hora', 'estado-fechayhora-siguiente'])
   
   const fechaSeleccionada = ref(null)
@@ -144,6 +146,7 @@
   const fechaCalendario = ref(null)
   const horaActual = ref(new Date()) // ⭐ Para validar intervalos pasados
   const intervalId = ref(null) // ⭐ Para el intervalo de actualización
+  const horasOcupadas = ref([])
   
   const nombresMeses = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -199,12 +202,14 @@
           
           // ⭐ Verificar si el intervalo ya pasó (solo si es hoy)
           const yaPaso = esHoySeleccionado && hasPasadoLaHora(horaInicio)
+
+          const estaOcupada = verificarHoraOcupada(horaInicio, duracion) // ⭐ Verificar si está ocupada
           
           intervalos.push({
             horaInicio,
             duracion: formatearDuracion(duracion),
             franjaId: franja.id_franja,
-            deshabilitado: yaPaso // ⭐ Marcar como deshabilitado
+            deshabilitado: yaPaso || estaOcupada // ⭐ Marcar como deshabilitado
           })
         }
       }
@@ -212,6 +217,30 @@
     
     return intervalos
   })
+
+  // ⭐ NUEVO: Verificar si una hora está ocupada
+  const verificarHoraOcupada = (horaInicio, duracionMin) => {
+    if (!horasOcupadas.value || horasOcupadas.value.length === 0) return false
+    
+    // Calcular fin del intervalo propuesto
+    const inicioMin = horaAMinutos(horaInicio)
+    const finMin = inicioMin + duracionMin
+    
+    // Verificar si se solapa con alguna cita existente
+    return horasOcupadas.value.some((ocupada) => {
+      const ocupadaInicioMin = horaAMinutos(ocupada.horaInicio)
+      const ocupadaFinMin = horaAMinutos(ocupada.horaFin)
+      
+      // Hay solapamiento si: (inicio1 < fin2) AND (inicio2 < fin1)
+      return (inicioMin < ocupadaFinMin) && (ocupadaInicioMin < finMin)
+    })
+  }
+
+  // ⭐ Convertir hora "HH:MM:SS" a minutos desde medianoche
+  const horaAMinutos = (horaStr) => {
+    const [h, m] = horaStr.split(':').map(Number)
+    return h * 60 + m
+  }
 
   // ⭐ Verificar si una hora ya pasó
   const hasPasadoLaHora = (horaIntervalo) => {
@@ -361,8 +390,22 @@
     }
   }, { deep: true })
 
-  watch(fechaSeleccionada, () => {
+  // ⭐ NUEVO: Cargar horas ocupadas cuando cambia la fecha
+  watch(fechaSeleccionada, async (nuevaFecha) => {
     horaSeleccionada.value = null
+    
+    if (nuevaFecha && reservaBarberoStore.barberoPreseleccionado) {
+      const fechaISO = nuevaFecha.toISOString().split('T')[0]
+      console.log('📅 Consultando disponibilidad para:', fechaISO)
+      
+      const resultado = await citaStore.obtenerHorasOcupadasBarbero(
+        reservaBarberoStore.barberoPreseleccionado.id,
+        fechaISO
+      )
+      
+      horasOcupadas.value = resultado.horasOcupadas || []
+      console.log('🚫 Horas ocupadas:', horasOcupadas.value)
+    }
   })
 
   const mesYAnioActual = computed(() => {

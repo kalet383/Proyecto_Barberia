@@ -73,7 +73,7 @@
 </template>
 
 <script setup>
-    import { ref, onMounted } from 'vue'
+    import { ref, onMounted, watch } from 'vue'
     import { useBarberStore } from '@/stores/barber';
     import { useReservaBarberoStore } from '@/stores/reservaBarbero';
     import VistareservacitaBarbero from './VistareservacitaBarbero.vue';
@@ -88,6 +88,9 @@
     // Función para agendar cita con un barbero específico
     const agendarCon = async (barbero) => {
         try {
+            // ⭐ NUEVO: Limpiar reserva anterior antes de abrir nueva
+            reservaBarberoStore.resetReserva()
+
             cargandoHorarios.value = barbero.id
             console.log('🔍 Obteniendo horarios del barbero:', barbero.nombre)
             const horarios = await barberStore.getHorariosBarbero(barbero.id)
@@ -116,6 +119,15 @@
             cargandoHorarios.value = null
         }
     }
+
+    // ⭐ NUEVO: Watch para limpiar cuando se cierra el modal
+    watch(showModal, (nuevoValor) => {
+        if (!nuevoValor) {
+            // Cuando se cierra el modal, resetear la reserva
+            console.log('🧹 Limpiando reserva al cerrar modal')
+            reservaBarberoStore.resetReserva()
+        }
+    })
 
     function abrirModal() {
         showModal.value = true

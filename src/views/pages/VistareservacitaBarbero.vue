@@ -185,6 +185,21 @@
     verificarEstadoTabActual()
   })
 
+  // ✅ Watch para sincronizar currentIndex cuando cambia en la store
+  watch(() => reservaBarberoStore.currentTab, (nuevoTab) => {
+    currentIndex.value = nuevoTab
+  })
+
+  // ⭐ NUEVO: Watch para sincronizar cuando se abre el modal
+  watch(() => props.modelValue, (nuevoValor) => {
+    if (nuevoValor) {
+      currentIndex.value = reservaBarberoStore.currentTab
+      nextTick(() => {
+        verificarEstadoTabActual()
+      })
+    }
+  })
+
   // ✅ Función para verificar estado del botón
   function verificarEstadoTabActual() {
     botonActivo.value = reservaBarberoStore.botonHabilitadoPorTab

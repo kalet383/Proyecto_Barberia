@@ -106,6 +106,20 @@ export const useCitaStore = defineStore('cita', {
       }
     },
 
+    async obtenerHorasOcupadasBarbero(barberoId: number, fecha: string) {
+      this.cargando = true
+      try {
+        const response = await axios.get(`${API_URL}/barbero/${barberoId}/ocupadas/${fecha}`)
+        return response.data
+      } catch (error: any) {
+        console.error('Error al obtener horas ocupadas:', error)
+        this.error = error.response?.data?.message || 'Error al consultar disponibilidad'
+        return { horasOcupadas: [] }
+      } finally {
+        this.cargando = false
+      }
+    },
+
     /**
      * Obtener todas las citas - CORREGIDO
      */
