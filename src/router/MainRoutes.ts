@@ -12,6 +12,8 @@ import ListaServicios from '@/views/dashboards/default/components/administrador/
 import DashboardCitas from '@/views/dashboards/default/components/administrador/gestion-de-citas/DashboardCitas.vue';
 import GestionarCitas from '@/views/dashboards/default/components/administrador/gestion-de-citas/GestionarCitas.vue';
 import VistaAgenda from '@/views/dashboards/default/components/barbero/VistaAgenda.vue';
+import ModalseleccionReserva from '@/views/dashboards/default/components/cliente/ModalseleccionReserva.vue';
+import ReservarCita from '@/views/dashboards/default/components/cliente/ReservarCita.vue';
 import VistaCitasActuales from '@/views/dashboards/default/components/cliente/VistaCitasActuales.vue';
 import VistaHistorialCitas from '@/views/dashboards/default/components/cliente/VistaHistorialCitas.vue';
 import DefaultDashboard from '@/views/dashboards/default/DefaultDashboard.vue';
@@ -139,6 +141,17 @@ const MainRoutes = {
       name: 'Colors',
       path: '/utils/colors',
       component: () => import('@/views/utilities/colors/ColorPage.vue')
+    },
+    {
+      path: '/modalseleccion-reserva',
+      name: 'ModalseleccionReserva',
+      component: ModalseleccionReserva,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/reservar-cita',
+      name: 'ReservarCita',
+      component: ReservarCita
     },
     {
       path: '/mis-citas',

@@ -285,7 +285,7 @@
         clienteId: authStore.user.id,
         barberoId: reservaBarberoStore.barberoPreseleccionado.id,
         servicioId: reservaBarberoStore.serviciosSeleccionados,
-        hora: reservaBarberoStore.horaSeleccionada + ':00',
+        hora: reservaBarberoStore.horaSeleccionada,
         fecha: reservaBarberoStore.fechaSeleccionada
       }
 

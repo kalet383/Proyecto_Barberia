@@ -167,9 +167,11 @@ const commonItems = {
         }
       ]
     },
-    // agendarCita: {
-
-    // },
+    agendarCita: {
+      title: 'Reservar Cita',
+      icon: KeyIcon,
+      to: '/reservar-cita'
+    },
     citas: {
       title: 'Mis Citas',
       icon: KeyIcon,
@@ -316,11 +318,7 @@ export default {
         commonItems.PaginaPrincipal,
         { divider: true },
         { header: 'Servicios' },
-        {
-        title: "Reservar Cita",
-        icon: "mdi-calendar-plus",
-        to: "/login1"
-        },
+        commonItems.cliente.agendarCita,
         commonItems.cliente.citas,
         {
         title: "Historial",

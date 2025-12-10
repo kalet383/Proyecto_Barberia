@@ -144,9 +144,9 @@
   const semanaActual = ref(new Date())
   const mostrarCalendario = ref(false)
   const fechaCalendario = ref(null)
-  const horaActual = ref(new Date()) // ⭐ Para validar intervalos pasados
-  const intervalId = ref(null) // ⭐ Para el intervalo de actualización
-  const horasOcupadas = ref([])
+  const horaActual = ref(new Date())
+  const intervalId = ref(null)
+  const horasOcupadas = ref([]) // ⭐ NUEVO: Horas ocupadas del barbero
   
   const nombresMeses = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -183,7 +183,7 @@
     const intervalos = []
     const duracion = duracionTotalMinutos.value
     const incremento = duracion
-    const esHoySeleccionado = esHoy(fechaSeleccionada.value) // ⭐ Verificar si es hoy
+    const esHoySeleccionado = esHoy(fechaSeleccionada.value)
     
     franjas.forEach(franja => {
       const [horaInicioH, horaInicioM] = franja.hora_inicio.split(':').map(Number)
@@ -202,14 +202,15 @@
           
           // ⭐ Verificar si el intervalo ya pasó (solo si es hoy)
           const yaPaso = esHoySeleccionado && hasPasadoLaHora(horaInicio)
-
-          const estaOcupada = verificarHoraOcupada(horaInicio, duracion) // ⭐ Verificar si está ocupada
+          
+          // ⭐ NUEVO: Verificar si la hora está ocupada
+          const estaOcupada = verificarHoraOcupada(horaInicio, duracion)
           
           intervalos.push({
             horaInicio,
             duracion: formatearDuracion(duracion),
             franjaId: franja.id_franja,
-            deshabilitado: yaPaso || estaOcupada // ⭐ Marcar como deshabilitado
+            deshabilitado: yaPaso || estaOcupada // ⭐ Deshabilitar si pasó o está ocupada
           })
         }
       }
@@ -236,9 +237,9 @@
     })
   }
 
-  // ⭐ Convertir hora "HH:MM:SS" a minutos desde medianoche
-  const horaAMinutos = (horaStr) => {
-    const [h, m] = horaStr.split(':').map(Number)
+  // ⭐ NUEVO: Convertir hora a minutos
+  const horaAMinutos = (hora) => {
+    const [h, m] = hora.split(':').map(Number)
     return h * 60 + m
   }
 
@@ -457,6 +458,8 @@
       fechaISO = fechaSeleccionada.value.toISOString().split('T')[0]
     }
     
+    // ⭐ IMPORTANTE: Guardar la hora tal cual viene (ya tiene formato HH:MM:SS)
+    // NO agregar :00 adicional
     reservaBarberoStore.setFechaHora(fechaISO, horaSeleccionada.value)
   }
 
