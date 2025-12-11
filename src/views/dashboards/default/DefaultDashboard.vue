@@ -1,11 +1,19 @@
-<script setup lang="ts">
-// imported components
-import TotalEarning from './components/TotalEarning.vue';
-import TotalOrder from './components/TotalOrder.vue';
-import TotalIncome from './components/TotalIncome.vue';
-import TotalGrowth from './components/TotalGrowth.vue';
-import PopularStocks from './components/PopularStocks.vue';
-import BannerBienvenida from './components/BannerBienvenida.vue';
+<script setup>
+  // imported components
+  import { computed } from 'vue';
+  import { useAuthStore } from '@/stores/auth';
+  import TotalEarning from './components/TotalEarning.vue';
+  import TotalOrder from './components/TotalOrder.vue';
+  import TotalIncome from './components/TotalIncome.vue';
+  import TotalGrowth from './components/TotalGrowth.vue';
+  import PopularStocks from './components/PopularStocks.vue';
+  import BannerbienvenidaAdmin from './components/administrador/BannerbienvenidaAdmin.vue';
+
+  const authStore = useAuthStore();
+  const userRole = computed(() => authStore.user?.Role);
+
+  console.log('Usuario:', authStore.user);
+  console.log('Role:', userRole.value);
 </script>
 
 <template>
@@ -13,8 +21,8 @@ import BannerBienvenida from './components/BannerBienvenida.vue';
     <!-- -------------------------------------------------------------------- -->
     <!-- Total Earning -->
     <!-- -------------------------------------------------------------------- -->
-    <v-col cols="12" md="6">
-      <BannerBienvenida></BannerBienvenida>
+    <v-col cols="12">
+      <BannerbienvenidaAdmin v-if="userRole === 'administrador'"></BannerbienvenidaAdmin>
       <br>
       <TotalEarning></TotalEarning>
     </v-col>
