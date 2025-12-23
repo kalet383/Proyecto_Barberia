@@ -31,6 +31,9 @@ onMounted(() => {
     ? ((authStore.user as any).Role as string).toLowerCase()
     : '';
   switch (role) {
+    case 'superadmin':
+      menu.value = menus.menusuperadmin;
+      break;
     case 'administrador':
       menu.value = menus.menuadministrador;
       break;

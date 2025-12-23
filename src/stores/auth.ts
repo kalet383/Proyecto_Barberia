@@ -30,14 +30,17 @@ export const useAuthStore = defineStore('auth', {
         const res = await api.post('/auth/login', credentials, { withCredentials: true });
         this.user = res.data.user;
         
-        if (this.user && (this.user as any).Role == 'Cliente') {
+        if (this.user && (this.user as any).Role == 'cliente') {
           this.menu = 2;
         }
-        if (this.user && (this.user as any).Role == 'Administrador') {
+        if (this.user && (this.user as any).Role == 'administrador') {
           this.menu = 0;
         }
-        if (this.user && (this.user as any).Role == 'Barbero') {
+        if (this.user && (this.user as any).Role == 'barbero') {
           this.menu = 1;
+        }
+        if (this.user && (this.user as any).Role == 'superadmin') {
+          this.menu = 3;
         }
         
         // 🎯 RETORNAR EL ROL
@@ -83,6 +86,9 @@ export const useAuthStore = defineStore('auth', {
         }
         if (this.user && (this.user as any).Role == 'administrador') {
           this.menu = 0
+        }
+        if (this.user && (this.user as any).Role == 'superadmin') {
+          this.menu = 3
         }
 
       } catch (error) {

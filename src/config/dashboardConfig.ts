@@ -334,5 +334,134 @@ export default {
         },
         { divider: true },
         commonItems.samplePage
+    ],
+
+    "menusuperadmin": [
+        { header: 'Super Administrador' },
+        {
+            title: "Dashboard",
+            icon: "mdi-view-dashboard",
+            to: "/superadmin/dashboard"
+        },
+        { divider: true },
+        { header: 'Gestión de Usuarios' },
+        {
+            title: "Todos los Usuarios",
+            icon: "mdi-account-group",
+            to: "/superadmin/usuarios"
+        },
+        {
+            title: "Barberos",
+            icon: "mdi-content-cut",
+            to: "/lista-barberos",
+            children: [
+                {
+                    title: "Lista de Barberos",
+                    icon: CircleIcon,
+                    to: "/lista-barberos"
+                },
+                {
+                    title: "Crear Barbero",
+                    icon: CircleIcon,
+                    to: "/crear-barbero"
+                }
+            ]
+        },
+        {
+            title: "Clientes",
+            icon: "mdi-account-multiple",
+            to: "/lista-clientes",
+            children: [
+                {
+                    title: "Lista de Clientes",
+                    icon: CircleIcon,
+                    to: "/lista-clientes"
+                }
+            ]
+        },
+        { divider: true },
+        { header: 'Gestión de Ventas' },
+        {
+            title: "Ventas",
+            icon: "mdi-cash-register",
+            to: "/superadmin/ventas"
+        },
+        {
+            title: "Productos",
+            icon: "mdi-package-variant",
+            to: "/productos",
+            children: [
+                {
+                    title: "Lista de Productos",
+                    icon: CircleIcon,
+                    to: "/lista-productos"
+                },
+                {
+                    title: "Crear Producto",
+                    icon: CircleIcon,
+                    to: "/crear-producto"
+                },
+                {
+                    title: "Categorías",
+                    icon: CircleIcon,
+                    to: "/lista-categorias-producto"
+                }
+            ]
+        },
+        { divider: true },
+        { header: 'Gestión de Servicios' },
+        {
+            title: "Servicios",
+            icon: "mdi-scissors-cutting",
+            to: "/servicios",
+            children: [
+                {
+                    title: "Lista de Servicios",
+                    icon: CircleIcon,
+                    to: "/lista-servicios"
+                },
+                {
+                    title: "Crear Servicio",
+                    icon: CircleIcon,
+                    to: "/crear-servicio"
+                },
+                {
+                    title: "Categorías",
+                    icon: CircleIcon,
+                    to: "/lista-categorias-servicio"
+                }
+            ]
+        },
+        { divider: true },
+        { header: 'Gestión de Citas' },
+        {
+            title: "Dashboard Citas",
+            icon: "mdi-calendar-clock",
+            to: "/dashboard-citas"
+        },
+        {
+            title: "Gestionar Citas",
+            icon: "mdi-calendar-edit",
+            to: "/gestion-citas"
+        },
+        { divider: true },
+        { header: 'Reportes y Estadísticas' },
+        {
+            title: "Reportes",
+            icon: "mdi-chart-bar",
+            to: "/superadmin/reportes"
+        },
+        {
+            title: "Estadísticas",
+            icon: "mdi-chart-line",
+            to: "/superadmin/dashboard"
+        },
+        { divider: true },
+        { header: 'Configuración' },
+        {
+            title: "Configuración General",
+            icon: "mdi-cog",
+            to: "/superadmin/dashboard"
+        }
     ]
 };

@@ -19,6 +19,11 @@ import VistaHistorialCitas from '@/views/dashboards/default/components/cliente/V
 import DefaultDashboard from '@/views/dashboards/default/DefaultDashboard.vue';
 import PaginaPrincipal from '@/views/pages/PaginaPrincipal.vue';
 
+// SuperAdmin Views
+import DashboardSuperAdmin from '@/views/pages/superadmin/DashboardSuperAdmin.vue';
+import GestionUsuarios from '@/views/pages/superadmin/GestionUsuarios.vue';
+import GestionVentas from '@/views/pages/superadmin/GestionVentas.vue';
+
 const MainRoutes = {
   path: '/dashboard',
   meta: {
@@ -167,6 +172,31 @@ const MainRoutes = {
       path: '/agenda-citas',
       name: 'VistaAgenda',
       component: VistaAgenda
+    },
+    // SuperAdmin Routes
+    {
+      path: '/superadmin/dashboard',
+      name: 'DashboardSuperAdmin',
+      component: DashboardSuperAdmin,
+      meta: { requiresAuth: true, requiresSuperAdmin: true }
+    },
+    {
+      path: '/superadmin/usuarios',
+      name: 'GestionUsuarios',
+      component: GestionUsuarios,
+      meta: { requiresAuth: true, requiresSuperAdmin: true }
+    },
+    {
+      path: '/superadmin/ventas',
+      name: 'GestionVentas',
+      component: GestionVentas,
+      meta: { requiresAuth: true, requiresSuperAdmin: true }
+    },
+    {
+      path: '/superadmin/reportes',
+      name: 'ReportesSuperAdmin',
+      component: DashboardSuperAdmin, // Reutilizamos el dashboard por ahora
+      meta: { requiresAuth: true, requiresSuperAdmin: true }
     }
   ],
 };
