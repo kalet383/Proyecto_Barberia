@@ -143,20 +143,26 @@
       <v-row class="copyright-section">
         <v-col cols="12" md="6" class="text-center text-md-left">
           <p class="copyright-text">
-            © 2025 <span class="brand-name">StyleHub</span>. Todos los derechos reservados.
+            © 2025 <span class="brand-name">CAPITÁN BARBAS®</span>. Todos los derechos reservados.
           </p>
         </v-col>
         <v-col cols="12" md="6" class="text-center text-md-right">
           <div class="legal-links">
-            <a href="#">Política de Privacidad</a>
+            <a href="javascript:void(0)" @click="showPolicy('privacy')">Política de Privacidad</a>
             <span class="separator">•</span>
-            <a href="#">Términos y Condiciones</a>
+            <a href="javascript:void(0)" @click="showPolicy('terms')">Términos de Servicio</a>
             <span class="separator">•</span>
-            <a href="#">Cookies</a>
+            <a href="javascript:void(0)" @click="showPolicy('refund')">Política de Reembolso</a>
+            <span class="separator">•</span>
+            <a href="javascript:void(0)" @click="showPolicy('shipping')">Política de Envío</a>
+            <span class="separator">•</span>
+            <a href="javascript:void(0)" @click="showPolicy('data')">Protección de Datos</a>
           </div>
         </v-col>
       </v-row>
     </v-container>
+
+    <PoliciesModal ref="policiesModal" />
 
     <!-- Línea decorativa inferior -->
     <div class="bottom-line"></div>
@@ -165,8 +171,55 @@
 
 <script setup>
 import { ref } from 'vue';
+import PoliciesModal from '@/components/shared/PoliciesModal.vue';
 
 const email = ref('');
+const policiesModal = ref(null);
+
+const policies = {
+  privacy: {
+    title: 'POLÍTICA DE PRIVACIDAD',
+    content: `<h3>SECCIÓN 1 - ¿QUÉ HACEMOS CON TU INFORMACIÓN?</h3>
+    Cuando compras algo en nuestras tiendas físicas o virtual o tomas servicios, como parte del proceso, nosotros recolectamos la información personal que nos das tales como nombre, dirección, correo electrónico, fecha de cumpleaños, número de identificación, entre otros.
+    <h3>SECCIÓN 2 - CONSENTIMIENTO</h3>
+    ¿Cómo obtienen mi consentimiento? Cuando nos provees tu información personal para completar una transacción, verificar tu tarjeta de crédito, crear una orden, pagar un producto o servicio, concertar un envío o hacer una devolución, implicamos que aceptas la recolección y uso por esa razón específica solamente.
+    <h3>SECCIÓN 3 - DIVULGACIÓN</h3>
+    Podemos divulgar tu información personal si se nos requiere por ley o si violas nuestros términos de servicio.
+    <h3>SECCIÓN 4 - SEGURIDAD</h3>
+    Para proteger tu información personal, tomamos precauciones razonables y seguimos las mejores prácticas de la industria. Si nos proporcionas la información de tu tarjeta de crédito, dicha información es encriptada mediante la tecnología Secure Socket Layer (SSL) y se almacena con un cifrado AES-256.`
+  },
+  terms: {
+    title: 'TÉRMINOS DE SERVICIO',
+    content: `Este sitio web es operado por CAPITÁN BARBAS®. Al visitar nuestro sitio participas en nuestro “Servicio” y aceptas los siguientes términos y condiciones.
+    <h3>SECCIÓN 1 - TÉRMINOS DEL SITIO WEB</h3>
+    Al utilizar este sitio, declaras que tienes al menos o la mayoría de edad en tu país de residencia. No puedes usar nuestros productos con ningún propósito ilegal o no autorizado.
+    <h3>SECCIÓN 2 - CONDICIONES GENERALES</h3>
+    Nos reservamos el derecho de rechazar la prestación de servicio a cualquier persona, por cualquier motivo y en cualquier momento.`
+  },
+  refund: {
+    title: 'POLÍTICA DE REEMBOLSO',
+    content: `Nuestra política tiene una duración de (15) días. Si (15) días han pasado desde tu compra, por desgracia no podemos ofrecer un reembolso o cambio.
+    <h3>REEMBOLSO</h3>
+    Para ser elegible para una devolución, el artículo debe estar sin usar y en las mismas condiciones en que lo recibiste. Debe estar en su empaque original.`
+  },
+  shipping: {
+    title: 'POLÍTICA DE ENVÍO',
+    content: `Los plazos de entrega serán con carácter general de un máximo de (8) días laborables. En circunstancias excepcionales dicho plazo podría ser de hasta (15) días hábiles.
+    <h3>RESPONSABILIDAD</h3>
+    Nuestros transportistas intentan entregar hasta 2 veces en la dirección proporcionada. Es responsabilidad del cliente estar presente.`
+  },
+  data: {
+    title: 'POLÍTICA DE TRATAMIENTO DE DATOS',
+    content: `Tu presentación de información personal a través del sitio se rige por nuestra Política de Tratamiento y Protección de Datos Personales. En CAPITÁN BARBAS® nos comprometemos a proteger la privacidad de nuestros usuarios y clientes de acuerdo con la ley vigente en Colombia.`
+  }
+};
+
+const showPolicy = (key) => {
+  const policy = policies[key];
+  if (policy && policiesModal.value) {
+    policiesModal.value.open(policy.title, policy.content);
+  }
+};
 
 const suscribirse = () => {
   if (email.value) {

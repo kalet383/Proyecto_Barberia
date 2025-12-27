@@ -21,7 +21,7 @@ const commonItems = {
   PaginaPrincipal: {
     title: 'Pagina Principal',
     icon: DashboardIcon,
-    to: '/pages/pagina-principal'
+    to: '/'
   },
   administrador: {
     authentication: {
@@ -281,6 +281,13 @@ export default {
         commonItems.administrador.categoriasProductos,
         commonItems.administrador.categoriasServicios,
         { divider: true },
+        { header: 'Gestion de Ventas' },
+        {
+            title: "Ventas",
+            icon: "mdi-cash-register",
+            to: "/superadmin/ventas"
+        },
+        { divider: true },
         { header: 'Gestion de citas' },
         commonItems.administrador.dashboardCita,
         commonItems.administrador.gestionCitas,
@@ -303,6 +310,11 @@ export default {
         title: "Clientes",
         icon: "mdi-account-multiple",
         to: "/clientes"
+        },
+        {
+            title: "Ventas",
+            icon: "mdi-cash-register",
+            to: "/superadmin/ventas"
         },
         { divider: true },
         { header: 'Utilidades' },
@@ -330,7 +342,7 @@ export default {
         {
         title: "Mi Perfil",
         icon: "mdi-account-circle",
-        to: "/perfil"
+        to: "/dashboard/default"
         },
         { divider: true },
         commonItems.samplePage

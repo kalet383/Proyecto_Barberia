@@ -93,8 +93,19 @@ export const useAuthStore = defineStore('auth', {
 
       } catch (error) {
         console.log('LOADUSER FALLÓ:', error);
-        this.user = null;
+        // 🎯 Si falla, resetear el estado completamente
+        this.resetAuthState();
+        throw error;
       }
+    },
+
+    // 🎯 NUEVA FUNCIÓN para resetear el estado completamente
+    resetAuthState() {
+      this.user = null;
+      this.returnUrl = null;
+      this.menu = null;
+      this.loading = false;
+      this.error = null;
     },
 
     async logout() {
@@ -103,8 +114,20 @@ export const useAuthStore = defineStore('auth', {
       } catch {
         // aunque falle, limpiamos
       }
-      this.user = null;
-      this.returnUrl = null;
+      
+      // 🎯 Resetear estado
+      this.resetAuthState();
+      
+      // 🎯 Limpiar localStorage
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // 🎯 Limpiar cookies (si existen)
+      document.cookie.split(";").forEach((c) => {
+        document.cookie = c
+          .replace(/^ +/, "")
+          .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      });
     },
   },
 });

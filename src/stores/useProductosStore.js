@@ -138,16 +138,17 @@ export const useProductosStore = defineStore('productos', {
         ],
         mostrarDetalles: false,
         productoSeleccionado: null,
+        carritoAbierto: false,
     }),
 
-    /* getters: {
-        todosLosProductos: (state) =>
-        state.categorias.flatMap(categoria => categoria.productos),
-
-        obtenerProductoPorId: (state) => (id) => {
-            return state.categorias.flatMap(cat => cat.productos).find(p => p.id === id);
+    getters: {
+        totalProductos: (state) => {
+            return state.ComprasCarrito.reduce((total, item) => total + item.cantidad, 0);
+        },
+        subtotalCarrito: (state) => {
+            return state.ComprasCarrito.reduce((total, item) => total + (item.precio * item.cantidad), 0);
         }
-    }, */
+    },
 
     actions: {
         abrirDetalles(producto) {
@@ -158,6 +159,12 @@ export const useProductosStore = defineStore('productos', {
             this.mostrarDetalles = false;
             this.productoSeleccionado = null;
         },
+        abrirCarrito() {
+            this.carritoAbierto = true;
+        },
+        cerrarCarrito() {
+            this.carritoAbierto = false;
+        },
         AgregaralCarrito(producto) {
             const existente = this.ComprasCarrito.find(p => p.id === producto.id);
             if (existente) {
@@ -165,6 +172,23 @@ export const useProductosStore = defineStore('productos', {
             } else {
                 this.ComprasCarrito.push({ ...producto, cantidad: 1 });
             }
+            this.abrirCarrito();
+        },
+        QuitarUno(productoId) {
+            const item = this.ComprasCarrito.find(p => p.id === productoId);
+            if (item) {
+                if (item.cantidad > 1) {
+                    item.cantidad -= 1;
+                } else {
+                    this.EliminarDelCarrito(productoId);
+                }
+            }
+        },
+        EliminarDelCarrito(productoId) {
+            this.ComprasCarrito = this.ComprasCarrito.filter(p => p.id !== productoId);
+        },
+        VaciarCarrito() {
+            this.ComprasCarrito = [];
         }
     }
 

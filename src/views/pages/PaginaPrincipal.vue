@@ -16,6 +16,14 @@
         </ul>
       </nav>
       <div class="header-actions">
+        <!-- Carrito de Compras -->
+        <v-btn icon class="text-white mr-4" variant="text" @click="productosStore.abrirCarrito()">
+          <v-badge color="error" :content="productosStore.totalProductos" v-if="productosStore.totalProductos > 0">
+            <ShoppingCartIcon size="28" stroke-width="1.5" />
+          </v-badge>
+          <ShoppingCartIcon size="28" stroke-width="1.5" v-else />
+        </v-btn>
+
         <!-- Usuario NO logueado -->
         <v-btn 
           v-if="!authStore.isAuthenticated" 
@@ -94,7 +102,7 @@
           </v-menu>
         </div>
 
-        <CarritoCompra></CarritoCompra>
+        <CartModal />
       </div>
     </header>
 
@@ -126,23 +134,45 @@
       <i class="fab fa-whatsapp"></i>
       <span class="parrafowhatsapp">Escribemos por Whatsapp</span>
     </a>
+
+    <v-snackbar v-model="snackbar" color="black" location="top right" :timeout="3000">
+      {{ snackbarText }}
+      <template v-slot:actions>
+        <v-btn color="primary" variant="text" @click="snackbar = false">
+          Cerrar
+        </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { useAuthStore } from '@/stores/auth';
+import { useProductosStore } from '@/stores/useProductosStore';
 import { useRouter } from 'vue-router';
 import HomeServicios from '@/views/pages/HomeServicios.vue';
 import HomeBarberos from '@/views/pages/HomeBarberos.vue';
 import HomeProductos from '@/views/pages/HomeProductos.vue';
 import HomeUbicacion from './HomeUbicacion.vue';
-import CarritoCompra from '@/components/shared/CarritoCompra.vue';
+import CartModal from '@/components/shared/CartModal.vue';
 import VistareservaCita from './VistareservaCita.vue';
 import FooterPagina from './FooterPagina.vue';
+import { ShoppingCartIcon } from 'vue-tabler-icons';
 
 const authStore = useAuthStore();
+const productosStore = useProductosStore();
 const router = useRouter();
+
+const snackbar = ref(false);
+const snackbarText = ref('');
+
+watch(() => productosStore.totalProductos, (newCount, oldCount) => {
+  if (newCount > oldCount) {
+    snackbarText.value = '¡Producto añadido al carrito! 🛒';
+    snackbar.value = true;
+  }
+});
 
 const images = [
   'https://img.freepik.com/fotos-premium/hombre-sentado-silla-barbero-mientras-barbero-corta-cabello-precision-barbero-cortando-cuidadosamente-barba-cliente-precision_538213-114313.jpg?w=996',
@@ -197,7 +227,8 @@ const irAPerfil = () => {
 
 const cerrarSesion = async () => {
   await authStore.logout();
-  window.location.href = '/';
+  // 🎯 Reload la página para limpiar todo el estado
+  location.reload();
 };
 
 function abrirModal() {

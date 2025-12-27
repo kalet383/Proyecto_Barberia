@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import MainRoutes from './MainRoutes';
 import PublicRoutes from './PublicRoutes';
 import { useAuthStore } from '@/stores/auth';
+import { useProductosStore } from '@/stores/useProductosStore';
 
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -10,6 +11,12 @@ export const router = createRouter({
       path: '/:pathMatch(.*)*',
       component: () => import('@/views/pages/maintenance/error/Error404Page.vue')
     },
+    {
+      path: '/checkout',
+      name: 'Checkout',
+      component: () => import('@/views/pages/checkout/CheckoutPage.vue'),
+      meta: { requiresAuth: false, requiresCart: true } // 🎯 Requiere carrito
+    },
     MainRoutes,
     PublicRoutes
   ]
@@ -17,6 +24,8 @@ export const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   const auth = useAuthStore();
+  const productosStore = useProductosStore();
+  
   console.log('Usuario en auth:', auth.user);
 
   console.log('ROUTER GUARD EJECUTADO');
@@ -27,29 +36,38 @@ router.beforeEach(async (to, from, next) => {
   console.log('👤 User in middleware:', auth.user);
   console.log('🔐 Is authenticated:', auth.isAuthenticated);
 
-  // 👇 NUEVO: Siempre intentar cargar usuario si no existe en memoria
-  if (!auth.user) {
-    try {
-      await auth.loadUser();
-    } catch (error) {
-      console.log('No hay sesión activa');
+  // 🎯 PROTEGER /checkout - debe tener carrito
+  if (to.path === '/checkout') {
+    if (!productosStore.ComprasCarrito || productosStore.ComprasCarrito.length === 0) {
+      console.log('❌ Intento de acceder a checkout sin carrito - redirigiendo a inicio');
+      return next('/');
     }
   }
 
-  // páginas públicas (no requieren login)
-  const publicPages = ['/login', '/login1', '/register']; // 👈 ajusta según lo que tengas
+  // 🎯 NUNCA intentes cargar usuario automáticamente en la página principal
+  // Solo carga si va a rutas protegidas (no públicas)
+  const publicPages = ['/login', '/login1', '/register', '/', '/checkout']; 
   const isPublicPage = publicPages.includes(to.path);
 
-  // 🎯 NUEVA LÓGICA: Si viene del dashboard y tiene usuario, bloquear ir a login
-  if (auth.user && (to.path === '/login' || to.path === '/login1') && from.path.startsWith('/dashboard')) {
-    console.log('Bloqueando navegación desde dashboard a login');
-    return next(false); // Bloquea la navegación
+  if (!auth.user && !isPublicPage && !from.path.startsWith('/dashboard')) {
+    try {
+      console.log('Intentando cargar usuario para ruta protegida...');
+      await auth.loadUser();
+    } catch (error) {
+      console.log('No hay sesión activa en ruta protegida');
+    }
   }
 
-  // la ruta requiere autenticación si tiene `meta.requiresAuth`
-  const authRequired = !isPublicPage && to.matched.some(record => record.meta.requiresAuth);
+  // 🎯 Si viene del dashboard y tiene usuario, bloquear ir a login
+  if (auth.user && (to.path === '/login' || to.path === '/login1') && from.path.startsWith('/dashboard')) {
+    console.log('Bloqueando navegación desde dashboard a login');
+    return next(false);
+  }
 
-  // 🎯 NUEVA LÓGICA: Si requiere auth y no hay usuario, intentar cargar desde cookies
+  // la ruta requiere autenticación si tiene `meta.requiresAuth` explícitamente en true
+  const authRequired = to.matched.some(record => record.meta.requiresAuth === true);
+
+  // Si requiere auth y no hay usuario
   if (authRequired && !auth.user) {
     try {
       console.log('Intentando cargar usuario desde cookies...');
@@ -62,8 +80,8 @@ router.beforeEach(async (to, from, next) => {
     }
   }
 
-  // si ya está logueado e intenta entrar a /login -> lo mando al home o returnUrl
-  if (auth.user && to.path === '/login') {
+  // si ya está logueado e intenta entrar a /login -> lo manda al home
+  if (auth.user && (to.path === '/login' || to.path === '/login1')) {
     return next(auth.returnUrl || '/');
   }
 

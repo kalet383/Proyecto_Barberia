@@ -1,5 +1,6 @@
 <template>
     <div class="producto-card">
+        <div class="badge-nuevo" v-if="esNuevo(producto.createdAt)">Recién Llegado</div>
         <img :src="producto.img || defaultImage" :alt="producto.nombre" class="producto-img">
         <div class="info-producto">
             <h3 class="nombre-producto"> {{ producto.nombre }} </h3>
@@ -32,6 +33,15 @@
     const emitirAgregarCarrito = () => {
         emit('agregar-carrito', props.producto)
     }
+
+    const esNuevo = (createdAt) => {
+        if (!createdAt) return false;
+        const fechaProducto = new Date(createdAt);
+        const hoy = new Date();
+        const diferencia = hoy.getTime() - fechaProducto.getTime();
+        const dias = diferencia / (1000 * 3600 * 24);
+        return dias <= 5;
+    }
 </script>
 
 <style scoped>
@@ -43,6 +53,22 @@
         text-align: center;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         transition: transform 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .badge-nuevo {
+        position: absolute;
+        top: 10px;
+        right: -30px;
+        background: #ee6f38;
+        color: white;
+        padding: 5px 35px;
+        font-size: 0.7rem;
+        font-weight: bold;
+        transform: rotate(45deg);
+        z-index: 1;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
 
     .producto-card:hover {

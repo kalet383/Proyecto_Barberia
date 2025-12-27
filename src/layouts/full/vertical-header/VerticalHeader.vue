@@ -2,7 +2,8 @@
 import { ref } from 'vue';
 import { useCustomizerStore } from '../../../stores/customizer';
 // Icon Imports
-import { BellIcon, SettingsIcon, SearchIcon, Menu2Icon } from 'vue-tabler-icons';
+import { BellIcon, SettingsIcon, SearchIcon, Menu2Icon, ShoppingCartIcon } from 'vue-tabler-icons';
+import { useProductosStore } from '../../../stores/useProductosStore';
 
 // dropdown imports
 import NotificationDD from './NotificationDD.vue';
@@ -10,6 +11,7 @@ import ProfileDD from './ProfileDD.vue';
 import Searchbar from './SearchBarPanel.vue';
 
 const customizer = useCustomizerStore();
+const productosStore = useProductosStore();
 const showSearch = ref(false);
 function searchbox() {
   showSearch.value = !showSearch.value;
@@ -71,6 +73,16 @@ function searchbox() {
     <!-- ---------------------------------------------- -->
     <!---right part -->
     <!-- ---------------------------------------------- -->
+
+    <!-- ---------------------------------------------- -->
+    <!-- Shopping Cart -->
+    <!-- ---------------------------------------------- -->
+    <v-btn icon class="text-secondary mx-3" color="lightsecondary" rounded="sm" size="small" variant="flat" @click="productosStore.abrirCarrito()">
+      <v-badge color="error" :content="productosStore.totalProductos" v-if="productosStore.totalProductos > 0">
+        <ShoppingCartIcon stroke-width="1.5" size="22" />
+      </v-badge>
+      <ShoppingCartIcon stroke-width="1.5" size="22" v-else />
+    </v-btn>
 
     <!-- ---------------------------------------------- -->
     <!-- Notification -->
