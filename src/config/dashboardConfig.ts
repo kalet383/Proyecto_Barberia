@@ -348,6 +348,7 @@ export default {
         commonItems.samplePage
     ],
 
+    // --- AQUÍ ESTÁ LA SECCIÓN MODIFICADA DEL SUPER ADMIN ---
     "menusuperadmin": [
         { header: 'Super Administrador' },
         {
@@ -391,6 +392,13 @@ export default {
                 }
             ]
         },
+        // --- AQUÍ AGREGUÉ PROVEEDORES (Debajo de Clientes) ---
+        {
+            title: "Proveedores",
+            icon: "mdi-truck-delivery",
+            to: "/superadmin/proveedores"
+        },
+        // ----------------------------------------------------
         { divider: true },
         { header: 'Gestión de Ventas' },
         {
@@ -470,10 +478,11 @@ export default {
         },
         { divider: true },
         { header: 'Configuración' },
+        // --- ESTA SECCIÓN APARECE AL FINAL DE TODO ---
         {
             title: "Configuración General",
             icon: "mdi-cog",
-            to: "/superadmin/dashboard"
+            to: "/superadmin/dashboard" // Puedes cambiar esto a '/starter' si prefieres
         }
     ]
 };

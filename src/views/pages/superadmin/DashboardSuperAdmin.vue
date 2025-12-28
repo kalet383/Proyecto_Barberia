@@ -141,6 +141,19 @@
                   Reportes
                 </v-btn>
               </v-col>
+
+              <!-- Nuevo botón para Gestión de Proveedores (al final, "abajo" de los otros) -->
+              <v-col cols="12" md="4">
+                <v-btn
+                  block
+                  size="large"
+                  color="warning"
+                  prepend-icon="mdi-truck-delivery"
+                  @click="$router.push('/superadmin/proveedores')"
+                >
+                  Gestionar Proveedores
+                </v-btn>
+              </v-col>
             </v-row>
           </v-card-text>
         </v-card>
