@@ -204,6 +204,7 @@
     const cerrarSesion = async () => {
         aceptaTerminos.value = false;
         await authStore.logout();
+        router.replace('/');
     };
 
     const validarConfirmacion = () => {

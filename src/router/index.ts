@@ -80,6 +80,26 @@ router.beforeEach(async (to, from, next) => {
     }
   }
 
+  // Normalizar rol del usuario para comparaciones seguras
+  const userRole = auth.user ? (((auth.user as any).role || (auth.user as any).Role || '') as string).toLowerCase() : '';
+  console.log('userRole normalizado en guard:', userRole);
+
+  // Si la ruta requiere SuperAdmin explícitamente
+  const requiresSuperAdmin = to.matched.some(record => record.meta.requiresSuperAdmin === true);
+  if (requiresSuperAdmin) {
+    if (!auth.user || userRole !== 'superadmin') {
+      return next('/');
+    }
+  }
+
+  // Si la ruta requiere Admin explícitamente (acepta administrador o superadmin)
+  const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin === true);
+  if (requiresAdmin) {
+    if (!auth.user || (userRole !== 'administrador' && userRole !== 'superadmin')) {
+      return next('/');
+    }
+  }
+
   // si ya está logueado e intenta entrar a /login -> lo manda al home
   if (auth.user && (to.path === '/login' || to.path === '/login1')) {
     return next(auth.returnUrl || '/');

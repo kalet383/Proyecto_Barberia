@@ -90,6 +90,25 @@ const MainRoutes = {
       component: ListaClientes
     },
     {
+      path: '/administrador/proveedores',
+      name: 'GestionProveedoresAdmin',
+      component: GestionProveedores,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    // Compras - Administrador
+    {
+      path: '/administrador/compras/nueva',
+      name: 'NuevaCompraAdmin',
+      component: () => import('@/views/pages/administrador/GestionCompras.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/administrador/compras/historial',
+      name: 'HistorialComprasAdmin',
+      component: () => import('@/views/pages/administrador/HistorialCompras.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
       path: '/lista-servicios',
       name: 'ListaServicios',
       component: ListaServicios
@@ -205,6 +224,19 @@ const MainRoutes = {
       path: '/superadmin/proveedores',
       name: 'GestionProveedores',
       component: GestionProveedores,
+      meta: { requiresAuth: true, requiresSuperAdmin: true }
+    },
+    // Compras - SuperAdmin
+    {
+      path: '/superadmin/compras/nueva',
+      name: 'NuevaCompraSuper',
+      component: () => import('@/views/pages/superadmin/GestionCompras.vue'),
+      meta: { requiresAuth: true, requiresSuperAdmin: true }
+    },
+    {
+      path: '/superadmin/compras/historial',
+      name: 'HistorialComprasSuper',
+      component: () => import('@/views/pages/superadmin/HistorialCompras.vue'),
       meta: { requiresAuth: true, requiresSuperAdmin: true }
     }
   ],

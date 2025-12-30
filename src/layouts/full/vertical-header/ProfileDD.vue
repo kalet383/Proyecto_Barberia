@@ -12,8 +12,8 @@ const router = useRouter(); // 🎯 AGREGAR ESTO
 // 🎯 NUEVA FUNCIÓN PARA MANEJAR LOGOUT
 const handleLogout = async () => {
   await authStore.logout();
-  // 🎯 Reload la página para limpiar TODO el estado completamente
-  location.reload();
+  // 🎯 Redirigir al home para evitar que el router nos mande a /login
+  router.replace('/');
 };
 </script>
 

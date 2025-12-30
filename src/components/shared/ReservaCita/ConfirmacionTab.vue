@@ -209,6 +209,7 @@
     const cerrarSesion = async () => {
         aceptaTerminos.value = false; // Resetear términos al cerrar sesión
         await authStore.logout();
+        router.replace('/');
     };
 
     // Exponer validación para componente padre

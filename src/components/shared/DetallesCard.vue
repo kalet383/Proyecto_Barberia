@@ -3,7 +3,7 @@
         <v-card class="detalle-card">
             <v-row>
                 <v-col cols="12" md="6">
-                    <v-img :src="productoSeleccionado?.img" aspect-ratio="1" class="imagen-modal" />
+                    <v-img :src="productoSeleccionado?.imagenUrl || productoSeleccionado?.img || '/imagenes/logo/logo2.png'" aspect-ratio="1" class="imagen-modal" />
                 </v-col>
                 <v-col cols="12" md="6">
                     <h3 class="titulodialog">{{ productoSeleccionado?.nombre }}</h3>

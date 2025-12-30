@@ -129,7 +129,7 @@
             </template>
 
             <template v-slot:item.total="{ item }">
-              ${{ parseFloat(item.total).toFixed(2) }}
+              ${{ Number(item.total).toFixed(2) }}
             </template>
 
             <template v-slot:item.tipoPago="{ item }">
@@ -190,7 +190,7 @@
                   @update:model-value="updatePrecio"
                 >
                   <template v-slot:item="{ props, item }">
-                    <v-list-item v-bind="props" :title="item.raw.nombre" :subtitle="`$${item.raw.precio} - Stock: ${item.raw.stock}`"></v-list-item>
+                    <v-list-item v-bind="props" :title="(item.raw as any).nombre" :subtitle="`$${(item.raw as any).precio_venta} - Stock: ${(item.raw as any).stock}`"></v-list-item>
                   </template>
                 </v-autocomplete>
               </v-col>
@@ -344,7 +344,7 @@ const rules = {
 const ventas = computed(() => ventaStore.ventas);
 const clientes = computed(() => superAdminStore.users.filter(u => u.role === 'cliente'));
 const barberos = computed(() => superAdminStore.users.filter(u => u.role === 'barbero'));
-const productos = computed(() => productosStore.productos);
+const productos = computed(() => (productosStore as any).productos);
 
 const getPaymentColor = (tipo: string) => {
   const colors: Record<string, string> = {
@@ -366,9 +366,9 @@ const formatDate = (date: string) => {
 };
 
 const updatePrecio = () => {
-  const producto = productos.value.find(p => p.id === formData.value.productoId);
+  const producto = (productos.value as any).find((p: any) => p.id === formData.value.productoId);
   if (producto) {
-    precioUnitario.value = parseFloat(producto.precio);
+    precioUnitario.value = parseFloat(producto.precio_venta);
     calcularTotal();
   }
 };
@@ -459,7 +459,7 @@ onMounted(async () => {
     await Promise.all([
       ventaStore.fetchVentas(),
       superAdminStore.fetchAllUsers(),
-      productosStore.fetchProductos(),
+      (productosStore as any).fetchProductos ? (productosStore as any).fetchProductos() : Promise.resolve(),
       loadEstadisticas(),
     ]);
   } catch (error) {

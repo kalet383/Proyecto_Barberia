@@ -2,7 +2,7 @@
   <div class="page-container">
     <header ref="headerRef" class="header">
       <div class="logo">
-        <a href="/" @click="location.reload()">
+        <a href="/" @click.prevent="goHome">
           <img src="/public/imagenes/logo/logo2.png" class="imagen-pequeña" />
         </a>
       </div>
@@ -225,10 +225,14 @@ const irAPerfil = () => {
   router.push('/perfil');
 };
 
+const goHome = () => {
+  router.replace('/');
+};
+
 const cerrarSesion = async () => {
   await authStore.logout();
-  // 🎯 Reload la página para limpiar todo el estado
-  location.reload();
+  // 🎯 Redirigir al home en lugar de recargar (evita que nos lleve a /login)
+  router.replace('/');
 };
 
 function abrirModal() {

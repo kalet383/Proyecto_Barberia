@@ -276,6 +276,27 @@ export default {
         { header: 'Administración' },
         commonItems.administrador.clientes,
         commonItems.administrador.barberos,
+        {
+            title: "Proveedores",
+            icon: "mdi-truck-delivery",
+            to: "/administrador/proveedores"
+        },
+        {
+            title: "Compras",
+            icon: "mdi-cart",
+            children: [
+                {
+                    title: "Nueva compra",
+                    icon: CircleIcon,
+                    to: "/administrador/compras/nueva"
+                },
+                {
+                    title: "Historial de compras",
+                    icon: CircleIcon,
+                    to: "/administrador/compras/historial"
+                }
+            ]
+        },
         commonItems.administrador.servicios,
         commonItems.administrador.productos,
         commonItems.administrador.categoriasProductos,
@@ -405,6 +426,22 @@ export default {
             title: "Ventas",
             icon: "mdi-cash-register",
             to: "/superadmin/ventas"
+        },
+        {
+            title: "Compras",
+            icon: "mdi-cart",
+            children: [
+                {
+                    title: "Nueva compra",
+                    icon: CircleIcon,
+                    to: "/superadmin/compras/nueva"
+                },
+                {
+                    title: "Historial de compras",
+                    icon: CircleIcon,
+                    to: "/superadmin/compras/historial"
+                }
+            ]
         },
         {
             title: "Productos",

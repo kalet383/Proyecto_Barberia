@@ -34,8 +34,10 @@ export const useProductoStore = defineStore('producto', {
                 // Transformar los datos para asegurar tipos correctos
                 this.productos = data.map((producto: any) => ({
                     ...producto,
-                    precio: parseFloat(producto.precio) || 0,
-                    stock: parseInt(producto.stock) || 0
+                    precio_venta: parseFloat(producto.precio_venta) || 0,
+                    stock: parseInt(producto.stock) || 0,
+                    cantidad_publicada: parseInt(producto.cantidad_publicada) || 0,
+                    publicado: !!producto.publicado
                 }));
                 console.log('Productos cargados:', this.productos);
                 return this.productos;
@@ -57,14 +59,66 @@ export const useProductoStore = defineStore('producto', {
                 this.productos.push(data);
                 return data;
             } catch (error) {
-                if (axios.isAxiosError(error) && error.response?.data?.message) {
-                    this.error = error.response.data.message;
+                console.error('Error creating product:', error);
+                if (axios.isAxiosError(error) && error.response?.data) {
+                    // Guardamos el mensaje de error y lo reenviamos para que el componente lo maneje
+                    this.error = error.response.data.message || JSON.stringify(error.response.data);
                 } else {
                     this.error = 'Error al crear el producto';
                 }
+                throw error; // Re-throw to allow caller to present the message
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async publishProducto(id: number, cantidad: number) {
+            this.loading = true;
+            this.error = null;
+            try {
+                const { data } = await api.post(`/producto/${id}/publicar`, { cantidad }, { withCredentials: true });
+                // actualizar localmente
+                const idx = this.productos.findIndex(p => p.id === id);
+                if (idx !== -1) this.productos[idx] = { ...this.productos[idx], ...data };
+                return data;
+            } catch (error) {
+                console.error('Error publicando producto:', error);
+                if (axios.isAxiosError(error)) {
+                    this.error = error.response?.data?.message || 'Error al publicar el producto';
+                    // Si el backend responde con el disponible, podemos usarlo para mostrar al usuario
+                    const disponible = error.response?.data?.available;
+                    if (typeof disponible === 'number') {
+                        this.error = `${this.error}. Disponible para publicar: ${disponible}`;
+                    }
+                } else {
+                    this.error = 'Error al publicar el producto';
+                }
+                throw error;
+            } finally {
+                this.loading = false;
+            }
+        },
+
+
+        async unpublishProducto(id: number) {
+            this.loading = true;
+            this.error = null;
+            try {
+                const { data } = await api.post(`/producto/${id}/unpublicar`, {}, { withCredentials: true });
+                const idx = this.productos.findIndex(p => p.id === id);
+                if (idx !== -1) this.productos[idx] = { ...this.productos[idx], ...data };
+                return data;
+            } catch (error) {
+                console.error('Error despublicando producto:', error);
+                if (axios.isAxiosError(error)) {
+                    this.error = error.response?.data?.message || 'Error al despublicar el producto';
+                } else {
+                    this.error = 'Error al despublicar el producto';
+                }
+                throw error;
             } finally {
                 this.loading = false;
             }
         }
     }
-})
+});

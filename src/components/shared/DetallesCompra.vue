@@ -21,7 +21,7 @@
                                 </div>
                             </template>
                             <template #item.subtotal="{ item }">
-                                ${{ (item.precio * item.cantidad).toLocaleString() }}
+                                ${{ (item.precio_venta * item.cantidad).toLocaleString() }}
                             </template>
                         </v-data-table>
                     </v-col>

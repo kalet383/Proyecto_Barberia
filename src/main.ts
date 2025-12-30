@@ -8,6 +8,9 @@ import VueTablerIcons from 'vue-tabler-icons'
 import VueSidebarMenu from 'vue-sidebar-menu'
 import 'vue-sidebar-menu/dist/vue-sidebar-menu.css'
 import print from 'vue3-print-nb'
+// Perfect Scrollbar
+import { PerfectScrollbar } from 'vue3-perfect-scrollbar'
+import 'vue3-perfect-scrollbar/style.css'
 
 // 📦 Estilos globales
 import '@fortawesome/fontawesome-free/css/all.css'
@@ -43,6 +46,9 @@ app.use(VueTablerIcons)
 app.use(print)
 app.use(VueApexCharts)
 app.use(VueSidebarMenu)
+
+// Registrar perfect scrollbar globalmente para evitar warnings
+app.component('perfect-scrollbar', PerfectScrollbar)
 
 // Montar app
 app.mount('#app')

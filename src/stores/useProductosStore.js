@@ -141,12 +141,25 @@ export const useProductosStore = defineStore('productos', {
         carritoAbierto: false,
     }),
 
+    // Normalizar datos: agregar precio_venta, stock y publicado por defecto para la demo
+    // (En producción los productos vendrán del backend con estos campos)
+    // Ejecutar una vez a la carga
+    hydrate: () => {
+        for (const cat of useProductosStore().categorias) {
+            for (const p of cat.productos) {
+                if (p.precio_venta === undefined) p.precio_venta = p.precio || 0;
+                if (p.stock === undefined) p.stock = 10; // demo
+                if (p.publicado === undefined) p.publicado = true;
+            }
+        }
+    },
+
     getters: {
         totalProductos: (state) => {
             return state.ComprasCarrito.reduce((total, item) => total + item.cantidad, 0);
         },
         subtotalCarrito: (state) => {
-            return state.ComprasCarrito.reduce((total, item) => total + (item.precio * item.cantidad), 0);
+            return state.ComprasCarrito.reduce((total, item) => total + (Number(item.precio || 0) * Number(item.cantidad || 0)), 0);
         }
     },
 
@@ -167,10 +180,22 @@ export const useProductosStore = defineStore('productos', {
         },
         AgregaralCarrito(producto) {
             const existente = this.ComprasCarrito.find(p => p.id === producto.id);
+            const disponible = producto.cantidad_publicada !== undefined ? producto.cantidad_publicada : (producto.stock || 0);
+
+            if (disponible <= 0) {
+                // No hay unidades publicadas
+                return;
+            }
+
             if (existente) {
+                // No permitir superar la cantidad publicada
+                if (existente.cantidad >= disponible) return;
                 existente.cantidad += 1;
             } else {
-                this.ComprasCarrito.push({ ...producto, cantidad: 1 });
+                // Normalizar precio e imagen para asegurar cálculos y visuales
+                const precio = Number(producto.precio_venta ?? producto.precio ?? 0);
+                const img = producto.imagenUrl || producto.img || '/imagenes/logo/logo2.png';
+                this.ComprasCarrito.push({ ...producto, precio, img, cantidad: 1 });
             }
             this.abrirCarrito();
         },

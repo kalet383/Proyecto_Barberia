@@ -29,24 +29,30 @@ export const useAuthStore = defineStore('auth', {
       try {
         const res = await api.post('/auth/login', credentials, { withCredentials: true });
         this.user = res.data.user;
-        
-        if (this.user && (this.user as any).Role == 'cliente') {
+
+        // Normalizar rol en minúsculas para uso consistente en la app
+        const rawRole = (this.user as any).Role || (this.user as any).role;
+        if (rawRole) {
+          (this.user as any).role = String(rawRole).toLowerCase();
+        }
+
+        if (this.user && (this.user as any).role == 'cliente') {
           this.menu = 2;
         }
-        if (this.user && (this.user as any).Role == 'administrador') {
+        if (this.user && (this.user as any).role == 'administrador') {
           this.menu = 0;
         }
-        if (this.user && (this.user as any).Role == 'barbero') {
+        if (this.user && (this.user as any).role == 'barbero') {
           this.menu = 1;
         }
-        if (this.user && (this.user as any).Role == 'superadmin') {
+        if (this.user && (this.user as any).role == 'superadmin') {
           this.menu = 3;
         }
-        
-        // 🎯 RETORNAR EL ROL
+
+        // 🎯 RETORNAR EL ROL (normalizado)
         return {
           ...res.data,
-          role: (this.user as any).Role
+          role: (this.user as any).role
         };
       } catch (err: unknown) {
         if (axios.isAxiosError(err) && err.response?.data?.message) {
@@ -55,6 +61,7 @@ export const useAuthStore = defineStore('auth', {
         throw 'Login failed';
       }
     },
+
 
     async register(payload: { nombre: string; apellido: string; email: string; password: string; telefono?: string }) {
       try {
@@ -77,17 +84,23 @@ export const useAuthStore = defineStore('auth', {
         console.log('LOADUSER EXITOSO:', profile);
         this.user = profile;
 
+        // Normalizar rol en minúsculas para uso consistente
+        const rawRole = (this.user as any).Role || (this.user as any).role;
+        if (rawRole) {
+          (this.user as any).role = String(rawRole).toLowerCase();
+        }
+
         // También debes setear el menu según el rol
-        if (this.user && (this.user as any).Role == 'cliente') {
+        if (this.user && (this.user as any).role == 'cliente') {
           this.menu = 2
         }
-        if (this.user && (this.user as any).Role == 'barbero') {
+        if (this.user && (this.user as any).role == 'barbero') {
           this.menu = 1
         }
-        if (this.user && (this.user as any).Role == 'administrador') {
+        if (this.user && (this.user as any).role == 'administrador') {
           this.menu = 0
         }
-        if (this.user && (this.user as any).Role == 'superadmin') {
+        if (this.user && (this.user as any).role == 'superadmin') {
           this.menu = 3
         }
 
@@ -98,6 +111,7 @@ export const useAuthStore = defineStore('auth', {
         throw error;
       }
     },
+
 
     // 🎯 NUEVA FUNCIÓN para resetear el estado completamente
     resetAuthState() {

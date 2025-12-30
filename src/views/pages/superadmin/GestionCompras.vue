@@ -6,6 +6,12 @@
       </v-col>
     </v-row>
 
+    <v-row v-if="loading">
+      <v-col cols="12">
+        <v-alert type="info" variant="outlined">Cargando datos...</v-alert>
+      </v-col>
+    </v-row>
+
     <v-form ref="form" v-model="valid">
       <!-- 1️⃣ Datos generales de la compra -->
       <v-card class="mb-6">
@@ -88,6 +94,7 @@
                     density="compact"
                     hide-details
                     :rules="[rules.required]"
+                    @update:model-value="(val) => setPrecioFromProducto(index, val)"
                   ></v-autocomplete>
                 </td>
                 <td class="pa-2">
@@ -103,7 +110,7 @@
                 </td>
                 <td class="pa-2">
                   <v-text-field
-                    v-model.number="detalle.precio_unitario"
+                    v-model.number="detalle.precio_compra"
                     type="number"
                     min="0"
                     prefix="$"
@@ -115,7 +122,7 @@
                 </td>
                 <td class="pa-2">
                   <v-text-field
-                    :value="formatCurrency(detalle.cantidad * detalle.precio_unitario)"
+                    :value="formatCurrency(detalle.cantidad * detalle.precio_compra)"
                     readonly
                     variant="filled"
                     density="compact"
@@ -180,6 +187,7 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 const valid = ref(false);
 const saving = ref(false);
+const loading = ref(false);
 const snackbar = ref(false);
 const snackbarText = ref('');
 const snackbarColor = ref('success');
@@ -201,7 +209,7 @@ const rules = {
 
 const totalGeneral = computed(() => {
   return compra.value.detalles.reduce((acc, item) => {
-    return acc + (Number(item.cantidad || 0) * Number(item.precio_unitario || 0));
+    return acc + (Number(item.cantidad || 0) * Number(item.precio_compra || 0));
   }, 0);
 });
 
@@ -217,8 +225,17 @@ const addProductCallback = () => {
   compra.value.detalles.push({
     id_producto: null,
     cantidad: 1,
-    precio_unitario: 0
+    precio_compra: 0
   });
+};
+
+const setPrecioFromProducto = (index: number, productId: number | null) => {
+  if (!productId) return;
+  const prod = productos.value.find(p => p.id === productId);
+  if (prod) {
+    // Usamos precio_venta como referencia opcional, el usuario puede cambiar el precio de compra
+    compra.value.detalles[index].precio_compra = Number(prod.precio_venta) || 0;
+  }
 };
 
 const removeProduct = (index: number) => {
@@ -226,37 +243,56 @@ const removeProduct = (index: number) => {
 };
 
 const fetchData = async () => {
+  loading.value = true;
   try {
     const [provRes, prodRes] = await Promise.all([
       api.get('/proveedor'),
       api.get('/producto')
     ]);
+    console.log('fetchData responses:', provRes.status, prodRes.status);
     proveedores.value = provRes.data;
     productos.value = prodRes.data;
+    console.log('proveedores/productos cargados:', proveedores.value?.length, productos.value?.length);
   } catch (error) {
+    console.error('fetchData error:', error);
     showSnackbar('Error al cargar datos necesarios', 'error');
+  } finally {
+    loading.value = false;
   }
 };
 
 const submitCompra = async () => {
-  if (!valid.value || compra.value.detalles.length === 0) return;
+  if (!valid.value) return;
 
   saving.value = true;
   try {
-    // Preparar el payload correcto
-    const payload = {
+    // 1) Crear la compra sin detalles (total en 0)
+    const payloadCreate = {
       fecha_compra: compra.value.fecha_compra,
       id_proveedor: compra.value.id_proveedor,
-      detalles: compra.value.detalles.map(d => ({
-        id_producto: d.id_producto,
-        cantidad: Number(d.cantidad),
-        precio_unitario: Number(d.precio_unitario)
-      }))
+      detalles: []
     };
 
-    await api.post('/compra-producto', payload);
+    const createRes = await api.post('/compra-producto', payloadCreate);
+    const createdCompra = createRes.data;
+
+    // 2) Agregar cada detalle por separado usando el endpoint /detalle-compra
+    for (const d of compra.value.detalles) {
+      const detallePayload = {
+        id_compra: createdCompra.id_compra,
+        id_producto: d.id_producto,
+        cantidad: Number(d.cantidad),
+        precio_compra: Number(d.precio_compra)
+      };
+
+      await api.post('/detalle-compra', detallePayload);
+    }
+
+    // 3) Obtener la compra actualizada (con total y detalles)
+    const updated = await api.get(`/compra-producto/${createdCompra.id_compra}`);
+
     showSnackbar('Compra registrada exitosamente', 'success');
-    
+
     // Resetear formulario
     compra.value = {
       id_proveedor: null,
@@ -264,7 +300,7 @@ const submitCompra = async () => {
       observacion: '',
       detalles: []
     };
-    
+
   } catch (error: any) {
     console.error(error);
     showSnackbar(error.response?.data?.message || 'Error al registrar compra', 'error');
@@ -279,8 +315,13 @@ const showSnackbar = (text: string, color: string) => {
   snackbar.value = true;
 };
 
-onMounted(() => {
-  fetchData();
+onMounted(async () => {
+  try {
+    await fetchData();
+    console.log('fetchData completado en onMounted');
+  } catch (e) {
+    console.error('Error en onMounted fetchData:', e);
+  }
 });
 </script>
 

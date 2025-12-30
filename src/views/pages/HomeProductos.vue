@@ -30,28 +30,47 @@
 </template>
 
 <script setup>
-    import { ref, computed } from 'vue'
-    import { useProductosStore } from '@/stores/useProductosStore'
+    import { ref, onMounted } from 'vue'
+    import api from '@/plugins/axios'
     import ProductoCard from '@/components/shared/ProductoCard.vue'
     import DetallesCard from '@/components/shared/DetallesCard.vue'
 
     // Estado local
     const Tabactivado = ref(0)
-
-    // Store de productos
-    const productoStore = useProductosStore()
-
-    // Computed para las categorías desde Pinia
-    const categorias = computed(() => productoStore.categorias)
+    const categorias = ref([])
 
     // Métodos
-    const emitirverDetalles = (producto) => {
+    const emitirverDetalles = async (producto) => {
+        const { useProductosStore } = await import('@/stores/useProductosStore');
+        const productoStore = useProductosStore();
         productoStore.abrirDetalles(producto)
     }
 
-    const AgregaralCarrito = (producto) => {
+    const AgregaralCarrito = async (producto) => {
+        const { useProductosStore } = await import('@/stores/useProductosStore');
+        const productoStore = useProductosStore();
         productoStore.AgregaralCarrito(producto)
     }
+
+    const loadProductosTienda = async () => {
+        try {
+            const res = await api.get('/producto/tienda');
+            const items = res.data || [];
+            const map = new Map();
+            for (const p of items) {
+                const cat = p.categoria || { id: p.categoriaId || 0, nombre: 'Sin categoría' };
+                if (!map.has(cat.id)) map.set(cat.id, { id: cat.id, nombre: cat.nombre || 'Sin categoría', productos: [] });
+                map.get(cat.id).productos.push(p);
+            }
+            categorias.value = Array.from(map.values());
+        } catch (error) {
+            console.error('Error cargando productos de tienda', error);
+        }
+    }
+
+    onMounted(() => {
+        loadProductosTienda();
+    })
 </script>
 
 <style scoped>

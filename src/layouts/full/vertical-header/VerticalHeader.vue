@@ -12,6 +12,7 @@ import Searchbar from './SearchBarPanel.vue';
 
 const customizer = useCustomizerStore();
 const productosStore = useProductosStore();
+(productosStore as any).hydrate?.(); // normalizar demo products (precio_venta, stock, publicado)
 const showSearch = ref(false);
 function searchbox() {
   showSearch.value = !showSearch.value;

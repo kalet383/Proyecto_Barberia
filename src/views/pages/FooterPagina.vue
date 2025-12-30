@@ -143,7 +143,7 @@
       <v-row class="copyright-section">
         <v-col cols="12" md="6" class="text-center text-md-left">
           <p class="copyright-text">
-            © 2025 <span class="brand-name">CAPITÁN BARBAS®</span>. Todos los derechos reservados.
+            © 2025 <span class="brand-name">STYLEHUB</span>. Todos los derechos reservados.
           </p>
         </v-col>
         <v-col cols="12" md="6" class="text-center text-md-right">
@@ -190,7 +190,7 @@ const policies = {
   },
   terms: {
     title: 'TÉRMINOS DE SERVICIO',
-    content: `Este sitio web es operado por CAPITÁN BARBAS®. Al visitar nuestro sitio participas en nuestro “Servicio” y aceptas los siguientes términos y condiciones.
+    content: `Este sitio web es operado por STYLEHUB. Al visitar nuestro sitio participas en nuestro “Servicio” y aceptas los siguientes términos y condiciones.
     <h3>SECCIÓN 1 - TÉRMINOS DEL SITIO WEB</h3>
     Al utilizar este sitio, declaras que tienes al menos o la mayoría de edad en tu país de residencia. No puedes usar nuestros productos con ningún propósito ilegal o no autorizado.
     <h3>SECCIÓN 2 - CONDICIONES GENERALES</h3>

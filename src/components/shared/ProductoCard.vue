@@ -1,13 +1,13 @@
 <template>
     <div class="producto-card">
         <div class="badge-nuevo" v-if="esNuevo(producto.createdAt)">Recién Llegado</div>
-        <img :src="producto.img || defaultImage" :alt="producto.nombre" class="producto-img">
+        <img :src="producto.imagenUrl || producto.img || defaultImage" :alt="producto.nombre" class="producto-img">
         <div class="info-producto">
             <h3 class="nombre-producto"> {{ producto.nombre }} </h3>
-            <p class="precio-producto">$ {{ producto.precio.toLocaleString() }} </p>
+            <p class="precio-producto">$ {{ producto.precio_venta.toLocaleString() }} </p>
             <div class="botonescarta">
                 <button class="btn-detalles" @click="emitirverDetalles">Ver Detalles</button>
-                <button class="btn-carrito" @click="emitirAgregarCarrito">Agregar al carrito</button>
+                <button class="btn-carrito" :disabled="!producto.cantidad_publicada || producto.cantidad_publicada <= 0" @click="emitirAgregarCarrito">{{ !producto.cantidad_publicada || producto.cantidad_publicada <= 0 ? 'Agotado' : 'Agregar al carrito' }}</button>
             </div>
         </div>
     </div>
@@ -23,8 +23,8 @@
 
     const emit = defineEmits(['ver-detalles', 'agregar-carrito'])
 
-    // Imagen por defecto
-    const defaultImage = '/public/imagenes/logo/logo2.png'
+    // Imagen por defecto (ruta desde la carpeta public)
+    const defaultImage = '/imagenes/logo/logo2.png' 
 
     const emitirverDetalles = () => {
         emit('ver-detalles', props.producto)
