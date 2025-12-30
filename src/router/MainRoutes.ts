@@ -109,6 +109,12 @@ const MainRoutes = {
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
+      path: '/administrador/ventas',
+      name: 'GestionVentasAdmin',
+      component: GestionVentas,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
       path: '/lista-servicios',
       name: 'ListaServicios',
       component: ListaServicios
@@ -193,6 +199,18 @@ const MainRoutes = {
       path: '/agenda-citas',
       name: 'VistaAgenda',
       component: VistaAgenda
+    },
+    {
+      path: '/checkout',
+      name: 'CheckoutPage',
+      component: () => import('@/views/pages/checkout/CheckoutPage.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/mis-compras',
+      name: 'MisCompras',
+      component: () => import('@/views/pages/cliente/MisCompras.vue'),
+      meta: { requiresAuth: true }
     },
     // SuperAdmin Routes
     {

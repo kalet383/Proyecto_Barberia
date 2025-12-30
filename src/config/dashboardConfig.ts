@@ -306,7 +306,7 @@ export default {
         {
             title: "Ventas",
             icon: "mdi-cash-register",
-            to: "/superadmin/ventas"
+            to: "/administrador/ventas"
         },
         { divider: true },
         { header: 'Gestion de citas' },
@@ -357,6 +357,13 @@ export default {
         title: "Historial",
         icon: "mdi-history",
         to: "/historial"
+        },
+        { divider: true },
+        { header: 'Compras' },
+        {
+          title: "Mis Compras",
+          icon: "mdi-shopping",
+          to: "/mis-compras"
         },
         { divider: true },
         { header: 'Cuenta' },

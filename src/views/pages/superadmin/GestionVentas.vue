@@ -1,439 +1,55 @@
-<template>
-  <v-container fluid>
-    <v-row>
-      <v-col cols="12">
-        <h1 class="text-h3 font-weight-bold mb-6">Gestión de Ventas</h1>
-      </v-col>
-    </v-row>
-
-    <!-- Estadísticas de Ventas -->
-    <v-row v-if="estadisticas">
-      <v-col cols="12" md="3">
-        <v-card color="primary" dark>
-          <v-card-text>
-            <div class="text-h6">Total Ventas</div>
-            <div class="text-h3 font-weight-bold">{{ estadisticas.totalVentas }}</div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-
-      <v-col cols="12" md="3">
-        <v-card color="success" dark>
-          <v-card-text>
-            <div class="text-h6">Ingresos Totales</div>
-            <div class="text-h3 font-weight-bold">${{ estadisticas.ingresoTotal }}</div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-
-      <v-col cols="12" md="3">
-        <v-card color="info" dark>
-          <v-card-text>
-            <div class="text-h6">Promedio por Venta</div>
-            <div class="text-h3 font-weight-bold">${{ estadisticas.promedioVenta }}</div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-
-      <v-col cols="12" md="3">
-        <v-card color="warning" dark>
-          <v-card-text>
-            <div class="text-h6">Efectivo</div>
-            <div class="text-h3 font-weight-bold">{{ estadisticas.ventasPorTipoPago?.efectivo || 0 }}</div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
-
-    <!-- Filtros -->
-    <v-row class="mt-4">
-      <v-col cols="12" md="4">
-        <v-text-field
-          v-model="search"
-          prepend-inner-icon="mdi-magnify"
-          label="Buscar"
-          variant="outlined"
-          density="comfortable"
-          clearable
-        ></v-text-field>
-      </v-col>
-
-      <v-col cols="12" md="3">
-        <v-text-field
-          v-model="fechaInicio"
-          label="Fecha Inicio"
-          type="date"
-          variant="outlined"
-          density="comfortable"
-        ></v-text-field>
-      </v-col>
-
-      <v-col cols="12" md="3">
-        <v-text-field
-          v-model="fechaFin"
-          label="Fecha Fin"
-          type="date"
-          variant="outlined"
-          density="comfortable"
-        ></v-text-field>
-      </v-col>
-
-      <v-col cols="12" md="2">
-        <v-btn
-          block
-          color="primary"
-          size="large"
-          @click="filtrarPorFecha"
-        >
-          Filtrar
-        </v-btn>
-      </v-col>
-    </v-row>
-
-    <!-- Tabla de Ventas -->
-    <v-row>
-      <v-col cols="12">
-        <v-card>
-          <v-card-title class="d-flex justify-space-between align-center">
-            <span>Historial de Ventas</span>
-            <v-btn
-              color="success"
-              prepend-icon="mdi-plus"
-              @click="openCreateDialog"
-            >
-              Nueva Venta
-            </v-btn>
-          </v-card-title>
-
-          <v-data-table
-            :headers="headers"
-            :items="ventas"
-            :search="search"
-            :loading="loading"
-            class="elevation-1"
-          >
-            <template v-slot:item.fechaVenta="{ item }">
-              {{ formatDate(item.fechaVenta) }}
-            </template>
-
-            <template v-slot:item.cliente="{ item }">
-              {{ item.cliente?.nombre }} {{ item.cliente?.apellido }}
-            </template>
-
-            <template v-slot:item.barbero="{ item }">
-              {{ item.barbero ? `${item.barbero.nombre} ${item.barbero.apellido}` : 'N/A' }}
-            </template>
-
-            <template v-slot:item.producto="{ item }">
-              {{ item.producto?.nombre }}
-            </template>
-
-            <template v-slot:item.total="{ item }">
-              ${{ Number(item.total).toFixed(2) }}
-            </template>
-
-            <template v-slot:item.tipoPago="{ item }">
-              <v-chip :color="getPaymentColor(item.tipoPago)" size="small">
-                {{ item.tipoPago }}
-              </v-chip>
-            </template>
-
-            <template v-slot:item.actions="{ item }">
-              <v-btn
-                icon="mdi-delete"
-                size="small"
-                variant="text"
-                color="error"
-                @click="confirmDelete(item)"
-              ></v-btn>
-            </template>
-          </v-data-table>
-        </v-card>
-      </v-col>
-    </v-row>
-
-    <!-- Dialog Nueva Venta -->
-    <v-dialog v-model="dialog" max-width="600px">
-      <v-card>
-        <v-card-title>
-          <span class="text-h5">Nueva Venta</span>
-        </v-card-title>
-
-        <v-card-text>
-          <v-form ref="form">
-            <v-row>
-              <v-col cols="12">
-                <v-autocomplete
-                  v-model="formData.clienteId"
-                  :items="clientes"
-                  item-title="nombre"
-                  item-value="id"
-                  label="Cliente"
-                  variant="outlined"
-                  :rules="[rules.required]"
-                >
-                  <template v-slot:item="{ props, item }">
-                    <v-list-item v-bind="props" :title="`${item.raw.nombre} ${item.raw.apellido}`" :subtitle="item.raw.email"></v-list-item>
-                  </template>
-                </v-autocomplete>
-              </v-col>
-
-              <v-col cols="12">
-                <v-autocomplete
-                  v-model="formData.productoId"
-                  :items="productos"
-                  item-title="nombre"
-                  item-value="id"
-                  label="Producto"
-                  variant="outlined"
-                  :rules="[rules.required]"
-                  @update:model-value="updatePrecio"
-                >
-                  <template v-slot:item="{ props, item }">
-                    <v-list-item v-bind="props" :title="(item.raw as any).nombre" :subtitle="`$${(item.raw as any).precio_venta} - Stock: ${(item.raw as any).stock}`"></v-list-item>
-                  </template>
-                </v-autocomplete>
-              </v-col>
-
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model.number="formData.cantidad"
-                  label="Cantidad"
-                  type="number"
-                  variant="outlined"
-                  :rules="[rules.required, rules.minValue]"
-                  @input="calcularTotal"
-                ></v-text-field>
-              </v-col>
-
-              <v-col cols="12" md="6">
-                <v-select
-                  v-model="formData.tipoPago"
-                  :items="tiposPago"
-                  label="Tipo de Pago"
-                  variant="outlined"
-                  :rules="[rules.required]"
-                ></v-select>
-              </v-col>
-
-              <v-col cols="12">
-                <v-autocomplete
-                  v-model="formData.barberoId"
-                  :items="barberos"
-                  item-title="nombre"
-                  item-value="id"
-                  label="Barbero (Opcional)"
-                  variant="outlined"
-                  clearable
-                >
-                  <template v-slot:item="{ props, item }">
-                    <v-list-item v-bind="props" :title="`${item.raw.nombre} ${item.raw.apellido}`"></v-list-item>
-                  </template>
-                </v-autocomplete>
-              </v-col>
-
-              <v-col cols="12">
-                <v-textarea
-                  v-model="formData.notas"
-                  label="Notas (Opcional)"
-                  variant="outlined"
-                  rows="2"
-                ></v-textarea>
-              </v-col>
-
-              <v-col cols="12" v-if="totalCalculado > 0">
-                <v-alert type="info" variant="tonal">
-                  <strong>Total a pagar: ${{ totalCalculado.toFixed(2) }}</strong>
-                </v-alert>
-              </v-col>
-            </v-row>
-          </v-form>
-        </v-card-text>
-
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="grey" variant="text" @click="closeDialog">Cancelar</v-btn>
-          <v-btn color="primary" variant="elevated" @click="saveVenta" :loading="saving">
-            Registrar Venta
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- Dialog Confirmar Eliminación -->
-    <v-dialog v-model="deleteDialog" max-width="400px">
-      <v-card>
-        <v-card-title class="text-h5">Confirmar Eliminación</v-card-title>
-        <v-card-text>
-          ¿Está seguro que desea eliminar esta venta? El stock del producto será restaurado.
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="grey" variant="text" @click="deleteDialog = false">Cancelar</v-btn>
-          <v-btn color="error" variant="elevated" @click="deleteVenta" :loading="deleting">Eliminar</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- Snackbar -->
-    <v-snackbar v-model="snackbar" :color="snackbarColor" :timeout="3000">
-      {{ snackbarText }}
-    </v-snackbar>
-  </v-container>
-</template>
-
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { useVentaStore } from '@/stores/venta';
+import { useVentaStore, EstadoVenta, type Venta } from '@/stores/venta';
 import { useSuperAdminStore } from '@/stores/superadmin';
-import { useProductosStore } from '@/stores/useProductosStore';
+import { useProductoStore } from '@/stores/producto'; // Added import for producto store
 
 const ventaStore = useVentaStore();
 const superAdminStore = useSuperAdminStore();
-const productosStore = useProductosStore();
+const productosStore = useProductoStore(); // Added instance for producto store
 
 const search = ref('');
 const fechaInicio = ref('');
 const fechaFin = ref('');
-const dialog = ref(false);
-const deleteDialog = ref(false);
-const loading = ref(false);
-const saving = ref(false);
-const deleting = ref(false);
-const ventaToDelete = ref<any>(null);
-const estadisticas = ref<any>(null);
-const totalCalculado = ref(0);
-const precioUnitario = ref(0);
 
-const snackbar = ref(false);
-const snackbarText = ref('');
-const snackbarColor = ref('success');
+const clientes = computed(() => superAdminStore.users.filter(u => u.role === 'cliente'));
+const barberos = computed(() => superAdminStore.users.filter(u => u.role === 'barbero'));
+const productos = computed(() => productosStore.productos);
+const detalleDialog = ref(false);
+const confirmDialog = ref(false);
+const loading = ref(false);
+const updating = ref(false);
+
+const selectedVenta = ref<Venta | null>(null);
+const nuevoEstado = ref<EstadoVenta | null>(null);
+const estadisticas = ref<any>(null);
 
 const headers = [
   { title: 'ID', key: 'id', sortable: true },
   { title: 'Fecha', key: 'fechaVenta', sortable: true },
   { title: 'Cliente', key: 'cliente', sortable: false },
-  { title: 'Producto', key: 'producto', sortable: false },
-  { title: 'Cantidad', key: 'cantidad', sortable: true },
   { title: 'Total', key: 'total', sortable: true },
+  { title: 'Estado', key: 'estado', sortable: true },
   { title: 'Tipo Pago', key: 'tipoPago', sortable: true },
-  { title: 'Barbero', key: 'barbero', sortable: false },
   { title: 'Acciones', key: 'actions', sortable: false },
 ];
 
-const tiposPago = [
-  { title: 'Efectivo', value: 'efectivo' },
-  { title: 'Tarjeta', value: 'tarjeta' },
-  { title: 'Transferencia', value: 'transferencia' },
-];
+const estadosVenta = Object.values(EstadoVenta);
 
-const formData = ref({
-  clienteId: null,
-  barberoId: null,
-  productoId: null,
-  cantidad: 1,
-  tipoPago: 'efectivo',
-  notas: '',
+onMounted(async () => {
+  await loadData();
 });
 
-const rules = {
-  required: (v: any) => !!v || 'Campo requerido',
-  minValue: (v: number) => v > 0 || 'Debe ser mayor a 0',
-};
-
-const ventas = computed(() => ventaStore.ventas);
-const clientes = computed(() => superAdminStore.users.filter(u => u.role === 'cliente'));
-const barberos = computed(() => superAdminStore.users.filter(u => u.role === 'barbero'));
-const productos = computed(() => (productosStore as any).productos);
-
-const getPaymentColor = (tipo: string) => {
-  const colors: Record<string, string> = {
-    efectivo: 'success',
-    tarjeta: 'primary',
-    transferencia: 'info',
-  };
-  return colors[tipo] || 'grey';
-};
-
-const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString('es-ES', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
-
-const updatePrecio = () => {
-  const producto = (productos.value as any).find((p: any) => p.id === formData.value.productoId);
-  if (producto) {
-    precioUnitario.value = parseFloat(producto.precio_venta);
-    calcularTotal();
-  }
-};
-
-const calcularTotal = () => {
-  totalCalculado.value = precioUnitario.value * formData.value.cantidad;
-};
-
-const openCreateDialog = () => {
-  formData.value = {
-    clienteId: null,
-    barberoId: null,
-    productoId: null,
-    cantidad: 1,
-    tipoPago: 'efectivo',
-    notas: '',
-  };
-  totalCalculado.value = 0;
-  precioUnitario.value = 0;
-  dialog.value = true;
-};
-
-const closeDialog = () => {
-  dialog.value = false;
-};
-
-const saveVenta = async () => {
-  saving.value = true;
-  try {
-    await ventaStore.createVenta(formData.value as any);
-    showSnackbar('Venta registrada exitosamente', 'success');
-    closeDialog();
-    await loadEstadisticas();
-  } catch (error: any) {
-    showSnackbar(error.response?.data?.message || 'Error al registrar venta', 'error');
-  } finally {
-    saving.value = false;
-  }
-};
-
-const confirmDelete = (venta: any) => {
-  ventaToDelete.value = venta;
-  deleteDialog.value = true;
-};
-
-const deleteVenta = async () => {
-  deleting.value = true;
-  try {
-    await ventaStore.deleteVenta(ventaToDelete.value.id);
-    showSnackbar('Venta eliminada exitosamente', 'success');
-    deleteDialog.value = false;
-    await loadEstadisticas();
-  } catch (error: any) {
-    showSnackbar(error.response?.data?.message || 'Error al eliminar venta', 'error');
-  } finally {
-    deleting.value = false;
-  }
-};
-
-const filtrarPorFecha = async () => {
+const loadData = async () => {
   loading.value = true;
   try {
-    estadisticas.value = await ventaStore.getEstadisticas(fechaInicio.value, fechaFin.value);
+    await Promise.all([
+      ventaStore.fetchVentas(),
+      productosStore.getProductos(),
+      loadEstadisticas()
+    ]);
   } catch (error) {
-    showSnackbar('Error al filtrar ventas', 'error');
+    console.error('Error loading data:', error);
   } finally {
     loading.value = false;
   }
@@ -441,37 +57,310 @@ const filtrarPorFecha = async () => {
 
 const loadEstadisticas = async () => {
   try {
-    estadisticas.value = await ventaStore.getEstadisticas();
+    estadisticas.value = await ventaStore.getEstadisticas(fechaInicio.value, fechaFin.value);
   } catch (error) {
-    console.error('Error al cargar estadísticas:', error);
+    console.error('Error loading stats:', error);
   }
 };
 
-const showSnackbar = (text: string, color: string) => {
-  snackbarText.value = text;
-  snackbarColor.value = color;
-  snackbar.value = true;
+const formatDate = (date: string) => {
+  return new Date(date).toLocaleDateString('es-CO', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 };
 
-onMounted(async () => {
-  loading.value = true;
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    maximumFractionDigits: 0
+  }).format(value);
+};
+
+const getEstadoColor = (estado: EstadoVenta) => {
+  const colors: Record<string, string> = {
+    [EstadoVenta.PENDIENTE]: 'warning',
+    [EstadoVenta.PAGADA]: 'info',
+    [EstadoVenta.ENTREGADA]: 'success',
+    [EstadoVenta.CANCELADA]: 'error'
+  };
+  return colors[estado] || 'grey';
+};
+
+const verDetalle = (venta: Venta) => {
+  selectedVenta.value = venta;
+  nuevoEstado.value = venta.estado;
+  detalleDialog.value = true;
+};
+
+const guardarCambioEstado = async () => {
+  if (!selectedVenta.value || !nuevoEstado.value) return;
+  
+  updating.value = true;
   try {
-    await Promise.all([
-      ventaStore.fetchVentas(),
-      superAdminStore.fetchAllUsers(),
-      (productosStore as any).fetchProductos ? (productosStore as any).fetchProductos() : Promise.resolve(),
-      loadEstadisticas(),
-    ]);
-  } catch (error) {
-    showSnackbar('Error al cargar datos', 'error');
+    await ventaStore.updateEstadoVenta(selectedVenta.value.id, nuevoEstado.value);
+    detalleDialog.value = false;
+    await loadData(); // Recargar para ver cambios y actualizar estadísticas
+  } catch (error: any) {
+    alert('Error al actualizar: ' + error.message);
   } finally {
-    loading.value = false;
+    updating.value = false;
   }
-});
+};
+
+const filtrar = async () => {
+  loading.value = true;
+  await loadEstadisticas();
+  loading.value = false;
+};
 </script>
 
+<template>
+  <v-container fluid>
+    <v-row>
+      <v-col cols="12">
+        <h1 class="text-h3 font-weight-bold mb-6 text-primary">Gestión de Ventas</h1>
+      </v-col>
+    </v-row>
+
+    <!-- Estadísticas -->
+    <v-row v-if="estadisticas" class="mb-6">
+      <v-col cols="12" md="3">
+        <v-card elevation="2" class="rounded-lg">
+          <v-card-text>
+            <div class="text-overline mb-1">Ventas Totales</div>
+            <div class="text-h4 font-weight-bold">{{ estadisticas.totalVentas }}</div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+      <v-col cols="12" md="3">
+        <v-card elevation="2" class="rounded-lg">
+          <v-card-text>
+            <div class="text-overline mb-1 text-success">Ingresos</div>
+            <div class="text-h4 font-weight-bold text-success">{{ formatCurrency(estadisticas.totalIngresos) }}</div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+      <v-col cols="12" md="3">
+        <v-card elevation="2" class="rounded-lg">
+          <v-card-text>
+            <div class="text-overline mb-1 text-warning">Pendientes</div>
+            <div class="text-h4 font-weight-bold text-warning">{{ estadisticas.ventasPorEstado.pendientes }}</div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+      <v-col cols="12" md="3">
+        <v-card elevation="2" class="rounded-lg">
+          <v-card-text>
+            <div class="text-overline mb-1 text-info">Pagadas</div>
+            <div class="text-h4 font-weight-bold text-info">{{ estadisticas.ventasPorEstado.pagadas }}</div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <!-- Filtros y Tabla -->
+    <v-card>
+      <v-card-title class="d-flex align-center flex-wrap gap-4 py-4">
+        <v-text-field
+          v-model="search"
+          prepend-inner-icon="mdi-magnify"
+          label="Buscar venta o cliente..."
+          variant="outlined"
+          density="compact"
+          hide-details
+          class="flex-grow-1"
+          style="max-width: 300px;"
+        ></v-text-field>
+
+        <v-divider vertical class="mx-4 hidden-sm-and-down"></v-divider>
+
+        <div class="d-flex gap-2 align-center">
+          <v-text-field
+            v-model="fechaInicio"
+            type="date"
+            label="Desde"
+            variant="outlined"
+            density="compact"
+            hide-details
+          ></v-text-field>
+          <v-text-field
+            v-model="fechaFin"
+            type="date"
+            label="Hasta"
+            variant="outlined"
+            density="compact"
+            hide-details
+          ></v-text-field>
+          <v-btn icon="mdi-filter" variant="text" @click="filtrar"></v-btn>
+        </div>
+      </v-card-title>
+
+      <v-data-table
+        :headers="headers"
+        :items="ventaStore.ventas"
+        :search="search"
+        :loading="loading"
+        hover
+      >
+        <template v-slot:item.fechaVenta="{ item }">
+          {{ formatDate(item.fechaVenta) }}
+        </template>
+
+        <template v-slot:item.cliente="{ item }">
+          <div v-if="item.cliente">
+            <div class="font-weight-bold">{{ item.cliente.nombre }} {{ item.cliente.apellido }}</div>
+            <div class="text-caption text-grey">{{ item.cliente.email }}</div>
+          </div>
+        </template>
+
+        <template v-slot:item.total="{ item }">
+          <span class="font-weight-black">{{ formatCurrency(item.total) }}</span>
+        </template>
+
+        <template v-slot:item.estado="{ item }">
+          <v-chip :color="getEstadoColor(item.estado)" size="small" class="font-weight-bold">
+            {{ item.estado }}
+          </v-chip>
+        </template>
+
+        <template v-slot:item.tipoPago="{ item }">
+          <div class="text-capitalize">{{ item.tipoPago?.toLowerCase().replace('_', ' ') }}</div>
+        </template>
+
+        <template v-slot:item.actions="{ item }">
+          <v-btn color="primary" variant="text" size="small" @click="verDetalle(item)">
+            Ver / Editar
+          </v-btn>
+        </template>
+      </v-data-table>
+    </v-card>
+
+    <!-- Dialogo de Detalle -->
+    <v-dialog v-model="detalleDialog" max-width="900" scrollable>
+      <v-card v-if="selectedVenta">
+        <v-toolbar color="primary" density="compact">
+          <v-toolbar-title>Venta #{{ selectedVenta.id }}</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-btn icon="mdi-close" @click="detalleDialog = false"></v-btn>
+        </v-toolbar>
+
+        <v-card-text class="pa-4">
+          <v-row>
+            <!-- Info General -->
+            <v-col cols="12" md="4" class="border-right">
+              <h3 class="text-subtitle-1 font-weight-bold mb-4">Información del Cliente</h3>
+              <div class="mb-4">
+                <div class="text-caption text-grey">Nombre</div>
+                <div>{{ selectedVenta.cliente.nombre }} {{ selectedVenta.cliente.apellido }}</div>
+              </div>
+              <div class="mb-4">
+                <div class="text-caption text-grey">Contacto</div>
+                <div>{{ selectedVenta.cliente.email }}</div>
+                <div>{{ selectedVenta.cliente.telefono }}</div>
+              </div>
+              <div class="mb-4" v-if="selectedVenta.direccionEnvio">
+                <div class="text-caption text-grey">Dirección de Envío</div>
+                <div>{{ selectedVenta.direccionEnvio }}</div>
+              </div>
+              
+              <v-divider class="my-4"></v-divider>
+              
+              <h3 class="text-subtitle-1 font-weight-bold mb-4">Gestión de Estado</h3>
+              <v-select
+                v-model="nuevoEstado"
+                :items="estadosVenta"
+                label="Estado de la Venta"
+                variant="outlined"
+                density="compact"
+              ></v-select>
+              
+              <div class="d-flex flex-column gap-2 mt-2">
+                <div class="text-caption text-grey">
+                  Nota: Al cambiar a 'CANCELADA', se restaurará el stock automáticamente.
+                </div>
+              </div>
+            </v-col>
+
+            <!-- Productos -->
+            <v-col cols="12" md="8">
+              <h3 class="text-subtitle-1 font-weight-bold mb-4">Productos ({{ selectedVenta.detalles.length }})</h3>
+              
+              <v-table density="comfortable" class="border rounded mb-4">
+                <thead>
+                  <tr>
+                    <th>Producto</th>
+                    <th class="text-center">Cant.</th>
+                    <th class="text-right">Precio</th>
+                    <th class="text-right">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="detalle in selectedVenta.detalles" :key="detalle.id">
+                    <td>
+                      <div class="d-flex align-center py-2">
+                        <v-avatar rounded size="40" class="mr-3 bg-grey-lighten-3">
+                          <v-img v-if="detalle.producto.imagenUrl" :src="detalle.producto.imagenUrl" cover></v-img>
+                          <v-icon v-else>mdi-image</v-icon>
+                        </v-avatar>
+                        <div>
+                          <div class="font-weight-medium">{{ detalle.producto.nombre }}</div>
+                          <div class="text-caption text-grey">ID: {{ detalle.producto.id }}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="text-center">{{ detalle.cantidad }}</td>
+                    <td class="text-right">{{ formatCurrency(detalle.precioUnitario) }}</td>
+                    <td class="text-right font-weight-bold">{{ formatCurrency(detalle.subtotal) }}</td>
+                  </tr>
+                </tbody>
+                <tfoot class="bg-grey-lighten-4"> 
+                  <tr>
+                    <td colspan="3" class="text-right font-weight-bold">Total</td>
+                    <td class="text-right font-weight-black">{{ formatCurrency(selectedVenta.total) }}</td>
+                  </tr>
+                </tfoot>
+              </v-table>
+
+              <div v-if="selectedVenta.notas" class="bg-amber-lighten-5 pa-3 rounded border border-amber-lighten-4">
+                <div class="text-caption font-weight-bold text-amber-darken-4">Notas del Cliente:</div>
+                <div class="text-body-2">{{ selectedVenta.notas }}</div>
+              </div>
+            </v-col>
+          </v-row>
+        </v-card-text>
+
+        <v-card-actions class="pa-4 border-top">
+          <v-spacer></v-spacer>
+          <v-btn variant="text" @click="detalleDialog = false">Cerrar</v-btn>
+          <v-btn 
+            color="primary" 
+            prepend-icon="mdi-content-save"
+            @click="guardarCambioEstado"
+            :loading="updating"
+            :disabled="nuevoEstado === selectedVenta.estado"
+          >
+            Guardar Cambios
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </v-container>
+</template>
+
 <style scoped>
-.text-h3 {
+.text-primary {
   color: rgb(var(--v-theme-primary));
+}
+.gap-4 { gap: 16px; }
+.gap-2 { gap: 8px; }
+.border-right { border-right: 1px solid rgba(0,0,0,0.12); }
+
+@media (max-width: 960px) {
+  .border-right { border-right: none; border-bottom: 1px solid rgba(0,0,0,0.12); padding-bottom: 16px; margin-bottom: 16px; }
 }
 </style>

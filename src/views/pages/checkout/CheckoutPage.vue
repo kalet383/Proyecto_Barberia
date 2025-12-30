@@ -2,26 +2,31 @@
 import { ref, computed } from 'vue';
 import { useProductosStore } from '@/stores/useProductosStore';
 import { useAuthStore } from '@/stores/auth';
+import { useVentaStore, TipoPago } from '@/stores/venta';
 import { useRouter } from 'vue-router';
-import { ChevronRightIcon, TruckIcon, MapPinIcon, CreditCardIcon, BuildingBankIcon, CashIcon } from 'vue-tabler-icons';
-import axios from '@/utils/axios'; // Or standard axios if utils not available, checking imports
+import { ChevronRightIcon, TruckIcon, MapPinIcon, CashIcon } from 'vue-tabler-icons';
 
 const productosStore = useProductosStore();
+const authStore = useAuthStore();
+const ventaStore = useVentaStore();
 const router = useRouter();
 
 // Form state
-const email = ref('');
 const deliveryMethod = ref('envio'); // 'envio' or 'retiro'
 const firstName = ref('');
 const lastName = ref('');
 const idNumber = ref('');
 const address = ref('');
-const apartamento = ref(''); // Nuevo
+const apartamento = ref('');
 const city = ref('Montería');
-const department = ref('Córdoba'); // Nuevo
+const department = ref('Córdoba');
 const phone = ref('');
-const paymentMethod = ref('paga-recibir'); // Default adjusted
+const paymentMethod = ref<string>('PAGO_CONTRA_ENTREGA');
 const sameAsShipping = ref(true);
+
+// Modal state
+const showConfirmModal = ref(false);
+const orderData = ref<any>(null);
 
 // Billing Address State
 const billingValues = ref({
@@ -39,8 +44,7 @@ const errors = ref({
     lastName: '',
     idNumber: '',
     address: '',
-    phone: '',
-    email: ''
+    phone: ''
 });
 
 // Shipping cost
@@ -57,7 +61,7 @@ const formatCurrency = (value: number) => {
 
 const validateForm = () => {
     let isValid = true;
-    errors.value = { firstName: '', lastName: '', idNumber: '', address: '', phone: '', email: '' };
+    errors.value = { firstName: '', lastName: '', idNumber: '', address: '', phone: '' };
 
     // Validation only if Shipping is selected
     if (deliveryMethod.value === 'envio') {
@@ -68,54 +72,141 @@ const validateForm = () => {
         if (!phone.value) { errors.value.phone = 'Requerido'; isValid = false; }
     }
 
-    // You can add email validation here if needed
-    // if (!email.value) { errors.value.email = 'Requerido'; isValid = false; }
-
     return isValid;
 };
 
-const finalizeOrder = async () => {
+const prepareOrderData = () => {
+    const direccion = deliveryMethod.value === 'envio' 
+        ? `${address.value}${apartamento.value ? ', ' + apartamento.value : ''}, ${city.value}, ${department.value}`
+        : 'Retiro en sucursal';
+
+    const notas = deliveryMethod.value === 'envio'
+        ? `Cliente: ${firstName.value} ${lastName.value} - ${idNumber.value}. Tel: ${phone.value}`
+        : 'Retiro en sucursal';
+
+    return {
+        direccion,
+        notas,
+        cliente: `${firstName.value} ${lastName.value}`,
+        telefono: phone.value,
+        metodoEntrega: deliveryMethod.value === 'envio' ? 'Envío a domicilio' : 'Retiro en sucursal'
+    };
+};
+
+const showConfirmationModal = () => {
     if (!validateForm()) {
-        alert('Por favor completa todos los campos obligatorios.');
+        // Use a snackbar or small dialog instead of alert if possible, or just return.
+        // For now, I'll allow alert for validation error as it wasn't explicitly forbidden, 
+        // but user disliked "localhost says". I'll use a simple approach or just rely on field errors.
+        // Actually, field errors are shown. I can just focus the first error.
         return;
     }
-    
-    // Check auth
-    const authStore = useAuthStore();
-    
+
     if (!authStore.user) {
-         if (confirm('Debes iniciar sesión para que la compra quede registrada en tu historial. ¿Deseas iniciar sesión ahora? (Si cancelas, no se guardará la compra)')) {
-            router.push('/login');
-            return;
-         }
-         // If they don't want to login, for now we effectively block or we need a guest API. 
-         // User emphasized "al iniciar sesion debe estar en su historial". 
-         // So blocking is safer for requirements.
-         return;
+        showLoginDialog.value = true;
+        return;
     }
+
+    orderData.value = prepareOrderData();
+    showConfirmModal.value = true;
+};
+
+// Dialog State
+const showLoginDialog = ref(false);
+const showSuccessDialog = ref(false);
+const confirmedOrderId = ref<number | null>(null);
+
+const goToLogin = () => {
+    // Save form data to persist across login
+    const formData = {
+        firstName: firstName.value,
+        lastName: lastName.value,
+        idNumber: idNumber.value,
+        address: address.value,
+        apartamento: apartamento.value,
+        city: city.value,
+        department: department.value,
+        phone: phone.value,
+        deliveryMethod: deliveryMethod.value,
+        paymentMethod: paymentMethod.value
+    };
+    localStorage.setItem('checkout_temp_data', JSON.stringify(formData));
     
-    try {
-        const payload = productosStore.ComprasCarrito.map(item => ({
-            clienteId: authStore.user.id,
-            barberoId: null, // Optional, could be selected if "Retiro" implies a barber relation? Assuming null for web sales.
-            productoId: item.id,
-            cantidad: item.cantidad,
-            tipoPago: paymentMethod.value,
-            notas: `Envío a: ${address.value}, ${city.value}, ${department.value}. Tel: ${phone.value}. Cliente: ${firstName.value} ${lastName.value} - ${idNumber.value}`
-        }));
+    // Redirect to login with return path
+    router.push({ path: '/login1', query: { redirect: '/checkout' } });
+};
 
-        console.log('Enviando orden:', payload);
+const finishOrderProcess = () => {
+    router.push('/mis-compras');
+};
 
-        // Call Backend
-        const response = await axios.post('/venta/bulk', payload);
+const goToHome = () => {
+    router.push('/');
+};
 
-        if (response.data.success) {
-            alert('¡Pedido realizado con éxito! Gracias por tu compra.');
-            productosStore.VaciarCarrito();
-            router.push('/');
-        } else {
-             alert('Hubo un problema procesando tu orden: ' + (response.data.mensaje || 'Error desconocido'));
+// Restore form data if exists
+import { onMounted } from 'vue';
+onMounted(() => {
+    const savedData = localStorage.getItem('checkout_temp_data');
+    if (savedData) {
+        try {
+            const parsed = JSON.parse(savedData);
+            firstName.value = parsed.firstName || '';
+            lastName.value = parsed.lastName || '';
+            idNumber.value = parsed.idNumber || '';
+            address.value = parsed.address || '';
+            apartamento.value = parsed.apartamento || '';
+            city.value = parsed.city || 'Montería';
+            department.value = parsed.department || 'Córdoba';
+            phone.value = parsed.phone || '';
+            deliveryMethod.value = parsed.deliveryMethod || 'envio';
+            paymentMethod.value = parsed.paymentMethod || 'PAGO_CONTRA_ENTREGA';
+            
+            // Clean up
+            localStorage.removeItem('checkout_temp_data');
+        } catch (e) {
+            console.error('Error restoring checkout data', e);
         }
+    }
+});
+
+const confirmOrder = async () => {
+    try {
+        // Map payment method to backend enum
+        let tipoPagoBackend: TipoPago;
+        switch (paymentMethod.value) {
+            case 'EFECTIVO':
+                tipoPagoBackend = TipoPago.EFECTIVO;
+                break;
+            case 'TRANSFERENCIA':
+            case 'bancolombia':
+            case 'davivienda':
+                tipoPagoBackend = TipoPago.TRANSFERENCIA;
+                break;
+            default:
+                tipoPagoBackend = TipoPago.PAGO_CONTRA_ENTREGA;
+        }
+
+        const ventaData = {
+            clienteId: (authStore.user as any).id,
+            items: (productosStore.ComprasCarrito as any[]).map(item => ({
+                productoId: item.id,
+                cantidad: item.cantidad
+            })),
+            tipoPago: tipoPagoBackend,
+            direccionEnvio: orderData.value.direccion,
+            notas: orderData.value.notas
+        };
+
+        const result = await ventaStore.createVenta(ventaData);
+
+        showConfirmModal.value = false;
+        confirmedOrderId.value = result.id;
+        showSuccessDialog.value = true;
+        // Do not empty cart immediately if we want to show order details? 
+        // Logic says empty it now.
+        productosStore.VaciarCarrito();
+
     } catch (error: any) {
         console.error('Error al procesar la orden:', error);
         alert('Error al procesar la orden: ' + (error.response?.data?.message || error.message));
@@ -148,16 +239,6 @@ interface Product {
                         <span class="text-black font-weight-bold">Información</span>
                         <ChevronRightIcon size="14" class="mx-2" />
                         <span>Pago</span>
-                    </div>
-
-                    <!-- Contact -->
-                    <div class="section mb-8">
-                        <div class="d-flex justify-space-between align-center mb-4">
-                            <h3 class="text-h6 font-weight-bold">Contacto</h3>
-                            <v-btn variant="text" size="small" to="/login" class="text-none">¿Ya tienes una cuenta? Iniciar sesión</v-btn>
-                        </div>
-                        <v-text-field v-model="email" label="Correo electrónico" placeholder="Email" variant="outlined" density="comfortable"></v-text-field>
-                        <v-checkbox label="Enviarme novedades y ofertas por correo electrónico" hide-details density="compact"></v-checkbox>
                     </div>
 
                     <!-- Delivery -->
@@ -246,7 +327,6 @@ interface Product {
                                     <div class="text-caption">Calle 123 #45-67, Montería, Córdoba</div>
                                     <div class="text-caption text-success font-weight-bold">Gratis • Normalmente listo en 24 horas</div>
                                 </div>
-                                <v-btn variant="text" size="small" color="primary">Ver mapa</v-btn>
                             </div>
                         </v-card>
                     </div>
@@ -257,22 +337,7 @@ interface Product {
                         <p class="text-caption text-grey mb-4">Todas las transacciones son seguras y están encriptadas.</p>
                         
                         <v-radio-group v-model="paymentMethod" class="payment-options border rounded" hide-details>
-                            <v-radio value="wompi" class="pa-4 border-bottom w-100 mr-0">
-                                <template v-slot:label>
-                                    <div class="d-flex align-center justify-space-between w-100">
-                                        <div class="d-flex align-center">
-                                            <span class="mr-2">Wompi</span>
-                                        </div>
-                                        <div class="d-flex gap-1">
-                                            <v-img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" width="30"></v-img>
-                                            <v-img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" width="30"></v-img>
-                                            <v-img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/American_Express_logo_%282018%29.svg" width="30"></v-img>
-                                        </div>
-                                    </div>
-                                </template>
-                            </v-radio>
-                            
-                            <v-radio value="paga-recibir" class="pa-4 border-bottom w-100 mr-0">
+                            <v-radio value="PAGO_CONTRA_ENTREGA" class="pa-4 border-bottom w-100 mr-0">
                                 <template v-slot:label>
                                     <div class="d-flex align-center font-weight-bold">
                                         Paga al Recibir
@@ -281,7 +346,7 @@ interface Product {
                             </v-radio>
                              <!-- Info Paga al Recibir -->
                             <v-expand-transition>
-                                <div v-if="paymentMethod === 'paga-recibir'" class="pa-4 bg-grey-lighten-4 border-bottom text-body-2 text-grey-darken-2">
+                                <div v-if="paymentMethod === 'PAGO_CONTRA_ENTREGA'" class="pa-4 bg-grey-lighten-4 border-bottom text-body-2 text-grey-darken-2">
                                     <div class="d-flex justify-center mb-4">
                                         <CashIcon size="40" stroke-width="1.5" />
                                     </div>
@@ -289,81 +354,36 @@ interface Product {
                                 </div>
                             </v-expand-transition>
 
-                            <v-radio value="bancolombia" class="pa-4 border-bottom w-100 mr-0">
+                            <v-radio value="TRANSFERENCIA" class="pa-4 border-bottom w-100 mr-0">
                                 <template v-slot:label>
                                     <div class="d-flex align-center">
-                                        Transferencia Bancolombia
+                                        Transferencia Bancaria
                                     </div>
                                 </template>
                             </v-radio>
-                             <!-- Info Bancolombia -->
+                             <!-- Info Transferencia -->
                             <v-expand-transition>
-                                <div v-if="paymentMethod === 'bancolombia'" class="pa-4 bg-grey-lighten-4 border-bottom text-body-2 text-grey-darken-2">
-                                     <p class="mb-2" align="justify">Realiza el pago de tu pedido desde la aplicación de Bancolombia haciendo una transferencia electrónica a nuestra cuenta, tendrás mayor control sobre tu pago y la seguridad de realizarlo directamente desde tu banco, sin necesidad de compartir tus datos bancarios en línea.</p>
-                                     <p align="justify">Una vez que hagas clic en "Finalizar el pedido", te mostraremos los datos de nuestra cuenta en Bancolombia para que puedas completar tu compra de manera fácil y rápida. ¡Así, compras con total tranquilidad y comodidad!</p>
+                                <div v-if="paymentMethod === 'TRANSFERENCIA'" class="pa-4 bg-grey-lighten-4 border-bottom text-body-2 text-grey-darken-2">
+                                     <p class="mb-2" align="justify">Realiza el pago de tu pedido desde tu aplicación bancaria haciendo una transferencia electrónica a nuestra cuenta, tendrás mayor control sobre tu pago y la seguridad de realizarlo directamente desde tu banco.</p>
+                                     <p align="justify">Una vez que hagas clic en "Pagar ahora", te mostraremos los datos de nuestra cuenta para que puedas completar tu compra de manera fácil y rápida.</p>
                                 </div>
                             </v-expand-transition>
 
-                            <v-radio value="davivienda" class="pa-4 w-100 mr-0">
+                            <v-radio value="EFECTIVO" class="pa-4 w-100 mr-0">
                                 <template v-slot:label>
                                     <div class="d-flex align-center">
-                                        Transferencia Davivienda
+                                        Efectivo (Retiro en sucursal)
                                     </div>
                                 </template>
                             </v-radio>
-                            <!-- Info Davivienda -->
-                            <v-expand-transition>
-                                <div v-if="paymentMethod === 'davivienda'" class="pa-4 bg-grey-lighten-4 text-body-2 text-grey-darken-2">
-                                     <p class="mb-2" align="justify">Realiza el pago de tu pedido desde la aplicación de Davivienda haciendo una transferencia electrónica a nuestra cuenta, tendrás mayor control sobre tu pago y la seguridad de realizarlo directamente desde tu banco, sin necesidad de compartir tus datos bancarios en línea.</p>
-                                     <p align="justify">Una vez que hagas clic en "Finalizar el pedido", te mostraremos los datos de nuestra cuenta en Davivienda para que puedas completar tu compra de manera fácil y rápida. ¡Así, compras con total tranquilidad y comodidad!</p>
-                                </div>
-                            </v-expand-transition>
                         </v-radio-group>
-                    </div>
-
-                    <!-- Billing Address -->
-                    <div class="section mb-8">
-                        <h3 class="text-h6 font-weight-bold mb-4">Dirección de facturación</h3>
-                        <v-radio-group v-model="sameAsShipping" class="border rounded" hide-details>
-                            <v-radio :value="true" label="La misma dirección de envío" class="pa-4 border-bottom w-100 mr-0"></v-radio>
-                            <v-radio :value="false" label="Usar una dirección de facturación distinta" class="pa-4 w-100 mr-0"></v-radio>
-                        </v-radio-group>
-
-                        <!-- Secondary Form for Billing -->
-                        <v-expand-transition>
-                            <div v-if="!sameAsShipping" class="pa-4 border-left border-right border-bottom bg-grey-lighten-5">
-                                 <v-row>
-                                    <v-col cols="12" class="py-1">
-                                        <v-select label="País/Región" :items="['Colombia']" variant="outlined" density="comfortable" model-value="Colombia" readonly disabled></v-select>
-                                    </v-col>
-                                    <v-col cols="12" md="6" class="py-1">
-                                        <v-text-field v-model="billingValues.firstName" label="Nombre (Obligatorio)" variant="outlined" density="comfortable"></v-text-field>
-                                    </v-col>
-                                    <v-col cols="12" md="6" class="py-1">
-                                        <v-text-field v-model="billingValues.lastName" label="Apellidos (Obligatorio)" variant="outlined" density="comfortable"></v-text-field>
-                                    </v-col>
-                                    <v-col cols="12" class="py-1">
-                                        <v-text-field v-model="billingValues.idNumber" label="Cédula, NIT o Pasaporte (Obligatorio - Solo números)" variant="outlined" density="comfortable"></v-text-field>
-                                    </v-col>
-                                    <v-col cols="12" class="py-1">
-                                        <v-text-field v-model="billingValues.address" label="Dirección y Barrio (Obligatorio)" variant="outlined" density="comfortable"></v-text-field>
-                                    </v-col>
-                                    <v-col cols="12" md="6" class="py-1">
-                                        <v-text-field v-model="billingValues.city" label="Ciudad" variant="outlined" density="comfortable"></v-text-field>
-                                    </v-col>
-                                    <v-col cols="12" md="6" class="py-1">
-                                        <v-text-field v-model="billingValues.phone" label="Teléfono (Obligatorio)" variant="outlined" density="comfortable"></v-text-field>
-                                    </v-col>
-                                </v-row>
-                            </div>
-                        </v-expand-transition>
                     </div>
 
                     <v-btn 
                         color="black" 
                         size="large" 
                         block 
-                        @click="finalizeOrder" 
+                        @click="showConfirmationModal" 
                         class="text-white font-weight-bold" 
                         height="48"
                         style="background-color: black !important; color: white !important;"
@@ -427,6 +447,107 @@ interface Product {
                 </div>
             </v-col>
         </v-row>
+
+        <!-- Confirmation Modal -->
+        <v-dialog v-model="showConfirmModal" max-width="600">
+            <v-card>
+                <v-card-title class="text-h5 font-weight-bold pa-6 bg-primary text-white">
+                    Confirmar Compra
+                </v-card-title>
+                <v-card-text class="pa-6">
+                    <div v-if="orderData">
+                        <h3 class="text-h6 font-weight-bold mb-4">Resumen de tu pedido</h3>
+                        
+                        <v-divider class="my-4"></v-divider>
+                        
+                        <div class="mb-3">
+                            <strong>Cliente:</strong> {{ orderData.cliente }}
+                        </div>
+                        <div class="mb-3" v-if="authStore.user">
+                            <strong>Email:</strong> {{ authStore.user.email }}
+                        </div>
+                        <div class="mb-3">
+                            <strong>Teléfono:</strong> {{ orderData.telefono }}
+                        </div>
+                        <div class="mb-3">
+                            <strong>Método de entrega:</strong> {{ orderData.metodoEntrega }}
+                        </div>
+                        <div class="mb-3">
+                            <strong>Dirección:</strong> {{ orderData.direccion }}
+                        </div>
+                        <div class="mb-3">
+                            <strong>Método de pago:</strong> 
+                            <span v-if="paymentMethod === 'PAGO_CONTRA_ENTREGA'">Pago contra entrega</span>
+                            <span v-else-if="paymentMethod === 'TRANSFERENCIA'">Transferencia bancaria</span>
+                            <span v-else>Efectivo</span>
+                        </div>
+
+                        <v-divider class="my-4"></v-divider>
+
+                        <h4 class="font-weight-bold mb-3">Productos:</h4>
+                        <div v-for="item in (productosStore.ComprasCarrito as any[])" :key="item.id" class="d-flex justify-space-between mb-2">
+                            <span>{{ item.nombre }} x{{ item.cantidad }}</span>
+                            <span class="font-weight-bold">{{ formatCurrency(item.precio * item.cantidad) }}</span>
+                        </div>
+
+                        <v-divider class="my-4"></v-divider>
+
+                        <div class="d-flex justify-space-between text-h6 font-weight-bold">
+                            <span>Total:</span>
+                            <span>{{ formatCurrency(total) }}</span>
+                        </div>
+                    </div>
+                </v-card-text>
+                <v-card-actions class="pa-6">
+                    <v-btn color="grey" variant="text" @click="showConfirmModal = false">
+                        Cancelar
+                    </v-btn>
+                    <v-spacer></v-spacer>
+                    <v-btn color="primary" variant="flat" @click="confirmOrder" :loading="ventaStore.loading">
+                        Confirmar Pedido
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <!-- Login Required Dialog -->
+        <v-dialog v-model="showLoginDialog" max-width="400">
+            <v-card>
+                <v-card-title class="text-h6 bg-warning text-white">
+                    Inicio de Sesión Requerido
+                </v-card-title>
+                <v-card-text class="pa-4 text-center">
+                    <v-icon size="64" color="warning" class="mb-4">mdi-account-alert</v-icon>
+                    <p class="text-body-1">Debes iniciar sesión para completar tu compra.</p>
+                </v-card-text>
+                <v-card-actions class="justify-center pa-4">
+                    <v-btn color="grey" variant="text" @click="showLoginDialog = false">Cancelar</v-btn>
+                    <v-btn color="primary" variant="elevated" @click="goToLogin">Iniciar Sesión</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <!-- Success Dialog -->
+        <v-dialog v-model="showSuccessDialog" max-width="500" persistent>
+            <v-card>
+                <v-card-title class="text-h5 bg-success text-white text-center py-4">
+                    ¡Pedido Realizado con Éxito!
+                </v-card-title>
+                <v-card-text class="pa-6 text-center">
+                    <v-icon size="80" color="success" class="mb-4">mdi-check-circle-outline</v-icon>
+                    <h3 class="text-h6 font-weight-bold mb-2">Pedido #{{ confirmedOrderId }}</h3>
+                    <p class="text-body-1 mb-4">Gracias por tu compra. Hemos Recibido tu pedido correctamente.</p>
+                </v-card-text>
+                <v-card-actions class="flex-column gap-2 pa-6">
+                    <v-btn color="primary" size="large" block variant="elevated" @click="finishOrderProcess">
+                        Ver Pedido en Mis Compras
+                    </v-btn>
+                     <v-btn color="secondary" variant="text" block @click="goToHome">
+                        Volver al Inicio
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
     </v-container>
 </template>
 
