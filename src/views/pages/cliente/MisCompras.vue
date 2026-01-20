@@ -176,8 +176,14 @@ const ventasOrdenadas = computed(() => {
 
                     <v-divider class="my-3"></v-divider>
 
-                    <div class="d-flex gap-2">
-                      <v-btn color="primary" variant="outlined" size="small" @click="verDetalle(venta)" block>
+                    <div class="d-flex flex-wrap gap-2">
+                      <v-btn 
+                        color="primary" 
+                        variant="outlined" 
+                        size="small" 
+                        @click="verDetalle(venta)" 
+                        class="flex-grow-1"
+                      >
                         Ver Detalle
                       </v-btn>
                       <v-btn 
@@ -186,7 +192,7 @@ const ventasOrdenadas = computed(() => {
                         variant="outlined" 
                         size="small" 
                         @click="confirmarCancelacion(venta)"
-                        block
+                        class="flex-grow-1"
                       >
                         Cancelar
                       </v-btn>
@@ -201,7 +207,7 @@ const ventasOrdenadas = computed(() => {
     </v-row>
 
     <!-- Detalle Dialog -->
-    <v-dialog v-model="showDetalleDialog" max-width="800">
+    <v-dialog v-model="showDetalleDialog" max-width="800" scrollable>
       <v-card v-if="selectedVenta">
         <v-card-title class="bg-primary text-white">
           <div class="d-flex align-center justify-space-between">
@@ -210,7 +216,7 @@ const ventasOrdenadas = computed(() => {
           </div>
         </v-card-title>
 
-        <v-card-text class="pa-6">
+        <v-card-text class="pa-6" style="max-height: 600px; overflow-y: auto;">
           <v-row>
             <v-col cols="12" md="6">
               <h3 class="text-h6 font-weight-bold mb-3">Información del Pedido</h3>
@@ -287,30 +293,58 @@ const ventasOrdenadas = computed(() => {
     </v-dialog>
 
     <!-- Cancelar Dialog -->
-    <v-dialog v-model="showCancelarDialog" max-width="500">
-      <v-card>
-        <v-card-title class="bg-error text-white">
-          Cancelar Pedido
+    <!-- Cancelar Dialog -->
+    <v-dialog v-model="showCancelarDialog" max-width="500" scrollable>
+      <v-card class="rounded-lg">
+        <v-card-title class="bg-red-lighten-5 text-error d-flex align-center py-4 px-6">
+          <v-icon icon="mdi-alert-circle-outline" size="24" class="mr-2"></v-icon>
+          <span class="text-h6 font-weight-bold">Cancelar Pedido</span>
         </v-card-title>
 
-        <v-card-text class="pa-6">
-          <p class="text-h6">¿Estás seguro de que deseas cancelar este pedido?</p>
-          <p class="text-body-2 text-grey mt-2">
-            Esta acción devolverá el stock de los productos y no se podrá deshacer.
-          </p>
-          <v-alert type="warning" variant="tonal" class="mt-4">
-            Solo puedes cancelar pedidos en estado PENDIENTE
-          </v-alert>
+        <v-card-text class="pa-6 text-center">
+            <v-icon icon="mdi-cart-remove" size="64" color="grey-lighten-2" class="mb-4"></v-icon>
+            <h3 class="text-h6 font-weight-medium mb-2">¿Estás seguro/a?</h3>
+            <p class="text-body-1 text-medium-emphasis mb-6">
+                Si cancelas este pedido, los productos volverán al inventario y esta acción no se puede deshacer.
+            </p>
+            
+            <v-sheet class="bg-grey-lighten-4 pa-4 rounded text-left border mb-2">
+                <div class="text-caption text-uppercase font-weight-bold text-grey mb-1">Pedido a cancelar</div>
+                <div class="d-flex justify-space-between align-center" v-if="ventaACancelar">
+                    <span class="font-weight-bold">#{{ ventaACancelar.id }}</span>
+                    <span class="text-primary font-weight-black">{{ formatCurrency(ventaACancelar.total) }}</span>
+                </div>
+            </v-sheet>
         </v-card-text>
 
-        <v-card-actions class="pa-6">
-          <v-btn color="grey" variant="text" @click="showCancelarDialog = false">
-            No, mantener pedido
-          </v-btn>
-          <v-spacer></v-spacer>
-          <v-btn color="error" variant="flat" @click="cancelarVenta" :loading="ventaStore.loading">
-            Sí, cancelar pedido
-          </v-btn>
+        <v-divider></v-divider>
+
+        <v-card-actions class="pa-4 bg-grey-lighten-5">
+            <v-row dense>
+                <v-col cols="12" sm="6" order="2" order-sm="1">
+                    <v-btn 
+                        variant="outlined" 
+                        color="grey-darken-1" 
+                        block 
+                        height="44"
+                        @click="showCancelarDialog = false"
+                    >
+                        Conservar Pedido
+                    </v-btn>
+                </v-col>
+                <v-col cols="12" sm="6" order="1" order-sm="2">
+                    <v-btn 
+                        color="error" 
+                        variant="flat" 
+                        block 
+                        height="44"
+                        @click="cancelarVenta" 
+                        :loading="ventaStore.loading"
+                    >
+                        Sí, Cancelar
+                    </v-btn>
+                </v-col>
+            </v-row>
         </v-card-actions>
       </v-card>
     </v-dialog>

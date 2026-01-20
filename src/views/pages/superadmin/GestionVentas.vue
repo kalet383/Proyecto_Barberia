@@ -156,8 +156,9 @@ const filtrar = async () => {
       <v-col cols="12" md="3">
         <v-card elevation="2" class="rounded-lg">
           <v-card-text>
-            <div class="text-overline mb-1 text-info">Pagadas</div>
-            <div class="text-h4 font-weight-bold text-info">{{ estadisticas.ventasPorEstado.pagadas }}</div>
+            <div class="text-overline mb-1 text-info">Completadas</div>
+            <div class="text-h4 font-weight-bold text-info">{{ (estadisticas.ventasPorEstado.pagadas || 0) + (estadisticas.ventasPorEstado.entregadas || 0) }}</div>
+             <div class="text-caption text-medium-emphasis">Entregadas / Pagadas</div>
           </v-card-text>
         </v-card>
       </v-col>
@@ -224,7 +225,7 @@ const filtrar = async () => {
 
         <template v-slot:item.estado="{ item }">
           <v-chip :color="getEstadoColor(item.estado)" size="small" class="font-weight-bold">
-            {{ item.estado }}
+            {{ item.estado === 'ENTREGADA' ? 'ENTREGADA' : (item.estado === 'PAGADA' ? 'PAGADA / RETIRADA' : item.estado) }}
           </v-chip>
         </template>
 

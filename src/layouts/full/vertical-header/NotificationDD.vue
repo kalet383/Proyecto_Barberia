@@ -1,26 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { computed } from 'vue';
 import { BuildingStoreIcon, SendIcon, MailboxIcon, PhotoIcon, BellIcon } from 'vue-tabler-icons';
-import api from '@/plugins/axios';
-import { useAuthStore } from '@/stores/auth';
+import { useNotificationStore } from '@/stores/notification';
 
-const notifications = ref<any[]>([]);
-const unreadCount = computed(() => notifications.value.filter(n => !n.leida).length);
-const authStore = useAuthStore();
-
-const fetchNotifications = async () => {
-    if (!authStore.user) return;
-    try {
-        const { data } = await api.get('/notifications');
-        notifications.value = data;
-    } catch (error) {
-        console.error('Error fetching notifications:', error);
-    }
-};
-
-onMounted(() => {
-    fetchNotifications();
-});
+const notificationStore = useNotificationStore();
+const notifications = computed(() => notificationStore.notifications);
+const unreadCount = computed(() => notificationStore.unreadCount);
 
 const getIcon = (tipo: string) => {
     switch (tipo) {
@@ -43,24 +28,6 @@ const getColor = (tipo: string) => {
 const formatTime = (date: string) => {
     return new Date(date).toLocaleString();
 };
-
-const markAsRead = async (id: number) => {
-    try {
-        await api.patch(`/notifications/${id}/leer`);
-        fetchNotifications();
-    } catch (e) {
-        console.error(e);
-    }
-};
-
-const markAllRead = async () => {
-     try {
-        await api.patch(`/notifications/leer-todas`);
-        fetchNotifications();
-    } catch (e) {
-        console.error(e);
-    }
-}
 </script>
 
 <template>
@@ -73,14 +40,14 @@ const markAllRead = async () => {
         Notificaciones
         <v-chip color="warning" variant="flat" size="small" class="ml-2 text-white">{{ unreadCount }}</v-chip>
       </h6>
-      <a href="#" class="text-decoration-underline text-primary text-subtitle-2" @click.prevent="markAllRead">Marcar leídas</a>
+      <a href="#" class="text-decoration-underline text-primary text-subtitle-2" @click.prevent="notificationStore.markAllAsRead()">Marcar leídas</a>
     </div>
   </div>
   <v-divider></v-divider>
   <perfect-scrollbar style="height: calc(100vh - 300px); max-height: 650px">
     <v-list class="py-0" lines="three" v-if="notifications.length > 0">
       <template v-for="(item, index) in notifications" :key="item.id">
-          <v-list-item :value="item.id" color="secondary" class="no-spacer" @click="markAsRead(item.id)">
+          <v-list-item :value="item.id" color="secondary" class="no-spacer" @click="notificationStore.markAsRead(item.id)">
             <template v-slot:prepend>
               <v-avatar size="40" variant="flat" :color="'light' + getColor(item.tipo)" class="mr-3 py-2" :class="'text-' + getColor(item.tipo)">
                 <component :is="getIcon(item.tipo)" size="20" />

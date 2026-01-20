@@ -128,7 +128,8 @@ const goToLogin = () => {
         department: department.value,
         phone: phone.value,
         deliveryMethod: deliveryMethod.value,
-        paymentMethod: paymentMethod.value
+        paymentMethod: paymentMethod.value,
+        autoOpenModal: true
     };
     localStorage.setItem('checkout_temp_data', JSON.stringify(formData));
     
@@ -146,7 +147,7 @@ const goToHome = () => {
 
 // Restore form data if exists
 import { onMounted } from 'vue';
-onMounted(() => {
+onMounted(async () => {
     const savedData = localStorage.getItem('checkout_temp_data');
     if (savedData) {
         try {
@@ -162,6 +163,13 @@ onMounted(() => {
             deliveryMethod.value = parsed.deliveryMethod || 'envio';
             paymentMethod.value = parsed.paymentMethod || 'PAGO_CONTRA_ENTREGA';
             
+            if (parsed.autoOpenModal && authStore.user) {
+                // Wait for reactivity
+                setTimeout(() => {
+                    showConfirmationModal();
+                }, 100);
+            }
+
             // Clean up
             localStorage.removeItem('checkout_temp_data');
         } catch (e) {

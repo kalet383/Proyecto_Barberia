@@ -6,6 +6,8 @@ import { useAuthStore } from '@/stores/auth';
 import { Form } from 'vee-validate';
 
 const router = useRouter();
+import { useRoute } from 'vue-router';
+const route = useRoute();
 const checkbox = ref(false);
 const valid = ref(false);
 const show1 = ref(false);
@@ -68,7 +70,15 @@ async function validate(values: any, { setErrors }: any) {
       return;
     }
     
-    // 🚀 REDIRIGIR SEGÚN EL ROL (solo si NO viene de reserva)
+    // 🔍 VERIFICAR SI HAY UN REDIRECT EN LA URL (Prioridad Alta)
+    const redirectPath = route.query.redirect as string;
+    if (redirectPath) {
+      console.log('📍 Redirigiendo a url solicitada:', redirectPath);
+      router.push(redirectPath);
+      return;
+    }
+
+    // 🚀 REDIRIGIR SEGÚN EL ROL (solo si NO viene de reserva y NO hay redirect)
     const userRole = (authStore.user as any)?.Role;
     
     if (userRole === 'cliente') {

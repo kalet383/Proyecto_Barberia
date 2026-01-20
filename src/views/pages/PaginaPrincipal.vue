@@ -69,9 +69,9 @@
               <!-- Opciones del menú -->
               <v-list-item @click="irADashboard" class="menu-item">
                 <template v-slot:prepend>
-                  <i class="fas fa-chart-line menu-icon"></i>
+                  <i class="fas fa-user-circle menu-icon"></i>
                 </template>
-                <v-list-item-title>Mi Dashboard</v-list-item-title>
+                <v-list-item-title>Mi Perfil</v-list-item-title>
               </v-list-item>
               
               <v-list-item @click="irAMisCitas" class="menu-item">
@@ -79,13 +79,6 @@
                   <i class="fas fa-calendar-check menu-icon"></i>
                 </template>
                 <v-list-item-title>Mis Citas</v-list-item-title>
-              </v-list-item>
-              
-              <v-list-item @click="irAPerfil" class="menu-item">
-                <template v-slot:prepend>
-                  <i class="fas fa-user-edit menu-icon"></i>
-                </template>
-                <v-list-item-title>Mi Perfil</v-list-item-title>
               </v-list-item>
               
               <v-divider></v-divider>

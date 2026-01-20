@@ -51,14 +51,28 @@
                 <v-card-title>Publicar producto</v-card-title>
                 <v-card-text>
                     <div>Producto: <strong>{{ selectedProduct?.nombre }}</strong></div>
-                    <v-text-field type="number" v-model.number="publishCantidad" label="Cantidad a publicar" min="1" :max="selectedProduct?.stock || 1"></v-text-field>
-                    <div class="text-caption">Stock disponible: {{ selectedProduct?.stock || 0 }}</div>
-                    <div class="text-caption">Stock disponible para publicar: {{ (selectedProduct?.stock || 0) - (selectedProduct?.cantidad_publicada || 0) }}</div>
+                    <!-- Max is (stock - published) -->
+                    <v-text-field 
+                        type="number" 
+                        v-model.number="publishCantidad" 
+                        label="Cantidad a publicar" 
+                        min="1" 
+                        :max="Math.max(0, (selectedProduct?.stock || 0) - (selectedProduct?.cantidad_publicada || 0))"
+                        :rules="[
+                            v => v > 0 || 'Debe ser mayor a 0',
+                            v => v <= Math.max(0, (selectedProduct?.stock || 0) - (selectedProduct?.cantidad_publicada || 0)) || 'Excede el stock disponible'
+                        ]"
+                    ></v-text-field>
+                    <div class="text-caption">Stock total: {{ selectedProduct?.stock || 0 }}</div>
+                    <div class="text-caption">Ya publicados: {{ selectedProduct?.cantidad_publicada || 0 }}</div>
+                    <div class="text-caption font-weight-bold" :class="{'text-error': ((selectedProduct?.stock || 0) - (selectedProduct?.cantidad_publicada || 0)) < 0}">
+                        Stock disponible para publicar: {{ Math.max(0, (selectedProduct?.stock || 0) - (selectedProduct?.cantidad_publicada || 0)) }}
+                    </div>
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn text @click="showPublishDialog = false">Cancelar</v-btn>
-                    <v-btn color="primary" @click="confirmPublish">Publicar</v-btn>
+                    <v-btn color="primary" @click="confirmPublish" :disabled="publishCantidad <= 0 || publishCantidad > Math.max(0, (selectedProduct?.stock || 0) - (selectedProduct?.cantidad_publicada || 0))">Publicar</v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
@@ -107,8 +121,21 @@
 
     const openPublishDialog = (producto) => {
         selectedProduct.value = producto;
-        // Por defecto publicar 1 si hay stock
-        publishCantidad.value = producto.stock > 0 ? 1 : 0;
+        
+        // Calculate max available to publish: stock - already_published
+        // If inconsistent (published > stock), we treat available as 0, but input max is technically current real stock?
+        // No, you can't publish more than you have. 
+        // If you have 5 in stock and 3 published. You can publish 2 more. Total published = 5.
+        // If you have 5 in stock and 5 published. You can publish 0.
+        // Wait, "Publicar producto" dialog seems to add *more* to published count? Or set the total published count?
+        // Looking at backend usually these actions are "set total" or "add".
+        // In most simple logic: "Publicar" means "Add this quantity to the published store".
+        // Let's assume it adds.
+        // Max to add = stock - published.
+        
+        const available = Math.max(0, producto.stock - (producto.cantidad_publicada || 0));
+        
+        publishCantidad.value = available > 0 ? 1 : 0;
         showPublishDialog.value = true;
     };
 

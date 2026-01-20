@@ -9,10 +9,14 @@ import { useProductosStore } from '../../../stores/useProductosStore';
 import NotificationDD from './NotificationDD.vue';
 import ProfileDD from './ProfileDD.vue';
 import Searchbar from './SearchBarPanel.vue';
+import { useNotificationStore } from '../../../stores/notification';
 
 const customizer = useCustomizerStore();
 const productosStore = useProductosStore();
+const notificationStore = useNotificationStore();
 (productosStore as any).hydrate?.(); // normalizar demo products (precio_venta, stock, publicado)
+notificationStore.fetchNotifications(); // Fetch on mount
+
 const showSearch = ref(false);
 function searchbox() {
   showSearch.value = !showSearch.value;
@@ -91,7 +95,10 @@ function searchbox() {
     <v-menu :close-on-content-click="false">
       <template v-slot:activator="{ props }">
         <v-btn icon class="text-secondary mx-3" color="lightsecondary" rounded="sm" size="small" variant="flat" v-bind="props">
-          <BellIcon stroke-width="1.5" size="22" />
+          <v-badge color="error" :content="notificationStore.unreadCount" v-if="notificationStore.unreadCount > 0">
+            <BellIcon stroke-width="1.5" size="22" />
+          </v-badge>
+          <BellIcon stroke-width="1.5" size="22" v-else />
         </v-btn>
       </template>
       <v-sheet rounded="md" width="330" elevation="12">
