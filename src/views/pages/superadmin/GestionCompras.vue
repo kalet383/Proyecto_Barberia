@@ -131,8 +131,8 @@
                   ></v-text-field>
                 </td>
                 <td class="text-center">
-                  <v-btn icon color="error" variant="text" size="small" @click="removeProduct(index)">
-                    <v-icon>mdi-delete</v-icon>
+                  <v-btn icon color="error" variant="flat" size="small" @click="removeProduct(index)">
+                    <v-icon>mdi-close</v-icon>
                   </v-btn>
                 </td>
               </tr>
