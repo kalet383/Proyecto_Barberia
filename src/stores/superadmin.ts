@@ -162,6 +162,26 @@ export const useSuperAdminStore = defineStore('superadmin', {
       }
     },
 
+    async fetchVentasStatistics() {
+      try {
+        const { data } = await api.get('/venta/estadisticas', { withCredentials: true });
+        return data;
+      } catch (error: any) {
+        console.error('Error al cargar estadísticas de ventas:', error);
+        throw error;
+      }
+    },
+
+    async fetchCitasStatistics() {
+      try {
+        const { data } = await api.get('/cita/estadisticas', { withCredentials: true });
+        return data;
+      } catch (error: any) {
+        console.error('Error al cargar estadísticas de citas:', error);
+        throw error;
+      }
+    },
+
     async deleteUser(id: number) {
       this.loading = true;
       this.error = null;

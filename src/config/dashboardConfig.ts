@@ -8,7 +8,25 @@ import {
     BugIcon,
     DashboardIcon,
     BrandChromeIcon,
-    HelpIcon
+    HelpIcon,
+    HomeIcon,
+    CalendarIcon,
+    CalendarEventIcon,
+    HistoryIcon,
+    ShoppingCartIcon,
+    UserIcon,
+    UsersIcon,
+    ScissorsIcon,
+    TruckIcon,
+    PackageIcon,
+    TagIcon,
+    SettingsIcon,
+    ReportAnalyticsIcon,
+    ChartInfographicIcon,
+    CurrencyDollarIcon,
+    Receipt2Icon,
+    BriefcaseIcon,
+    ShoppingBagIcon
 } from 'vue-tabler-icons';
 
 // Opciones comunes que pueden usar todos los roles
@@ -20,7 +38,7 @@ const commonItems = {
   },
   PaginaPrincipal: {
     title: 'Pagina Principal',
-    icon: DashboardIcon,
+    icon: HomeIcon,
     to: '/'
   },
   administrador: {
@@ -43,7 +61,7 @@ const commonItems = {
     },
     clientes: {
       title: 'Clientes',
-      icon: KeyIcon,
+      icon: UsersIcon,
       to: '/clientes',
       children: [
         {
@@ -55,7 +73,7 @@ const commonItems = {
     },
     barberos: {
       title: 'Barberos',
-      icon: KeyIcon,
+      icon: ScissorsIcon,
       to: '/barberos',
       children: [
         {
@@ -72,7 +90,7 @@ const commonItems = {
     },
     servicios: {
       title: 'Servicios',
-      icon: KeyIcon,
+      icon: ScissorsIcon, 
       to: '/servicios',
       children: [
         {
@@ -84,12 +102,22 @@ const commonItems = {
           title: 'Crear Servicio',
           icon: CircleIcon,
           to: '/crear-servicio'
+        },
+        {
+          title: 'Categorías',
+          icon: TagIcon,
+          to: '/lista-categorias-servicio'
+        },
+        {
+          title: 'Crear Categoría',
+          icon: CircleIcon,
+          to: '/crear-categoria-servicio'
         }
       ]
     },
     productos: {
       title: 'Productos',
-      icon: KeyIcon,
+      icon: PackageIcon,
       to: '/productos',
       children: [
         {
@@ -101,51 +129,27 @@ const commonItems = {
           title: 'Crear Producto',
           icon: CircleIcon,
           to: '/crear-producto'
-        }
-      ]
-    },
-    categoriasProductos: {
-      title: 'Categorias de productos',
-      icon: KeyIcon,
-      to: '/categorias-productos',
-      children: [
+        },
         {
-          title: 'Lista de Categorias productos',
-          icon: CircleIcon,
+          title: 'Categorías',
+          icon: TagIcon,
           to: '/lista-categorias-producto'
         },
         {
-          title: 'Crear Categoria producto',
+          title: 'Crear Categoría',
           icon: CircleIcon,
           to: '/crear-categoria-producto'
         }
       ]
     },
-    categoriasServicios: {
-      title: 'Categorias de servicios',
-      icon: KeyIcon,
-      to: '/categorias-servicios',
-      children: [
-        {
-          title: 'Lista de Categorias servicios',
-          icon: CircleIcon,
-          to: '/lista-categorias-servicio'
-        },
-        {
-          title: 'Crear Categoria servicio',
-          icon: CircleIcon,
-          to: '/crear-categoria-servicio'
-        }
-      ]
-    },
     dashboardCita: {
       title: 'Dashboard Citas',
-      icon: KeyIcon,
+      icon: CalendarIcon,
       to: '/dashboard-citas'
     },
     gestionCitas: {
       title: 'Gestionar Citas',
-      icon: KeyIcon,
+      icon: CalendarEventIcon,
       to: '/gestion-citas'
     }
   },
@@ -169,12 +173,12 @@ const commonItems = {
     },
     agendarCita: {
       title: 'Reservar Cita',
-      icon: KeyIcon,
+      icon: CalendarIcon,
       to: '/reservar-cita'
     },
     citas: {
       title: 'Mis Citas',
-      icon: KeyIcon,
+      icon: CalendarEventIcon,
       to: '/mis-citas',
       children: [
         {
@@ -184,7 +188,7 @@ const commonItems = {
         },
         {
           title: 'Historial de citas',
-          icon: CircleIcon,
+          icon: HistoryIcon,
           to: '/historial-citas'
         }
       ]
@@ -197,20 +201,20 @@ const commonItems = {
       to: '/auth',
       children: [
         {
-          title: 'Login',
-          icon: CircleIcon,
-          to: '/login1'
+            title: 'Login',
+            icon: CircleIcon,
+            to: '/login1'
         },
         {
-          title: 'Register',
-          icon: CircleIcon,
-          to: '/register'
+            title: 'Register',
+            icon: CircleIcon,
+            to: '/register'
         }
       ]
     },
     agendaCitas: {
       title: 'Mi agenda',
-      icon: KeyIcon,
+      icon: CalendarIcon, 
       to: '/agenda-citas'
     }
   },
@@ -268,9 +272,9 @@ export default {
     "menuadministrador": [
         { header: 'Menu Administrador' },
         {
-        title: "Inicio",
-        icon: "mdi-account-multiple",
-        to: "/inicio-dashboard"
+            title: "Inicio",
+            icon: HomeIcon,
+            to: "/inicio-dashboard"
         },
         { divider: true },
         { header: 'Administración' },
@@ -278,12 +282,12 @@ export default {
         commonItems.administrador.barberos,
         {
             title: "Proveedores",
-            icon: "mdi-truck-delivery",
+            icon: TruckIcon,
             to: "/administrador/proveedores"
         },
         {
             title: "Compras",
-            icon: "mdi-cart",
+            icon: ShoppingBagIcon,
             children: [
                 {
                     title: "Nueva compra",
@@ -292,241 +296,123 @@ export default {
                 },
                 {
                     title: "Historial de compras",
-                    icon: CircleIcon,
+                    icon: HistoryIcon,
                     to: "/administrador/compras/historial"
                 }
             ]
         },
         commonItems.administrador.servicios,
         commonItems.administrador.productos,
-        commonItems.administrador.categoriasProductos,
-        commonItems.administrador.categoriasServicios,
         { divider: true },
         { header: 'Gestion de Ventas' },
         {
             title: "Ventas",
-            icon: "mdi-cash-register",
+            icon: CurrencyDollarIcon,
             to: "/administrador/ventas"
         },
         { divider: true },
         { header: 'Gestion de citas' },
         commonItems.administrador.dashboardCita,
-        commonItems.administrador.gestionCitas,
-        { divider: true },
-        commonItems.samplePage,
-        commonItems.documentation
+        commonItems.administrador.gestionCitas
     ],
 
     "menubarbero": [
         { header: 'Menu Barbero' },
         {
-        title: "Inicio",
-        icon: "mdi-account-multiple",
-        to: "/inicio-dashboard"
+            title: "Inicio",
+            icon: HomeIcon,
+            to: "/inicio-dashboard"
         },
         { divider: true },
         { header: 'Trabajo' },
         commonItems.barbero.agendaCitas,
         {
-        title: "Clientes",
-        icon: "mdi-account-multiple",
-        to: "/clientes"
+            title: "Clientes",
+            icon: UsersIcon,
+            to: "/clientes"
         },
         {
             title: "Ventas",
-            icon: "mdi-cash-register",
-            to: "/superadmin/ventas"
+            icon: Receipt2Icon, 
+            to: "/superadmin/ventas" 
         },
         { divider: true },
         { header: 'Utilidades' },
         commonItems.colors,
-        commonItems.icons,
-        { divider: true },
-        commonItems.samplePage
+        commonItems.icons
     ],
 
     "menucliente": [
         { header: 'Menu Cliente' },
-        commonItems.dashboard,
+        {
+            title: 'Dashboard Principal',
+            icon: DashboardIcon,
+            to: '/dashboard/default'
+        },
         commonItems.PaginaPrincipal,
         { divider: true },
         { header: 'Servicios' },
         commonItems.cliente.agendarCita,
         commonItems.cliente.citas,
         {
-        title: "Historial",
-        icon: "mdi-history",
-        to: "/historial"
+            title: "Historial",
+            icon: HistoryIcon,
+            to: "/historial"
         },
         { divider: true },
         { header: 'Compras' },
         {
-          title: "Mis Compras",
-          icon: "mdi-shopping",
-          to: "/mis-compras"
+            title: "Mis Compras",
+            icon: ShoppingCartIcon,
+            to: "/mis-compras"
         },
         { divider: true },
         { header: 'Cuenta' },
         {
-        title: "Mi Perfil",
-        icon: "mdi-account-circle",
-        to: "/dashboard/default"
-        },
-        { divider: true },
-        commonItems.samplePage
+            title: "Mi Perfil",
+            icon: UserIcon,
+            to: "/dashboard/default"
+        }
     ],
 
-    // --- AQUÍ ESTÁ LA SECCIÓN MODIFICADA DEL SUPER ADMIN ---
     "menusuperadmin": [
         { header: 'Super Administrador' },
         {
-            title: "Dashboard",
-            icon: "mdi-view-dashboard",
+            title: "Dashboard y Estadísticas",
+            icon: DashboardIcon,
             to: "/superadmin/dashboard"
         },
         { divider: true },
-        { header: 'Gestión de Usuarios' },
+        { header: 'Gestión Principal' },
         {
-            title: "Todos los Usuarios",
-            icon: "mdi-account-group",
-            to: "/superadmin/usuarios"
+            title: "Gestión de Usuarios",
+            icon: UsersIcon,
+            to: "/superadmin/usuarios",
+            subCaption: "Admins, Barberos, Clientes"
         },
-        {
-            title: "Barberos",
-            icon: "mdi-content-cut",
-            to: "/lista-barberos",
-            children: [
-                {
-                    title: "Lista de Barberos",
-                    icon: CircleIcon,
-                    to: "/lista-barberos"
-                },
-                {
-                    title: "Crear Barbero",
-                    icon: CircleIcon,
-                    to: "/crear-barbero"
-                }
-            ]
-        },
-        {
-            title: "Clientes",
-            icon: "mdi-account-multiple",
-            to: "/lista-clientes",
-            children: [
-                {
-                    title: "Lista de Clientes",
-                    icon: CircleIcon,
-                    to: "/lista-clientes"
-                }
-            ]
-        },
-        // --- AQUÍ AGREGUÉ PROVEEDORES (Debajo de Clientes) ---
-        {
-            title: "Proveedores",
-            icon: "mdi-truck-delivery",
-            to: "/superadmin/proveedores"
-        },
-        // ----------------------------------------------------
         { divider: true },
-        { header: 'Gestión de Ventas' },
+        { header: 'Control Operativo' },
         {
-            title: "Ventas",
-            icon: "mdi-cash-register",
+            title: "Todas las Ventas",
+            icon: CurrencyDollarIcon,
             to: "/superadmin/ventas"
         },
         {
-            title: "Compras",
-            icon: "mdi-cart",
-            children: [
-                {
-                    title: "Nueva compra",
-                    icon: CircleIcon,
-                    to: "/superadmin/compras/nueva"
-                },
-                {
-                    title: "Historial de compras",
-                    icon: CircleIcon,
-                    to: "/superadmin/compras/historial"
-                }
-            ]
+            title: "Historial de Compras",
+            icon: HistoryIcon,
+            to: "/superadmin/compras/historial"
         },
         {
-            title: "Productos",
-            icon: "mdi-package-variant",
-            to: "/productos",
-            children: [
-                {
-                    title: "Lista de Productos",
-                    icon: CircleIcon,
-                    to: "/lista-productos"
-                },
-                {
-                    title: "Crear Producto",
-                    icon: CircleIcon,
-                    to: "/crear-producto"
-                },
-                {
-                    title: "Categorías",
-                    icon: CircleIcon,
-                    to: "/lista-categorias-producto"
-                }
-            ]
+            title: "Inventario (Productos)",
+            icon: PackageIcon,
+            to: "/lista-productos"
         },
         { divider: true },
-        { header: 'Gestión de Servicios' },
+        { header: 'Reportes' },
         {
-            title: "Servicios",
-            icon: "mdi-scissors-cutting",
-            to: "/servicios",
-            children: [
-                {
-                    title: "Lista de Servicios",
-                    icon: CircleIcon,
-                    to: "/lista-servicios"
-                },
-                {
-                    title: "Crear Servicio",
-                    icon: CircleIcon,
-                    to: "/crear-servicio"
-                },
-                {
-                    title: "Categorías",
-                    icon: CircleIcon,
-                    to: "/lista-categorias-servicio"
-                }
-            ]
-        },
-        { divider: true },
-        { header: 'Gestión de Citas' },
-        {
-            title: "Dashboard Citas",
-            icon: "mdi-calendar-clock",
-            to: "/dashboard-citas"
-        },
-        {
-            title: "Gestionar Citas",
-            icon: "mdi-calendar-edit",
-            to: "/gestion-citas"
-        },
-        { divider: true },
-        { header: 'Reportes y Estadísticas' },
-        {
-            title: "Reportes",
-            icon: "mdi-chart-bar",
-            to: "/superadmin/reportes"
-        },
-        {
-            title: "Estadísticas",
-            icon: "mdi-chart-line",
+            title: "Estadísticas Globales",
+            icon: ChartInfographicIcon,
             to: "/superadmin/dashboard"
-        },
-        { divider: true },
-        { header: 'Configuración' },
-        // --- ESTA SECCIÓN APARECE AL FINAL DE TODO ---
-        {
-            title: "Configuración General",
-            icon: "mdi-cog",
-            to: "/superadmin/dashboard" // Puedes cambiar esto a '/starter' si prefieres
         }
     ]
 };

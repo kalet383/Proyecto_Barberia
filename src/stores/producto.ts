@@ -6,10 +6,17 @@ interface producto {
     id?: number;
     nombre: string;
     descripcion: string;
-    precio: number;
+    precio_venta: number;
     stock: number;
     imagenUrl: string;
     categoriaId: number;
+    cantidad_publicada?: number;
+    publicado?: boolean;
+    en_oferta?: boolean;
+    precio_oferta?: number | null;
+    dias_oferta?: string | null;
+    informacion_oferta?: string | null;
+    categoria?: any;
 }
 
 interface ProductoState {
@@ -92,6 +99,37 @@ export const useProductoStore = defineStore('producto', {
                     }
                 } else {
                     this.error = 'Error al publicar el producto';
+                }
+                throw error;
+            } finally {
+                this.loading = false;
+            }
+        },
+        async updateProducto(id: number, payload: any) {
+            this.loading = true;
+            this.error = null;
+            try {
+                const { data } = await api.patch(`/producto/${id}`, payload, { withCredentials: true });
+                const idx = this.productos.findIndex(p => p.id === id);
+                if (idx !== -1) {
+                    this.productos[idx] = { 
+                        ...this.productos[idx], 
+                        ...data,
+                        precio_venta: parseFloat(data.precio_venta) || this.productos[idx].precio_venta,
+                        stock: parseInt(data.stock) || this.productos[idx].stock,
+                        cantidad_publicada: parseInt(data.cantidad_publicada) || this.productos[idx].cantidad_publicada,
+                        publicado: !!data.publicado,
+                        en_oferta: !!data.en_oferta,
+                        precio_oferta: parseFloat(data.precio_oferta) || null
+                    };
+                }
+                return data;
+            } catch (error) {
+                console.error('Error actualizando producto:', error);
+                if (axios.isAxiosError(error)) {
+                    this.error = error.response?.data?.message || 'Error al actualizar el producto';
+                } else {
+                    this.error = 'Error al actualizar el producto';
                 }
                 throw error;
             } finally {

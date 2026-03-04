@@ -305,7 +305,7 @@ const ventasOrdenadas = computed(() => {
             <v-icon icon="mdi-cart-remove" size="64" color="grey-lighten-2" class="mb-4"></v-icon>
             <h3 class="text-h6 font-weight-medium mb-2">¿Estás seguro/a?</h3>
             <p class="text-body-1 text-medium-emphasis mb-6">
-                Si cancelas este pedido, los productos volverán al inventario y esta acción no se puede deshacer.
+                AL cancelar este pedido lo podras volver a comprar en nuestra tienda.
             </p>
             
             <v-sheet class="bg-grey-lighten-4 pa-4 rounded text-left border mb-2">

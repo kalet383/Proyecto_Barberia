@@ -158,7 +158,7 @@ export const useProductosStore = defineStore('productos', {
         totalProductos: (state) => {
             return state.ComprasCarrito.reduce((total, item) => total + item.cantidad, 0);
         },
-        subtotalCarrito: (state) => {
+    subtotalCarrito: (state) => {
             return state.ComprasCarrito.reduce((total, item) => total + (Number(item.precio || 0) * Number(item.cantidad || 0)), 0);
         }
     },
@@ -183,19 +183,26 @@ export const useProductosStore = defineStore('productos', {
             const disponible = producto.cantidad_publicada !== undefined ? producto.cantidad_publicada : (producto.stock || 0);
 
             if (disponible <= 0) {
-                // No hay unidades publicadas
                 return;
             }
 
             if (existente) {
-                // No permitir superar la cantidad publicada
                 if (existente.cantidad >= disponible) return;
                 existente.cantidad += 1;
             } else {
-                // Normalizar precio e imagen para asegurar cálculos y visuales
-                const precio = Number(producto.precio_venta ?? producto.precio ?? 0);
+                // Usar precio de oferta si está activo, sino precio normal
+                const tieneOferta = !!(producto.en_oferta && producto.precio_oferta && Number(producto.precio_oferta) > 0);
+                const precio = tieneOferta ? Number(producto.precio_oferta) : Number(producto.precio_venta ?? producto.precio ?? 0);
                 const img = producto.imagenUrl || producto.img || '/imagenes/logo/logo2.png';
-                this.ComprasCarrito.push({ ...producto, precio, img, cantidad: 1 });
+                this.ComprasCarrito.push({ 
+                    ...producto, 
+                    precio, 
+                    img, 
+                    cantidad: 1,
+                    en_oferta: tieneOferta,
+                    precio_oferta: tieneOferta ? Number(producto.precio_oferta) : null,
+                    precio_original: tieneOferta ? Number(producto.precio_venta ?? producto.precio ?? 0) : null
+                });
             }
             this.abrirCarrito();
         },

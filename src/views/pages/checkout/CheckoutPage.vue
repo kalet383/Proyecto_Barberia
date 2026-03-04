@@ -4,19 +4,18 @@ import { useProductosStore } from '@/stores/useProductosStore';
 import { useAuthStore } from '@/stores/auth';
 import { useVentaStore, TipoPago } from '@/stores/venta';
 import { useRouter } from 'vue-router';
-import { ChevronRightIcon, TruckIcon, MapPinIcon, CashIcon } from 'vue-tabler-icons';
+import { ChevronRightIcon, TruckIcon, MapPinIcon, CashIcon, ShieldCheckIcon, ArrowLeftIcon } from 'vue-tabler-icons';
 import PickupLocationModal from './PickupLocationModal.vue';
+
 
 const productosStore = useProductosStore();
 const authStore = useAuthStore();
 const ventaStore = useVentaStore();
 const router = useRouter();
 
-// Form state
 const contactEmail = ref('');
-const deliveryMethod = ref('envio'); // 'envio' or 'retiro'
+const deliveryMethod = ref('envio');
 const country = ref('Colombia');
-
 const firstName = ref('');
 const lastName = ref('');
 const idNumber = ref('');
@@ -25,64 +24,35 @@ const apartamento = ref('');
 const city = ref('Montería');
 const department = ref('Córdoba');
 const phone = ref('');
-
-// Billing Form state
 const billingFirstName = ref('');
 const billingLastName = ref('');
 const billingIdNumber = ref('');
 const billingAddress = ref('');
 const billingCity = ref('');
 const billingPhone = ref('');
-
-const paymentMethod = ref<string>('wompi'); // Default to first option in image usually
+const paymentMethod = ref<string>('wompi');
 const sameAsShipping = ref(true);
 const saveInfo = ref(false);
 const emailUpdates = ref(false);
-
 const discountCode = ref('');
 
-// Constants
-const DEPARTMENTS = ['Córdoba', 'Antioquia', 'Bogotá D.C.', 'Cundinamarca']; // Demo list
+const DEPARTMENTS = ['Córdoba', 'Antioquia', 'Bogotá D.C.', 'Cundinamarca'];
 
-// Modal state
 const showConfirmModal = ref(false);
 const orderData = ref<any>(null);
-
-// Dialog State
 const showLoginDialog = ref(false);
 const showSuccessDialog = ref(false);
 const confirmedOrderId = ref<number | null>(null);
 const showShippingPolicy = ref(false);
 
-// Pickup Logic
 const showPickupModal = ref(false);
-const pickupInfo = ref({
-    distance: '',
-    address: '',
-    coords: null as any
-});
+const pickupInfo = ref({ distance: '', address: '', coords: null as any });
 
-const openPickupModal = () => {
-    showPickupModal.value = true;
-};
+const openPickupModal = () => { showPickupModal.value = true; };
+const handleLocationSelected = (data: any) => { pickupInfo.value = data; };
 
-const handleLocationSelected = (data: any) => {
-    pickupInfo.value = data;
-    // user explicitly chose a location or confirmed pickup details
-};
+const errors = ref({ email: '', firstName: '', lastName: '', idNumber: '', address: '', phone: '', city: '' });
 
-// Errors state
-const errors = ref({
-    email: '',
-    firstName: '',
-    lastName: '',
-    idNumber: '',
-    address: '',
-    phone: '',
-    city: ''
-});
-
-// Initialize email if user is logged in
 watch(() => authStore.user, (user) => {
     if (user) {
         const u = user as any;
@@ -93,25 +63,14 @@ watch(() => authStore.user, (user) => {
     }
 }, { immediate: true });
 
-// Shipping cost
 const shippingCost = computed(() => deliveryMethod.value === 'envio' ? 13900 : 0);
 const total = computed(() => productosStore.subtotalCarrito + shippingCost.value);
 
-const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('es-CO', {
-        style: 'currency',
-        currency: 'COP',
-        maximumFractionDigits: 0
-    }).format(value);
-};
+const formatCurrency = (value: number) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(value);
 
 const validateForm = () => {
     let isValid = true;
     errors.value = { email: '', firstName: '', lastName: '', idNumber: '', address: '', phone: '', city: '' };
-
-    if (!contactEmail.value) { errors.value.email = 'Requerido'; isValid = false; }
-    else if (!/.+@.+\..+/.test(contactEmail.value)) { errors.value.email = 'Email inválido'; isValid = false; }
-
     if (deliveryMethod.value === 'envio') {
         if (!firstName.value) { errors.value.firstName = 'Requerido'; isValid = false; }
         if (!lastName.value) { errors.value.lastName = 'Requerido'; isValid = false; }
@@ -120,85 +79,43 @@ const validateForm = () => {
         if (!city.value) { errors.value.city = 'Requerido'; isValid = false; }
         if (!phone.value) { errors.value.phone = 'Requerido'; isValid = false; }
     }
-
-    // Billing validation if applicable
     if (deliveryMethod.value === 'retiro' || !sameAsShipping.value) {
-         if (!billingFirstName.value) isValid = false;
-         if (!billingLastName.value) isValid = false;
-         if (!billingIdNumber.value) isValid = false;
-         if (!billingAddress.value) isValid = false;
-         if (!billingCity.value) isValid = false;
-         if (!billingPhone.value) isValid = false;
-         // Note: kept simple for now, can add specific error messages later if needed
+        if (!billingFirstName.value) isValid = false;
+        if (!billingLastName.value) isValid = false;
+        if (!billingIdNumber.value) isValid = false;
+        if (!billingAddress.value) isValid = false;
+        if (!billingCity.value) isValid = false;
+        if (!billingPhone.value) isValid = false;
     }
-
     return isValid;
 };
 
 const prepareOrderData = () => {
-    const direccion = deliveryMethod.value === 'envio' 
+    const direccion = deliveryMethod.value === 'envio'
         ? `${address.value}${apartamento.value ? ', ' + apartamento.value : ''}, ${city.value}, ${department.value}`
         : 'Barbería StyleHub - Montería';
-
     const notas = deliveryMethod.value === 'envio'
         ? `Cliente: ${firstName.value} ${lastName.value} - ${idNumber.value}. Tel: ${phone.value}`
         : 'Retiro en Barbería';
-
-    return {
-        direccion,
-        notas,
-        cliente: `${firstName.value} ${lastName.value}`,
-        telefono: phone.value,
-        metodoEntrega: deliveryMethod.value === 'envio' ? 'Envío a domicilio' : 'Retiro en Barbería'
-    };
+    return { direccion, notas, cliente: `${firstName.value} ${lastName.value}`, telefono: phone.value, metodoEntrega: deliveryMethod.value === 'envio' ? 'Envío a domicilio' : 'Retiro en Barbería' };
 };
 
 const showConfirmationModal = () => {
     if (!validateForm()) return;
-
-    // Check if user is logged in
-    if (!authStore.user) {
-        // Here we could check if email already exists in backend, but for now simple logic:
-        // If not authenticated, force login flow to associate order or register
-        showLoginDialog.value = true;
-        return;
-    }
-
-    // Verify email match?
-    // User wants: "fill form, then if email detected ask login".
-    // We already check !authStore.user.
-    
+    if (!authStore.user) { showLoginDialog.value = true; return; }
     orderData.value = prepareOrderData();
     showConfirmModal.value = true;
 };
 
-
 const goToLogin = () => {
-    const formData = {
-        email: contactEmail.value,
-        firstName: firstName.value,
-        lastName: lastName.value,
-        idNumber: idNumber.value,
-        address: address.value,
-        apartamento: apartamento.value,
-        city: city.value,
-        department: department.value,
-        phone: phone.value,
-        deliveryMethod: deliveryMethod.value,
-        paymentMethod: paymentMethod.value,
-        autoOpenModal: true
-    };
+    const formData = { email: contactEmail.value, firstName: firstName.value, lastName: lastName.value, idNumber: idNumber.value, address: address.value, apartamento: apartamento.value, city: city.value, department: department.value, phone: phone.value, deliveryMethod: deliveryMethod.value, paymentMethod: paymentMethod.value, autoOpenModal: true };
     localStorage.setItem('checkout_temp_data', JSON.stringify(formData));
     router.push({ path: '/login1', query: { redirect: '/checkout' } });
 };
 
-const finishOrderProcess = () => {
-    router.push('/mis-compras');
-};
-
-const goToHome = () => {
-    router.push('/');
-};
+const finishOrderProcess = () => { router.push('/mis-compras'); };
+const goToHome = () => { router.push('/'); };
+const goBack = () => { router.back(); };
 
 onMounted(async () => {
     const savedData = localStorage.getItem('checkout_temp_data');
@@ -216,16 +133,8 @@ onMounted(async () => {
             phone.value = parsed.phone || '';
             deliveryMethod.value = parsed.deliveryMethod || 'envio';
             paymentMethod.value = parsed.paymentMethod || 'wompi';
-            
-            if (parsed.autoOpenModal && authStore.user) {
-                setTimeout(() => {
-                    showConfirmationModal();
-                }, 100);
-            }
             localStorage.removeItem('checkout_temp_data');
-        } catch (e) {
-            console.error('Error restoring checkout data', e);
-        }
+        } catch (e) { console.error('Error restoring checkout data', e); }
     }
 });
 
@@ -233,631 +142,840 @@ const confirmOrder = async () => {
     try {
         let tipoPagoBackend: TipoPago;
         switch (paymentMethod.value) {
-            case 'pago_al_recibir':
-                tipoPagoBackend = TipoPago.PAGO_CONTRA_ENTREGA;
-                break;
+            case 'pago_al_recibir': tipoPagoBackend = TipoPago.PAGO_CONTRA_ENTREGA; break;
             case 'transferencia_bancolombia':
-            case 'transferencia_davivienda':
-                tipoPagoBackend = TipoPago.TRANSFERENCIA;
-                break;
-            case 'wompi':
-                // Assuming wompi is handled as online/card or just mapped to transfer for now/demo
-                // Or maybe specific enum if exists. Using TRANSFERENCIA or PAGO_CONTRA_ENTREGA as placeholder?
-                // The existing store only has EFECTIVO, PAGO_CONTRA_ENTREGA, TRANSFERENCIA.
-                // I will map Wompi to TRANSFERENCIA (simulated online) or default.
-                tipoPagoBackend = TipoPago.TRANSFERENCIA; 
-                break;
-            default:
-                tipoPagoBackend = TipoPago.PAGO_CONTRA_ENTREGA;
+            case 'transferencia_davivienda': tipoPagoBackend = TipoPago.TRANSFERENCIA; break;
+            case 'wompi': tipoPagoBackend = TipoPago.TRANSFERENCIA; break;
+            default: tipoPagoBackend = TipoPago.PAGO_CONTRA_ENTREGA;
         }
-
         const ventaData = {
             clienteId: (authStore.user as any).id,
-            items: (productosStore.ComprasCarrito as any[]).map(item => ({
-                productoId: item.id,
-                cantidad: item.cantidad
-            })),
+            items: (productosStore.ComprasCarrito as any[]).map(item => ({ productoId: item.id, cantidad: item.cantidad })),
             tipoPago: tipoPagoBackend,
             direccionEnvio: orderData.value.direccion,
             notas: orderData.value.notas + (paymentMethod.value === 'wompi' ? ' (Pago Wompi)' : '')
         };
-
         const result = await ventaStore.createVenta(ventaData);
-
         showConfirmModal.value = false;
         confirmedOrderId.value = result.id;
         showSuccessDialog.value = true;
         productosStore.VaciarCarrito();
-
     } catch (error: any) {
         console.error('Error al procesar la orden:', error);
         alert('Error al procesar la orden: ' + (error.response?.data?.message || error.message));
     }
 };
 
-interface Product {
-    id: number;
-    nombre: string;
-    precio: number;
-    img: string;
-    cantidad: number;
-}
+interface Product { id: number; nombre: string; precio: number; img: string; cantidad: number; }
 </script>
 
 <template>
-    <v-container fluid class="checkout-page pa-0">
-        <v-row no-gutters>
-            <!-- Form Side -->
-            <v-col cols="12" md="7" class="form-column py-8 px-4 px-md-16 border-right">
-                <div class="checkout-form max-width-600 mx-auto mx-md-0 ml-md-auto">
-                    <!-- Brand -->
-                    <div class="brand-logo mb-6 text-center text-md-left">
-                        <img src="/public/imagenes/logo/logo2.png" width="120" alt="StyleHub">
-                    </div>
+    <div class="checkout-wrapper">
+        <div class="mobile-summary-bar d-md-none">
+            <div class="d-flex justify-space-between align-center">
+                <div class="d-flex align-center gap-2">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span>{{ productosStore.ComprasCarrito.length }} productos</span>
+                </div>
+                <span class="total-mobile">{{ formatCurrency(total) }}</span>
+            </div>
+        </div>
 
-                    <!-- Breadcrumbs -->
-                    <div class="d-flex align-center text-caption text-grey mb-8 justify-center justify-md-start">
-                        <span class="text-primary cursor-pointer" @click="router.push('/carrito')">Carrito</span>
-                        <ChevronRightIcon size="14" class="mx-2" />
-                        <span class="text-black font-weight-bold">Información</span>
-                        <ChevronRightIcon size="14" class="mx-2" />
-                        <span>Envíos</span>
-                         <ChevronRightIcon size="14" class="mx-2" />
-                        <span>Pago</span>
-                    </div>
-
-                    <!-- Contact -->
-                    <div class="section mb-8">
-                        <div class="d-flex justify-space-between align-center mb-2">
-                            <h3 class="text-h6 font-weight-bold">Contacto</h3>
-                            <div v-if="!authStore.user">
-                                <span class="text-body-2 mr-1">¿Ya tienes cuenta?</span>
-                                <a href="#" @click.prevent="goToLogin" class="text-primary text-decoration-none font-weight-medium">Iniciar sesión</a>
-                            </div>
-                        </div>
-                        <v-text-field 
-                            v-model="contactEmail" 
-                            label="Correo electrónico" 
-                            variant="outlined" 
-                            density="comfortable"
-                            :error-messages="errors.email"
-                            placeholder="tucorreo@ejemplo.com"
-                            bg-color="white"
-                        ></v-text-field>
-                        <v-checkbox v-model="emailUpdates" label="Enviarme novedades y ofertas por correo electrónico" density="compact" hide-details class="mt-n2"></v-checkbox>
-                    </div>
-
-                    <!-- Delivery Method Toggle -->
-                     <div class="section mb-6">
-                        <h3 class="text-h6 font-weight-bold mb-3">Entrega</h3>
-                        <div class="delivery-toggle border rounded mb-4 d-flex overflow-hidden">
-                            <div 
-                                class="toggle-option w-50 text-center py-3 cursor-pointer d-flex justify-center align-center gap-2"
-                                :class="{ 'active': deliveryMethod === 'envio' }"
-                                @click="deliveryMethod = 'envio'"
-                            >
-                                <TruckIcon size="20" /> Envío
-                            </div>
-                            <div 
-                                class="toggle-option w-50 text-center py-3 cursor-pointer d-flex justify-center align-center gap-2 border-left"
-                                :class="{ 'active': deliveryMethod === 'retiro' }"
-                                @click="deliveryMethod = 'retiro'"
-                            >
-                                <MapPinIcon size="20" /> Retiro
-                            </div>
-                        </div>
-
-                        <!-- Shipping Form -->
-                        <div v-if="deliveryMethod === 'envio'">
-                            <v-select 
-                                v-model="country" 
-                                label="País/Región" 
-                                :items="['Colombia']" 
-                                variant="outlined" 
-                                density="comfortable" 
-                                bg-color="white"
-                                class="mb-3"
-                            ></v-select>
-
-                            <v-row dense>
-                                <v-col cols="12" md="6">
-                                    <v-text-field v-model="firstName" label="Nombre (Obligatorio)" variant="outlined" density="comfortable" bg-color="white" :error-messages="errors.firstName"></v-text-field>
-                                </v-col>
-                                <v-col cols="12" md="6">
-                                    <v-text-field v-model="lastName" label="Apellidos (Obligatorio)" variant="outlined" density="comfortable" bg-color="white" :error-messages="errors.lastName"></v-text-field>
-                                </v-col>
-                            </v-row>
-
-                            <v-text-field v-model="idNumber" class="mt-3" label="Cédula, NIT o Pasaporte (Obligatorio - Solo números)" variant="outlined" density="comfortable" bg-color="white" :error-messages="errors.idNumber"></v-text-field>
-
-                            <v-text-field v-model="address" class="mt-3" label="Dirección y Barrio (Obligatorio)" variant="outlined" density="comfortable" bg-color="white" :error-messages="errors.address"></v-text-field>
-
-                            <v-text-field v-model="apartamento" class="mt-3" label="Número de Casa, Torre, Apartamento (Opcional)" variant="outlined" density="comfortable" bg-color="white"></v-text-field>
-
-                            <v-row dense class="mt-3">
-                                <v-col cols="4">
-                                    <v-text-field v-model="city" label="Ciudad" variant="outlined" density="comfortable" bg-color="white" :error-messages="errors.city"></v-text-field>
-                                </v-col>
-                                <v-col cols="4">
-                                    <v-select v-model="department" label="Departamento" :items="DEPARTMENTS" variant="outlined" density="comfortable" bg-color="white"></v-select>
-                                </v-col>
-                                <v-col cols="4">
-                                    <v-text-field label="Código postal (opc...)" variant="outlined" density="comfortable" bg-color="white"></v-text-field>
-                                </v-col>
-                            </v-row>
-
-                            <v-text-field v-model="phone" class="mt-3" label="Teléfono (Obligatorio)" variant="outlined" density="comfortable" bg-color="white" :error-messages="errors.phone">
-                                <template v-slot:append-inner>
-                                    <v-icon icon="mdi-help-circle-outline" size="small" color="grey"></v-icon>
-                                </template>
-                            </v-text-field>
-
-                             <v-checkbox v-model="saveInfo" label="Guardar mi información y consultar más rápidamente la próxima vez" density="compact" hide-details class="mt-n1"></v-checkbox>
-                            
-                             <h3 class="text-subtitle-1 font-weight-bold mt-6 mb-3">Método de envío</h3>
-                             <div class="border rounded pa-4 d-flex justify-space-between align-center bg-grey-lighten-5">
-                                 <div>
-                                     <div class="text-body-2 font-weight-medium">ESTÁNDAR Entrega de 2 a 5 días hábiles</div>
-                                 </div>
-                                 <div class="font-weight-bold text-body-2">$13.900,00</div>
-                             </div>
-                        </div>
-                        
-                        <!-- Pickup Info -->
-                        <div v-else>
-                             <!-- Distance / Location Alert -->
-                            <div class="bg-grey-lighten-4 pa-4 rounded mb-4 text-body-2 border">
-                                <div class="d-flex align-start">
-                                    <v-icon size="18" class="mr-2 mt-1" color="grey-darken-2">mdi-information-outline</v-icon>
-                                    <div>
-                                        <div v-if="pickupInfo.distance">La barbería StyleHub está a <strong>{{ pickupInfo.distance }} km</strong> de tu ubicación.</div>
-                                        <div v-else>La barbería StyleHub está en Montería. Calcula la distancia desde tu ubicación.</div>
-                                        
-                                        <div class="mt-1">
-                                            <a href="#" class="text-decoration-underline text-grey-darken-3 mr-1" @click.prevent="openPickupModal">Cambia tu ubicación</a>
-                                            <span class="text-grey">o</span>
-                                            <a href="#" class="text-decoration-underline text-grey-darken-3 ml-1" @click.prevent="deliveryMethod = 'envio'">enviar a la dirección</a>
-                                        </div>
-                                    </div>
+        <v-container fluid class="checkout-page pa-0">
+            <v-row no-gutters>
+                <v-col cols="12" md="7" lg="7" class="form-column">
+                    <div class="form-scroll-area">
+                        <div class="checkout-form">
+                            <div class="checkout-header">
+                                <a href="/" class="brand-logo" @click.prevent="goToHome">
+                                    <img src="/public/imagenes/logo/logo2.png" alt="StyleHub">
+                                </a>
+                                <div class="breadcrumbs">
+                                    <span class="step clickable" @click="goBack"><i class="fas fa-shopping-cart"></i> Carrito</span>
+                                    <ChevronRightIcon size="14" />
+                                    <span class="step active">Información</span>
+                                    <ChevronRightIcon size="14" />
+                                    <span class="step">Pago</span>
                                 </div>
                             </div>
 
-                             <!-- Store Card -->
-                            <v-card variant="outlined" class="pa-4 bg-white border cursor-pointer" @click="openPickupModal">
-                                <div class="d-flex justify-space-between align-start">
-                                    <div>
-                                        <div class="font-weight-bold text-subtitle-1">StyleHub Barber Shop</div>
-                                        <div class="text-caption text-grey-darken-1 mt-1">Calle Principal #123, Montería, Córdoba</div>
-                                        
-                                        <div class="d-flex align-center mt-2 gap-3 text-caption">
-                                            <div class="d-flex align-center">
-                                                <v-icon size="14" class="mr-1">mdi-map-marker-distance</v-icon>
-                                                <span v-if="pickupInfo.distance">{{ pickupInfo.distance }} km</span>
-                                                <span v-else>-- km</span>
+                            <button class="back-link" @click="goBack">
+                                <ArrowLeftIcon size="18" /><span>Volver al carrito</span>
+                            </button>
+
+                            <section class="checkout-section">
+                                <div class="section-header">
+                                    <span class="section-number">1</span>
+                                    <h2>Método de Entrega</h2>
+                                </div>
+                                <div class="delivery-options">
+                                    <div class="delivery-card" :class="{ 'selected': deliveryMethod === 'envio' }" @click="deliveryMethod = 'envio'">
+                                        <div class="card-radio"><div class="radio-dot"></div></div>
+                                        <div class="card-icon"><TruckIcon size="28" stroke-width="1.5" /></div>
+                                        <div class="card-content">
+                                            <h4>Envío a Domicilio</h4>
+                                            <p>Recibe en tu puerta en 2-5 días hábiles</p>
+                                        </div>
+                                        <div class="card-price">{{ formatCurrency(13900) }}</div>
+                                    </div>
+                                    <div class="delivery-card" :class="{ 'selected': deliveryMethod === 'retiro' }" @click="deliveryMethod = 'retiro'">
+                                        <div class="card-radio"><div class="radio-dot"></div></div>
+                                        <div class="card-icon"><MapPinIcon size="28" stroke-width="1.5" /></div>
+                                        <div class="card-content">
+                                            <h4>Retiro en Tienda</h4>
+                                            <p>Listo en 24 horas - StyleHub Montería</p>
+                                        </div>
+                                        <div class="card-price free">GRATIS</div>
+                                    </div>
+                                </div>
+
+                                <div v-if="deliveryMethod === 'envio'" class="shipping-form">
+                                    <div class="form-grid">
+                                        <div class="form-group full">
+                                            <label>País/Región</label>
+                                            <div class="custom-select">
+                                                <select v-model="country"><option value="Colombia">🇨🇴 Colombia</option></select>
+                                                <i class="fas fa-chevron-down"></i>
                                             </div>
-                                            <div class="d-flex align-center">
-                                                <v-icon size="14" class="mr-1">mdi-clock-outline</v-icon>
-                                                <span>Normalmente listo en 24 horas</span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Nombre <span class="required">*</span></label>
+                                            <input v-model="firstName" type="text" placeholder="Tu nombre" :class="{ 'error': errors.firstName }" />
+                                            <span class="error-msg" v-if="errors.firstName">{{ errors.firstName }}</span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Apellidos <span class="required">*</span></label>
+                                            <input v-model="lastName" type="text" placeholder="Tus apellidos" :class="{ 'error': errors.lastName }" />
+                                            <span class="error-msg" v-if="errors.lastName">{{ errors.lastName }}</span>
+                                        </div>
+                                        <div class="form-group full">
+                                            <label>Cédula / NIT <span class="required">*</span></label>
+                                            <input v-model="idNumber" type="text" placeholder="Solo números" :class="{ 'error': errors.idNumber }" />
+                                            <span class="error-msg" v-if="errors.idNumber">{{ errors.idNumber }}</span>
+                                        </div>
+                                        <div class="form-group full">
+                                            <label>Dirección <span class="required">*</span></label>
+                                            <input v-model="address" type="text" placeholder="Calle, número, barrio" :class="{ 'error': errors.address }" />
+                                            <span class="error-msg" v-if="errors.address">{{ errors.address }}</span>
+                                        </div>
+                                        <div class="form-group full">
+                                            <label>Apartamento / Casa (Opcional)</label>
+                                            <input v-model="apartamento" type="text" placeholder="Torre, piso, apartamento..." />
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Ciudad <span class="required">*</span></label>
+                                            <input v-model="city" type="text" :class="{ 'error': errors.city }" />
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Departamento</label>
+                                            <div class="custom-select">
+                                                <select v-model="department">
+                                                    <option v-for="dep in DEPARTMENTS" :key="dep" :value="dep">{{ dep }}</option>
+                                                </select>
+                                                <i class="fas fa-chevron-down"></i>
+                                            </div>
+                                        </div>
+                                        <div class="form-group full">
+                                            <label>Teléfono <span class="required">*</span></label>
+                                            <input v-model="phone" type="tel" placeholder="+57 300 000 0000" :class="{ 'error': errors.phone }" />
+                                            <span class="error-msg" v-if="errors.phone">{{ errors.phone }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="shipping-method-box">
+                                        <div class="method-info">
+                                            <TruckIcon size="20" />
+                                            <div><strong>Envío Estándar</strong><span>2 a 5 días hábiles</span></div>
+                                        </div>
+                                        <div class="method-price">{{ formatCurrency(13900) }}</div>
+                                    </div>
+                                </div>
+
+                                <div v-else class="pickup-info">
+                                    <div class="pickup-notice">
+                                        <i class="fas fa-info-circle"></i>
+                                        <div>
+                                            <span v-if="pickupInfo.distance">La barbería está a <strong>{{ pickupInfo.distance }}</strong> de tu ubicación</span>
+                                            <span v-else>Calcula la distancia desde tu ubicación</span>
+                                            <div class="pickup-actions">
+                                                <a @click.prevent="openPickupModal">Cambiar ubicación</a>
+                                                <span>o</span>
+                                                <a @click.prevent="deliveryMethod = 'envio'">Enviar a domicilio</a>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="font-weight-bold text-success text-caption">GRATIS</div>
+                                    <div class="store-card" @click="openPickupModal">
+                                        <div class="store-icon"><i class="fas fa-store"></i></div>
+                                        <div class="store-details">
+                                            <h4>StyleHub Barber Shop</h4>
+                                            <p>Calle Principal #123, Montería, Córdoba</p>
+                                            <div class="store-meta">
+                                                <span><i class="fas fa-route"></i> {{ pickupInfo.distance || '--' }} km</span>
+                                                <span><i class="fas fa-clock"></i> Listo en 24h</span>
+                                            </div>
+                                        </div>
+                                        <div class="store-free">GRATIS</div>
+                                        <i class="fas fa-chevron-right store-arrow"></i>
+                                    </div>
                                 </div>
-                            </v-card>
-                            
-                            <div class="d-flex justify-space-between align-center px-2 py-3 cursor-pointer" @click="openPickupModal">
-                                <span class="text-body-2">Cambiar lugar</span>
-                                <v-icon size="16">mdi-chevron-right</v-icon>
-                            </div>
-                        </div>
-                    </div>
+                            </section>
 
-                    <!-- Payment Methods -->
-                    <div class="section mb-8">
-                        <h3 class="text-h6 font-weight-bold mb-2">Formas de Pago</h3>
-                        <p class="text-caption text-grey mb-4">Todas las transacciones son seguras y están encriptadas.</p>
-                        
-                        <v-radio-group v-model="paymentMethod" class="payment-options border rounded overflow-hidden" hide-details>
-                            
-                            <!-- Wompi -->
-                            <v-radio value="wompi" class="pa-4 border-bottom w-100 mr-0 bg-white">
-                                <template v-slot:label>
-                                    <div class="d-flex align-center justify-space-between w-100">
-                                        <span class="font-weight-bold ml-2">Wompi</span>
-                                        <div class="d-flex gap-1">
-                                            <v-img src="https://logos-world.net/wp-content/uploads/2020/04/Visa-Logo.png" width="30" height="20" contain></v-img>
-                                            <v-img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/1280px-Mastercard-logo.svg.png" width="30" height="20" contain></v-img>
+                            <section class="checkout-section">
+                                <div class="section-header">
+                                    <span class="section-number">2</span>
+                                    <h2>Método de Pago</h2>
+                                </div>
+                                <p class="section-subtitle"><ShieldCheckIcon size="16" /> Todas las transacciones son seguras y encriptadas</p>
+                                <div class="payment-options">
+                                    <div class="payment-card" :class="{ 'selected': paymentMethod === 'wompi' }" @click="paymentMethod = 'wompi'">
+                                        <div class="payment-header">
+                                            <div class="payment-radio"><div class="radio-dot"></div></div>
+                                            <div class="payment-title"><span>Tarjeta de Crédito/Débito</span><small>Wompi - Pago seguro</small></div>
+                                            <div class="payment-icons">
+                                                <img src="https://logos-world.net/wp-content/uploads/2020/04/Visa-Logo.png" alt="Visa">
+                                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/1280px-Mastercard-logo.svg.png" alt="Mastercard">
+                                            </div>
+                                        </div>
+                                        <transition name="expand">
+                                            <div v-if="paymentMethod === 'wompi'" class="payment-body">
+                                                <div class="payment-note"><i class="fas fa-external-link-alt"></i><span>Serás redirigido a Wompi para completar tu pago de forma segura</span></div>
+                                            </div>
+                                        </transition>
+                                    </div>
+                                    <div class="payment-card" :class="{ 'selected': paymentMethod === 'pago_al_recibir' }" @click="paymentMethod = 'pago_al_recibir'">
+                                        <div class="payment-header">
+                                            <div class="payment-radio"><div class="radio-dot"></div></div>
+                                            <div class="payment-title"><span>Pago Contra Entrega</span><small>Paga cuando recibas tu pedido</small></div>
+                                            <div class="payment-icon-single"><i class="fas fa-money-bill-wave"></i></div>
+                                        </div>
+                                        <transition name="expand">
+                                            <div v-if="paymentMethod === 'pago_al_recibir'" class="payment-body">
+                                                <div class="payment-note"><i class="fas fa-hand-holding-usd"></i><span>Paga en efectivo al momento de recibir tu pedido</span></div>
+                                            </div>
+                                        </transition>
+                                    </div>
+                                    <div class="payment-card" :class="{ 'selected': paymentMethod === 'transferencia_bancolombia' }" @click="paymentMethod = 'transferencia_bancolombia'">
+                                        <div class="payment-header">
+                                            <div class="payment-radio"><div class="radio-dot"></div></div>
+                                            <div class="payment-title"><span>Transferencia Bancolombia</span><small>Cuenta de ahorros</small></div>
+                                            <div class="payment-icon-single bank"><i class="fas fa-university"></i></div>
                                         </div>
                                     </div>
-                                </template>
-                            </v-radio>
-                            <v-expand-transition>
-                                <div v-if="paymentMethod === 'wompi'" class="pa-6 bg-grey-lighten-5 border-bottom text-body-2 text-center text-grey-darken-2">
-                                     <v-icon size="48" class="mb-2">mdi-monitor-cellphone</v-icon>
-                                     <p>Después de hacer clic en "Pagar ahora", serás redirigido a Wompi para completar tu compra de forma segura.</p>
+                                    <div class="payment-card" :class="{ 'selected': paymentMethod === 'transferencia_davivienda' }" @click="paymentMethod = 'transferencia_davivienda'">
+                                        <div class="payment-header">
+                                            <div class="payment-radio"><div class="radio-dot"></div></div>
+                                            <div class="payment-title"><span>Transferencia Davivienda</span><small>Cuenta de ahorros</small></div>
+                                            <div class="payment-icon-single bank davi"><i class="fas fa-university"></i></div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </v-expand-transition>
+                            </section>
 
-                            <!-- Paga al recibir -->
-                            <v-radio value="pago_al_recibir" class="pa-4 border-bottom w-100 mr-0 bg-white">
-                                <template v-slot:label>
-                                    <span class="font-weight-bold ml-2">Paga al Recibir</span>
-                                </template>
-                            </v-radio>
-                             <v-expand-transition>
-                                <div v-if="paymentMethod === 'pago_al_recibir'" class="pa-4 bg-grey-lighten-5 border-bottom text-body-2 text-grey-darken-2">
-                                    <p>Paga en efectivo al momento de la entrega.</p>
+                            <section class="checkout-section" v-if="deliveryMethod === 'envio'">
+                                <div class="section-header">
+                                    <span class="section-number">3</span>
+                                    <h2>Dirección de Facturación</h2>
                                 </div>
-                            </v-expand-transition>
+                                <div class="billing-options">
+                                    <div class="billing-option" :class="{ 'selected': sameAsShipping }" @click="sameAsShipping = true">
+                                        <div class="option-radio"><div class="radio-dot"></div></div>
+                                        <span>Misma dirección de envío</span>
+                                    </div>
+                                    <div class="billing-option" :class="{ 'selected': !sameAsShipping }" @click="sameAsShipping = false">
+                                        <div class="option-radio"><div class="radio-dot"></div></div>
+                                        <span>Usar dirección diferente</span>
+                                    </div>
+                                </div>
+                            </section>
 
-                            <!-- Bancolombia -->
-                            <v-radio value="transferencia_bancolombia" class="pa-4 border-bottom w-100 mr-0 bg-white">
-                                <template v-slot:label>
-                                    <span class="font-weight-bold ml-2">Transferencia Bancolombia</span>
-                                </template>
-                            </v-radio>
+                            <section class="checkout-section" v-if="deliveryMethod === 'retiro' || !sameAsShipping">
+                                <div class="section-header" v-if="deliveryMethod === 'retiro'">
+                                    <span class="section-number">3</span>
+                                    <h2>Datos de Facturación</h2>
+                                </div>
+                                <div class="shipping-form">
+                                    <div class="form-grid">
+                                        <div class="form-group"><label>Nombre <span class="required">*</span></label><input v-model="billingFirstName" type="text" placeholder="Tu nombre" /></div>
+                                        <div class="form-group"><label>Apellidos <span class="required">*</span></label><input v-model="billingLastName" type="text" placeholder="Tus apellidos" /></div>
+                                        <div class="form-group full"><label>Cédula / NIT <span class="required">*</span></label><input v-model="billingIdNumber" type="text" placeholder="Solo números" /></div>
+                                        <div class="form-group full"><label>Dirección <span class="required">*</span></label><input v-model="billingAddress" type="text" placeholder="Dirección completa" /></div>
+                                        <div class="form-group"><label>Ciudad <span class="required">*</span></label><input v-model="billingCity" type="text" /></div>
+                                        <div class="form-group"><label>Teléfono <span class="required">*</span></label><input v-model="billingPhone" type="tel" placeholder="+57 300 000 0000" /></div>
+                                    </div>
+                                </div>
+                            </section>
 
-                             <!-- Davivienda -->
-                            <v-radio value="transferencia_davivienda" class="pa-4 w-100 mr-0 bg-white">
-                                <template v-slot:label>
-                                    <span class="font-weight-bold ml-2">Transferencia Davivienda</span>
-                                </template>
-                            </v-radio>
+                            <div class="checkout-actions">
+                                <button class="pay-button" @click="showConfirmationModal">
+                                    <i class="fas fa-lock"></i><span>Pagar {{ formatCurrency(total) }}</span>
+                                </button>
+                                <div class="secure-badge"><ShieldCheckIcon size="16" /><span>Pago 100% seguro y encriptado</span></div>
+                            </div>
 
-                        </v-radio-group>
-                    </div>
-
-                    <!-- Billing Address -->
-                    <div class="section mb-8">
-                         <h3 class="text-h6 font-weight-bold mb-3">Dirección de facturación</h3>
-                         
-                         <!-- Toggle only for Shipping -->
-                         <v-radio-group v-if="deliveryMethod === 'envio'" v-model="sameAsShipping" class="payment-options border rounded overflow-hidden mb-4" hide-details>
-                            <v-radio :value="true" class="pa-4 border-bottom w-100 mr-0 bg-white">
-                                <template v-slot:label>
-                                    <span class="font-weight-medium ml-2">La misma dirección de envío</span>
-                                </template>
-                            </v-radio>
-                            <v-radio :value="false" class="pa-4 w-100 mr-0 bg-white">
-                                <template v-slot:label>
-                                    <span class="font-weight-medium ml-2">Usar una dirección de facturación distinta</span>
-                                </template>
-                            </v-radio>
-                        </v-radio-group>
-
-                        <!-- Billing Form (Shows if Retiro OR Different Address) -->
-                        <div v-if="deliveryMethod === 'retiro' || !sameAsShipping">
-                            <v-select 
-                                label="País/Región" 
-                                :items="['Colombia']" 
-                                model-value="Colombia"
-                                variant="outlined" 
-                                density="comfortable" 
-                                bg-color="white"
-                                class="mb-3"
-                            ></v-select>
-
-                            <v-row dense>
-                                <v-col cols="12" md="6">
-                                    <v-text-field v-model="billingFirstName" label="Nombre (Obligatorio)" variant="outlined" density="comfortable" bg-color="white" :error-messages="!billingFirstName && !sameAsShipping ? 'Requerido' : ''"></v-text-field>
-                                </v-col>
-                                <v-col cols="12" md="6">
-                                    <v-text-field v-model="billingLastName" label="Apellidos (Obligatorio)" variant="outlined" density="comfortable" bg-color="white" :error-messages="!billingLastName && !sameAsShipping ? 'Requerido' : ''"></v-text-field>
-                                </v-col>
-                            </v-row>
-
-                            <v-text-field v-model="billingIdNumber" class="mt-3" label="Cédula, NIT o Pasaporte (Obligatorio - Solo números)" variant="outlined" density="comfortable" bg-color="white"></v-text-field>
-
-                            <v-text-field v-model="billingAddress" class="mt-3" label="Dirección y Barrio (Obligatorio)" variant="outlined" density="comfortable" bg-color="white"></v-text-field>
-
-                            <v-text-field class="mt-3" label="Número de Casa, Torre, Apartamento (Opcional)" variant="outlined" density="comfortable" bg-color="white"></v-text-field>
-
-                            <v-row dense class="mt-3">
-                                <v-col cols="4">
-                                    <v-text-field v-model="billingCity" label="Ciudad" variant="outlined" density="comfortable" bg-color="white"></v-text-field>
-                                </v-col>
-                                <v-col cols="4">
-                                     <v-select label="Departamento" :items="DEPARTMENTS" model-value="Córdoba" variant="outlined" density="comfortable" bg-color="white"></v-select>
-                                </v-col>
-                                <v-col cols="4">
-                                    <v-text-field label="Código postal" variant="outlined" density="comfortable" bg-color="white"></v-text-field>
-                                </v-col>
-                            </v-row>
-
-                            <v-text-field v-model="billingPhone" class="mt-3" label="Teléfono (Obligatorio)" variant="outlined" density="comfortable" bg-color="white">
-                                <template v-slot:append-inner>
-                                    <v-icon icon="mdi-help-circle-outline" size="small" color="grey"></v-icon>
-                                </template>
-                            </v-text-field>
+                            <div class="checkout-footer">
+                                <a href="#">Política de reembolso</a>
+                                <a href="#">Política de envíos</a>
+                                <a href="#">Privacidad</a>
+                                <a href="#">Términos</a>
+                            </div>
                         </div>
                     </div>
+                </v-col>
 
-                    <v-btn 
-                        color="black" 
-                        size="large" 
-                        block 
-                        @click="showConfirmationModal" 
-                        class="text-white font-weight-bold text-none rounded-md" 
-                        height="56"
-                        flat
-                        style="background-color: #000 !important; color: #fff !important;"
-                    >
-                        Pagar ahora
-                    </v-btn>
-
-                    <div class="footer-links mt-12 pt-6 border-top d-flex flex-wrap gap-4 text-caption text-primary">
-                        <a href="#" class="text-decoration-underline text-grey-darken-1">Política de reembolso</a>
-                        <a href="#" class="text-decoration-underline text-grey-darken-1">Política de envíos</a>
-                        <a href="#" class="text-decoration-underline text-grey-darken-1">Política de privacidad</a>
-                        <a href="#" class="text-decoration-underline text-grey-darken-1">Términos del servicio</a>
+                <v-col cols="12" md="5" lg="5" class="summary-column d-none d-md-block">
+                    <div class="summary-sticky">
+                        <div class="summary-content">
+                            <h3 class="summary-title">Resumen del Pedido</h3>
+                            <div class="summary-products">
+                                <div v-for="item in (productosStore.ComprasCarrito as Product[])" :key="item.id" class="summary-item">
+                                    <div class="item-image">
+                                        <img :src="item.img" :alt="item.nombre" />
+                                        <span class="item-qty">{{ item.cantidad }}</span>
+                                    </div>
+                                    <div class="item-details">
+                                        <h4>{{ item.nombre }}</h4>
+                                        <span class="item-ref">REF: {{ item.id }}</span>
+                                    </div>
+                                    <div class="item-price">{{ formatCurrency(item.precio * item.cantidad) }}</div>
+                                </div>
+                            </div>
+                            <div class="discount-section">
+                                <div class="discount-input-wrap">
+                                    <input v-model="discountCode" type="text" placeholder="Código de descuento" />
+                                    <button class="discount-btn">Aplicar</button>
+                                </div>
+                            </div>
+                            <div class="summary-totals">
+                                <div class="total-row"><span>Subtotal</span><span>{{ formatCurrency(productosStore.subtotalCarrito) }}</span></div>
+                                <div class="total-row">
+                                    <span class="d-flex align-center gap-1">
+                                        {{ deliveryMethod === 'retiro' ? 'Retiro' : 'Envío' }}
+                                        <i class="fas fa-info-circle info-icon" @click="showShippingPolicy = true"></i>
+                                    </span>
+                                    <span v-if="deliveryMethod === 'envio'">{{ formatCurrency(shippingCost) }}</span>
+                                    <span v-else class="free-shipping">GRATIS</span>
+                                </div>
+                                <div class="total-row final">
+                                    <span>Total</span>
+                                    <div class="final-price"><small>COP</small><strong>{{ formatCurrency(total) }}</strong></div>
+                                </div>
+                            </div>
+                            <div class="trust-badges">
+                                <div class="badge"><i class="fas fa-shield-alt"></i><span>Pago Seguro</span></div>
+                                <div class="badge"><i class="fas fa-undo"></i><span>30 días devolución</span></div>
+                                <div class="badge"><i class="fas fa-headset"></i><span>Soporte 24/7</span></div>
+                            </div>
+                        </div>
                     </div>
+                </v-col>
+            </v-row>
+        </v-container>
+
+        <PickupLocationModal v-model="showPickupModal" @location-selected="handleLocationSelected" />
+
+        <!-- ===== MODAL: POLÍTICA DE ENVÍO ===== -->
+        <v-dialog v-model="showShippingPolicy" max-width="520">
+            <v-card class="modal-barber" rounded="xl">
+                <div class="modal-barber__header">
+                    <div class="modal-barber__header-icon"><i class="fas fa-truck"></i></div>
+                    <div>
+                        <h3 class="modal-barber__header-title">Política de Envío</h3>
+                        <p class="modal-barber__header-sub">StyleHub Barber Shop</p>
+                    </div>
+                    <button class="modal-barber__close" @click="showShippingPolicy = false"><i class="fas fa-times"></i></button>
                 </div>
-            </v-col>
-
-            <!-- Summary Side -->
-            <v-col cols="12" md="5" class="bg-grey-lighten-5 py-8 px-4 px-md-10 border-left min-vh-100">
-                <div class="order-summary sticky-top pt-md-8 max-width-450">
-                    <v-list class="bg-transparent pa-0 mb-6">
-                        <v-list-item v-for="item in (productosStore.ComprasCarrito as Product[])" :key="item.id" class="px-0 py-3">
-                            <template v-slot:prepend>
-                                <div class="item-img-container position-relative">
-                                    <v-img :src="item.img" width="64" height="64" cover class="border rounded bg-white"></v-img>
-                                    <v-badge color="grey-darken-3" text-color="white" :content="item.cantidad" class="qty-badge" offset-x="-10" offset-y="-10" floating></v-badge>
-                                </div>
-                            </template>
-                            <div class="ml-4 d-flex justify-space-between align-center w-100">
-                                <div>
-                                    <div class="text-body-2 font-weight-bold mb-1">{{ item.nombre }}</div>
-                                    <div class="text-caption text-grey">1.3 oz (Travel Size)</div> <!-- Hardcoded stub based on img, can be dynamic -->
-                                </div>
-                                <div class="font-weight-medium text-body-2">{{ formatCurrency(item.precio * item.cantidad) }}</div>
-                            </div>
-                        </v-list-item>
-                    </v-list>
-
-                    <v-divider class="mb-6"></v-divider>
-
-                    <div class="discount-code d-flex gap-3 mb-6">
-                        <v-text-field 
-                            v-model="discountCode" 
-                            label="Código de descuento o tarjeta de regalo" 
-                            variant="outlined" 
-                            density="comfortable" 
-                            hide-details 
-                            bg-color="white"
-                        ></v-text-field>
-                        <v-btn variant="outlined" color="grey-darken-1" height="48" class="text-none">Aplicar</v-btn>
+                <div class="modal-barber__body">
+                    <div class="shipping-policy-item">
+                        <div class="shipping-policy-icon"><i class="fas fa-box"></i></div>
+                        <div>
+                            <strong>Empresa de mensajería</strong>
+                            <p>El transporte se realizará a través de una empresa de mensajería especializada.</p>
+                        </div>
                     </div>
-
-                    <v-divider class="mb-6"></v-divider>
-
-                    <div class="totals py-2">
-                        <div class="d-flex justify-space-between mb-2 text-body-2">
-                            <span>Subtotal</span>
-                            <span class="font-weight-bold">{{ formatCurrency(productosStore.subtotalCarrito) }}</span>
+                    <div class="shipping-policy-item">
+                        <div class="shipping-policy-icon"><i class="fas fa-calendar-alt"></i></div>
+                        <div>
+                            <strong>Plazo de entrega</strong>
+                            <p>Máximo <span class="text-accent">8 días laborables</span>. Puede variar según el pedido.</p>
                         </div>
-                        <div class="d-flex justify-space-between mb-2 text-body-2">
-                             <div class="d-flex align-center">
-                                <span>{{ deliveryMethod === 'retiro' ? 'Retiro en tienda' : 'Envíos' }}</span>
-                                <v-icon size="14" class="ml-1 cursor-pointer text-grey" @click="showShippingPolicy = true">mdi-help-circle-outline</v-icon>
-                            </div>
-                            <span class="font-weight-bold" v-if="deliveryMethod === 'envio'">{{ formatCurrency(shippingCost) }}</span>
-                            <span class="text-success font-weight-bold" v-else>GRATIS</span>
+                    </div>
+                    <div class="shipping-policy-item">
+                        <div class="shipping-policy-icon"><i class="fas fa-phone-alt"></i></div>
+                        <div>
+                            <strong>Datos obligatorios</strong>
+                            <p>Es indispensable completar el formulario con el teléfono de contacto.</p>
                         </div>
-                        
-                        <v-divider class="my-4"></v-divider>
-                        
-                        <div class="d-flex justify-space-between align-center">
-                            <span class="text-h6 font-weight-bold">Total</span>
-                            <div class="d-flex align-baseline">
-                                <span class="text-caption text-grey mr-2">COP</span>
-                                <span class="text-h5 font-weight-bold">{{ formatCurrency(total) }}</span>
-                            </div>
+                    </div>
+                    <div class="shipping-policy-contact">
+                        <i class="fas fa-headset"></i>
+                        <div>
+                            <span>¿Tienes dudas? Contáctanos</span>
+                            <strong>+57 (350) 489-7346</strong>
                         </div>
                     </div>
                 </div>
-            </v-col>
-        </v-row>
-
-        <!-- Modals -->
-        <PickupLocationModal 
-            v-model="showPickupModal" 
-            @location-selected="handleLocationSelected" 
-        />
-
-        <!-- Shipping Policy Modal -->
-        <v-dialog v-model="showShippingPolicy" max-width="700" scrollable>
-            <v-card class="rounded-lg">
-                <v-card-title class="d-flex justify-space-between align-center pa-4 bg-white border-bottom">
-                     <span class="text-h6 font-weight-bold">POLÍTICA DE ENVÍO</span>
-                     <v-btn icon variant="text" @click="showShippingPolicy = false" density="compact">
-                        <v-icon>mdi-close</v-icon>
-                    </v-btn>
-                </v-card-title>
-                <v-card-text class="pa-6 text-body-2">
-                    <p class="mb-4">El transporte de los artículos comprados en CAPIMARKET.COM y/o en tiendas físicas se realizará a través de una empresa de mensajería especializada.</p>
-                    
-                    <p class="mb-4">Los plazos de entrega serán con carácter general de un máximo de (8) días laborables. Dichos plazos pueden variar en función de las circunstancias concretas de cada pedido, como la disponibilidad del producto escogido o la zona de envío. Asimismo, en circunstancias excepcionales dicho plazo podría verse alterado por incidencias extraordinarias en el transportista o por dificultades en la entrega de la mercancía. En estos casos, el plazo de entrega puede ser de hasta (15) días hábiles.</p>
-                    
-                    <p class="mb-4">Para evitar incidencias en la entrega (direcciones erróneas, imposibilidad de encontrar a alguien en el domicilio etc.), es indispensable completar correctamente el correspondiente formulario siendo obligatorio rellenar la casilla relativa a los teléfonos de contacto.</p>
-                    
-                    <p class="mb-4">La responsabilidad de CAPITÁN BARBAS® queda limitada en casos de fuerza mayor (huelgas, fenómenos climatológicos adversos que impidan el tráfico normal por tierra, mar o aire,…). En estos casos, se entregarán los pedidos lo antes posible, y los plazos arriba indicados no aplicarán.</p>
-                    
-                    <p class="mb-4">Los plazos de entrega dependen del tiempo de gestión del pedido y del envío, pudendo variar en función de la red de distribución provista por las agencias de transporte en cada región. En el momento de la entrega el Cliente no deberá hacer pago alguno salvo que haya elegido como medio de pago el contra-entrega, en cuyo caso, deberá abonar el importe del pedido, el transporte y el recargo de este servicio en el momento de la recepción.</p>
-                    
-                    <p class="mb-4">Los plazos de gestión de un pedido varían para cada venta, si bien, en condiciones normales, el plazo mínimo de gestión de un pedido realizado a través de CAPIMARKET.COM antes de las 14:00 horas, en día habíl, será de (1) día y el máximo de (15) días, dependiendo del tipo o clase de producto y del lugar de entrega.</p>
-                    
-                    <p class="mb-4">CAPITÁN BARBAS® no asume responsabilidad alguna por las consecuencias de posibles retrasos en el envío.</p>
-                    
-                    <p class="mb-4">Nuestros transportistas intentan entregar hasta 2 veces en la dirección proporcionada por el cliente, en horario laboral de 9:00 a.m a 6:00 p.m. Es responsabilidad del cliente estar presente en la dirección de entrega proporcionada a CAPIMARKET.COM.</p>
-                    
-                    <p class="mb-4">En caso de no localizar al destinatario en el lugar indicado en el pedido, la agencia de transporte deja una nota de aviso con un teléfono para que pueda concretar fecha, hora y lugar exactos del segundo intento de entrega y, en su defecto, éste se realizará al día hábil siguiente. Si tras este no se logra la entrega, el transportista devolverá el paquete a origen, y CAPITÁN BARBAS® reintegrará el importe del pedido, deduciendo los costes asociados a la devolución.</p>
-                    
-                    <p class="mb-4">Si la dirección de entrega de tu orden está erronea, se cobrará un domicilio adicional.</p>
-                    
-                    <h3 class="font-weight-bold mb-2">No encuentro la respuesta a mi pregunta, ¿qué hago?</h3>
-                    <p>Si tienes dudas ESCRIBE O LLAMA +57 (350) 489-7346.</p>
-                </v-card-text>
+                <div class="modal-barber__footer single">
+                    <button class="modal-barber__btn-primary" @click="showShippingPolicy = false">Entendido</button>
+                </div>
             </v-card>
         </v-dialog>
 
-        <v-dialog v-model="showConfirmModal" max-width="600">
-            <v-card>
-                <v-card-title class="pa-4 bg-black text-white text-h6 font-weight-bold">Confirmar Compra</v-card-title>
-                <v-card-text class="pa-6">
-                     <p>Estás a un paso de completar tu pedido. Revisa los detalles.</p>
-                     <v-divider class="my-4"></v-divider>
-                     <div><strong>Total a Pagar:</strong> {{ formatCurrency(total) }}</div>
-                </v-card-text>
-                <v-card-actions class="pa-4">
-                    <v-spacer></v-spacer>
-                    <v-btn variant="text" @click="showConfirmModal = false">Cancelar</v-btn>
-                    <v-btn color="black" variant="flat" @click="confirmOrder">Confirmar</v-btn>
-                </v-card-actions>
+        <!-- ===== MODAL: CONFIRMAR PEDIDO ===== -->
+        <v-dialog v-model="showConfirmModal" max-width="480">
+            <v-card class="modal-barber" rounded="xl">
+                <div class="modal-barber__header">
+                    <div class="modal-barber__header-icon"><i class="fas fa-receipt"></i></div>
+                    <div>
+                        <h3 class="modal-barber__header-title">Confirmar Pedido</h3>
+                        <p class="modal-barber__header-sub">Revisa los detalles antes de continuar</p>
+                    </div>
+                    <button class="modal-barber__close" @click="showConfirmModal = false"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-barber__body">
+                    <div class="confirm-table">
+                        <div class="confirm-table__row">
+                            <span class="confirm-table__label"><i class="fas fa-shopping-bag"></i> Productos</span>
+                            <span class="confirm-table__value">{{ productosStore.ComprasCarrito.length }} item{{ productosStore.ComprasCarrito.length !== 1 ? 's' : '' }}</span>
+                        </div>
+                        <div class="confirm-table__row">
+                            <span class="confirm-table__label"><i class="fas fa-truck"></i> Entrega</span>
+                            <span class="confirm-table__value">{{ deliveryMethod === 'envio' ? 'Envío a domicilio' : 'Retiro en tienda' }}</span>
+                        </div>
+                        <div class="confirm-table__row">
+                            <span class="confirm-table__label"><i class="fas fa-credit-card"></i> Pago</span>
+                            <span class="confirm-table__value">{{ paymentMethod === 'wompi' ? 'Tarjeta (Wompi)' : paymentMethod === 'pago_al_recibir' ? 'Contra entrega' : 'Transferencia' }}</span>
+                        </div>
+                        <div class="confirm-table__row confirm-table__row--total">
+                            <span class="confirm-table__label"><i class="fas fa-coins"></i> Total a Pagar</span>
+                            <span class="confirm-table__total">{{ formatCurrency(total) }}</span>
+                        </div>
+                    </div>
+                    <div class="confirm-secure-note">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Tu compra está protegida. Pago 100% seguro.</span>
+                    </div>
+                </div>
+                <div class="modal-barber__footer">
+                    <button class="modal-barber__btn-secondary" @click="showConfirmModal = false">Cancelar</button>
+                    <button class="modal-barber__btn-primary" @click="confirmOrder"><i class="fas fa-check"></i> Confirmar compra</button>
+                </div>
             </v-card>
         </v-dialog>
 
-        <!-- Login Dialog -->
-        <v-dialog v-model="showLoginDialog" max-width="450">
-            <v-card class="rounded-lg">
-                <v-card-title class="text-h6 py-4 px-6">
-                    Inicia sesión para continuar
-                </v-card-title>
-                <v-card-text class="px-6 pb-6">
-                    <p class="text-body-2 text-grey-darken-1 mb-4">
-                        Ya existe una cuenta asociada a <strong>{{ contactEmail }}</strong> o necesitas crear una para continuar con el pedido y hacer seguimiento.
+        <!-- ===== MODAL: INICIAR SESIÓN ===== -->
+        <v-dialog v-model="showLoginDialog" max-width="420">
+            <v-card class="modal-barber modal-barber--login" rounded="xl">
+                <div class="login-modal-deco">
+                    <div class="login-modal-deco__avatar"><i class="fas fa-cut"></i></div>
+                </div>
+                <div class="login-modal-content">
+                    <h3 class="login-modal-title">¡Un paso más!</h3>
+                    <p class="login-modal-sub">Inicia sesión para completar tu compra y hacer seguimiento de tu pedido.</p>
+                    <div class="login-modal-benefits">
+                        <div class="login-modal-benefit"><i class="fas fa-box-open"></i><span>Seguimiento de pedidos en tiempo real</span></div>
+                        <div class="login-modal-benefit"><i class="fas fa-history"></i><span>Historial de compras guardado</span></div>
+                        <div class="login-modal-benefit"><i class="fas fa-tag"></i><span>Ofertas y descuentos exclusivos</span></div>
+                    </div>
+                    <button class="modal-barber__btn-primary w-full" @click="goToLogin">
+                        <i class="fas fa-sign-in-alt"></i> Iniciar Sesión / Registrarse
+                    </button>
+                    <button class="modal-barber__btn-ghost w-full" @click="showLoginDialog = false">Volver al checkout</button>
+                </div>
+            </v-card>
+        </v-dialog>
+
+        <!-- ===== MODAL: COMPRA EXITOSA ===== -->
+        <v-dialog v-model="showSuccessDialog" max-width="460" persistent>
+            <v-card class="modal-barber modal-barber--success" rounded="xl">
+                <!-- Cabecera con confetti visual -->
+                <div class="success-modal__top">
+                    <div class="success-modal__rays"></div>
+                    <div class="success-modal__check">
+                        <i class="fas fa-check"></i>
+                    </div>
+                </div>
+
+                <div class="success-modal__body">
+                    <h2 class="success-modal__title">¡Gracias por tu compra!</h2>
+                    <div class="success-modal__order-badge">
+                        <i class="fas fa-hashtag"></i>
+                        Pedido {{ confirmedOrderId }}
+                    </div>
+                    <p class="success-modal__msg">
+                        Recibirás un correo con todos los detalles y el seguimiento de tu pedido.
                     </p>
-                    <v-btn block color="primary" @click="goToLogin" size="large" class="text-none">
-                        Iniciar Sesión / Registrarse
-                    </v-btn>
-                    <v-btn block variant="text" class="mt-2 text-none" @click="showLoginDialog = false">
-                        Volver
-                    </v-btn>
-                </v-card-text>
+
+                    <!-- Mini resumen -->
+                    <div class="success-modal__info">
+                        <div class="success-modal__info-row">
+                            <i class="fas fa-truck"></i>
+                            <span>{{ deliveryMethod === 'envio' ? 'Envío a domicilio — 2 a 5 días hábiles' : 'Retiro en StyleHub — Listo en 24h' }}</span>
+                        </div>
+                        <div class="success-modal__info-row">
+                            <i class="fas fa-credit-card"></i>
+                            <span>{{ paymentMethod === 'wompi' ? 'Pago con tarjeta (Wompi)' : paymentMethod === 'pago_al_recibir' ? 'Pago contra entrega' : 'Transferencia bancaria' }}</span>
+                        </div>
+                    </div>
+
+                    <button class="modal-barber__btn-primary w-full" @click="finishOrderProcess">
+                        <i class="fas fa-box-open"></i> Ver mis pedidos
+                    </button>
+                    <button class="modal-barber__btn-ghost w-full" @click="goToHome">
+                        Seguir comprando
+                    </button>
+                </div>
             </v-card>
         </v-dialog>
-        
-        <!-- Success Dialog -->
-        <v-dialog v-model="showSuccessDialog" max-width="500" persistent>
-             <v-card class="text-center pa-8 rounded-lg">
-                <v-icon size="64" color="success" class="mb-4">mdi-check-circle</v-icon>
-                <h2 class="text-h5 font-weight-bold mb-2">¡Gracias por tu compra!</h2>
-                <p class="text-body-1 text-grey mb-6">Tu pedido #{{ confirmedOrderId }} ha sido confirmado.</p>
-                <v-btn block color="black" size="large" class="mb-3 text-none" @click="finishOrderProcess">Ver mis pedidos</v-btn>
-                <v-btn block variant="text" class="text-none" @click="goToHome">Volver a la tienda</v-btn>
-             </v-card>
-        </v-dialog>
-
-    </v-container>
+    </div>
 </template>
 
 <style scoped>
-.checkout-page {
-    background-color: white;
+.checkout-wrapper {
+    --primary: #ee6f38;
+    --primary-dark: #d45a28;
+    --primary-light: #ff8c61;
+    --dark: #1a1a1a;
+    --darker: #111111;
+    --card-bg: #242424;
+    --border: #e0e0e0;
+    --border-dark: #333;
+    --text: #1a1a1a;
+    --text-light: #666;
+    --text-muted: #999;
+    --success: #22c55e;
+    --bg-light: #f8f8f8;
     min-height: 100vh;
+    background: white;
 }
 
-.max-width-600 {
-    max-width: 600px;
+.mobile-summary-bar { position: sticky; top: 0; z-index: 100; background: var(--dark); color: white; padding: 16px 20px; }
+.mobile-summary-bar i { color: var(--primary); }
+.total-mobile { font-weight: 700; font-size: 1.1rem; }
+.checkout-page { min-height: 100vh; }
+.form-column { background: white; }
+.form-scroll-area { min-height: 100vh; padding: 40px 24px; }
+
+@media (min-width: 960px) {
+    .form-scroll-area { padding: 48px 64px 48px 48px; max-width: 680px; margin-left: auto; }
 }
 
-.max-width-450 {
-    max-width: 450px;
+.summary-column { background: linear-gradient(180deg, var(--dark) 0%, var(--darker) 100%); min-height: 100vh; }
+.summary-sticky { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 48px 48px 48px 40px; }
+.summary-content { max-width: 420px; }
+.checkout-header { margin-bottom: 32px; }
+.brand-logo img { height: 50px; margin-bottom: 24px; }
+.breadcrumbs { display: flex; align-items: center; gap: 12px; font-size: 0.85rem; color: var(--text-muted); }
+.breadcrumbs .step { transition: color 0.2s; }
+.breadcrumbs .step.clickable { cursor: pointer; }
+.breadcrumbs .step.clickable:hover { color: var(--primary); }
+.breadcrumbs .step.active { color: var(--primary); font-weight: 600; }
+.breadcrumbs .step i { margin-right: 6px; }
+.back-link { display: inline-flex; align-items: center; gap: 8px; background: none; border: none; color: var(--text-light); font-size: 0.9rem; cursor: pointer; margin-bottom: 32px; transition: color 0.2s; }
+.back-link:hover { color: var(--primary); }
+.checkout-section { margin-bottom: 40px; }
+.section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.section-number { width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; }
+.section-header h2 { font-size: 1.25rem; font-weight: 700; color: var(--text); margin: 0; }
+.section-subtitle { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px; }
+.delivery-options { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+.delivery-card { display: flex; align-items: center; gap: 16px; padding: 20px; border: 2px solid var(--border); border-radius: 12px; cursor: pointer; transition: all 0.3s ease; background: white; }
+.delivery-card:hover { border-color: #ccc; }
+.delivery-card.selected { border-color: var(--primary); background: linear-gradient(135deg, rgba(238,111,56,0.05), rgba(238,111,56,0.02)); }
+.card-radio { width: 22px; height: 22px; border: 2px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; }
+.delivery-card.selected .card-radio { border-color: var(--primary); }
+.radio-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--primary); transform: scale(0); transition: transform 0.2s; }
+.delivery-card.selected .radio-dot, .payment-card.selected .radio-dot, .billing-option.selected .radio-dot { transform: scale(1); }
+.card-icon { width: 48px; height: 48px; background: var(--bg-light); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-light); flex-shrink: 0; }
+.delivery-card.selected .card-icon { background: var(--primary); color: white; }
+.card-content { flex: 1; }
+.card-content h4 { font-size: 1rem; font-weight: 600; margin: 0 0 4px 0; color: var(--text); }
+.card-content p { font-size: 0.85rem; color: var(--text-muted); margin: 0; }
+.card-price { font-weight: 700; color: var(--text); font-size: 0.95rem; }
+.card-price.free { color: var(--success); }
+.shipping-form { background: var(--bg-light); border-radius: 16px; padding: 24px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-group { display: flex; flex-direction: column; }
+.form-group.full { grid-column: 1 / -1; }
+.form-group label { font-size: 0.85rem; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+.form-group label .required { color: var(--primary); }
+.form-group input, .custom-select select { width: 100%; padding: 14px 16px; border: 2px solid var(--border); border-radius: 10px; font-size: 0.95rem; background: white; transition: all 0.2s; outline: none; }
+.form-group input:focus, .custom-select select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(238,111,56,0.1); }
+.form-group input.error { border-color: #ef4444; }
+.error-msg { font-size: 0.75rem; color: #ef4444; margin-top: 4px; }
+.custom-select { position: relative; }
+.custom-select select { appearance: none; cursor: pointer; padding-right: 40px; }
+.custom-select i { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
+.shipping-method-box { display: flex; justify-content: space-between; align-items: center; background: white; border: 2px solid var(--primary); border-radius: 12px; padding: 16px 20px; margin-top: 20px; }
+.method-info { display: flex; align-items: center; gap: 12px; color: var(--primary); }
+.method-info div { display: flex; flex-direction: column; }
+.method-info strong { color: var(--text); font-size: 0.95rem; }
+.method-info span { font-size: 0.8rem; color: var(--text-muted); }
+.method-price { font-weight: 700; color: var(--text); }
+.pickup-info { display: flex; flex-direction: column; gap: 16px; }
+.pickup-notice { display: flex; gap: 12px; padding: 16px; background: #fff8f5; border: 1px solid rgba(238,111,56,0.2); border-radius: 12px; }
+.pickup-notice > i { color: var(--primary); font-size: 1.1rem; margin-top: 2px; }
+.pickup-notice span { font-size: 0.9rem; color: var(--text); }
+.pickup-actions { margin-top: 8px; font-size: 0.85rem; }
+.pickup-actions a { color: var(--primary); cursor: pointer; text-decoration: underline; }
+.pickup-actions span { color: var(--text-muted); margin: 0 8px; }
+.store-card { display: flex; align-items: center; gap: 16px; padding: 20px; background: white; border: 2px solid var(--primary); border-radius: 12px; cursor: pointer; transition: all 0.3s; }
+.store-card:hover { box-shadow: 0 8px 24px rgba(238,111,56,0.15); }
+.store-icon { width: 50px; height: 50px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; }
+.store-details { flex: 1; }
+.store-details h4 { font-size: 1rem; font-weight: 700; margin: 0 0 4px 0; }
+.store-details p { font-size: 0.85rem; color: var(--text-muted); margin: 0 0 8px 0; }
+.store-meta { display: flex; gap: 16px; font-size: 0.8rem; color: var(--text-light); }
+.store-meta i { margin-right: 4px; color: var(--primary); }
+.store-free { font-weight: 700; color: var(--success); font-size: 0.85rem; }
+.store-arrow { color: var(--text-muted); }
+.payment-options { display: flex; flex-direction: column; border: 2px solid var(--border); border-radius: 12px; overflow: hidden; }
+.payment-card { border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.2s; }
+.payment-card:last-child { border-bottom: none; }
+.payment-card:hover { background: var(--bg-light); }
+.payment-card.selected { background: linear-gradient(135deg, rgba(238,111,56,0.05), rgba(238,111,56,0.02)); }
+.payment-header { display: flex; align-items: center; gap: 16px; padding: 18px 20px; }
+.payment-radio { width: 20px; height: 20px; border: 2px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.payment-card.selected .payment-radio { border-color: var(--primary); }
+.payment-title { flex: 1; display: flex; flex-direction: column; }
+.payment-title span { font-weight: 600; color: var(--text); }
+.payment-title small { font-size: 0.8rem; color: var(--text-muted); }
+.payment-icons { display: flex; gap: 8px; }
+.payment-icons img { height: 24px; width: auto; }
+.payment-icon-single { width: 40px; height: 40px; background: var(--bg-light); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); }
+.payment-icon-single.bank { background: #0052cc15; color: #0052cc; }
+.payment-icon-single.davi { background: #ed1c2415; color: #ed1c24; }
+.payment-body { padding: 0 20px 20px 56px; }
+.payment-note { display: flex; align-items: center; gap: 12px; padding: 16px; background: var(--bg-light); border-radius: 10px; font-size: 0.85rem; color: var(--text-light); }
+.payment-note i { color: var(--primary); }
+.expand-enter-active, .expand-leave-active { transition: all 0.3s ease; overflow: hidden; }
+.expand-enter-from, .expand-leave-to { opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; }
+.billing-options { display: flex; flex-direction: column; border: 2px solid var(--border); border-radius: 12px; overflow: hidden; }
+.billing-option { display: flex; align-items: center; gap: 16px; padding: 18px 20px; cursor: pointer; transition: background 0.2s; border-bottom: 1px solid var(--border); }
+.billing-option:last-child { border-bottom: none; }
+.billing-option:hover { background: var(--bg-light); }
+.billing-option.selected { background: linear-gradient(135deg, rgba(238,111,56,0.05), rgba(238,111,56,0.02)); }
+.option-radio { width: 20px; height: 20px; border: 2px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.billing-option.selected .option-radio { border-color: var(--primary); }
+.checkout-actions { margin-top: 40px; }
+.pay-button { width: 100%; padding: 18px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 14px; font-size: 1.1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; box-shadow: 0 8px 24px rgba(238,111,56,0.35); transition: all 0.3s ease; }
+.pay-button:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(238,111,56,0.45); }
+.pay-button:active { transform: translateY(0); }
+.secure-badge { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 16px; font-size: 0.8rem; color: var(--text-muted); }
+.secure-badge svg { color: var(--success); }
+.checkout-footer { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); }
+.checkout-footer a { font-size: 0.8rem; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+.checkout-footer a:hover { color: var(--primary); }
+.summary-title { color: white; font-size: 1.3rem; font-weight: 700; margin: 0 0 32px 0; padding-bottom: 20px; border-bottom: 1px solid var(--border-dark); }
+.summary-products { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; max-height: 280px; overflow-y: auto; padding-right: 8px; }
+.summary-products::-webkit-scrollbar { width: 4px; }
+.summary-products::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 2px; }
+.summary-item { display: flex; align-items: center; gap: 16px; }
+.item-image { position: relative; width: 64px; height: 64px; flex-shrink: 0; }
+.item-image img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; border: 1px solid var(--border-dark); }
+.item-qty { position: absolute; top: -8px; right: -8px; width: 22px; height: 22px; background: var(--primary); color: white; border-radius: 50%; font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.item-details { flex: 1; min-width: 0; }
+.item-details h4 { color: white; font-size: 0.9rem; font-weight: 600; margin: 0 0 4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.item-ref { font-size: 0.75rem; color: #666; }
+.item-price { color: white; font-weight: 600; font-size: 0.95rem; }
+.discount-section { padding: 20px 0; border-top: 1px solid var(--border-dark); border-bottom: 1px solid var(--border-dark); margin-bottom: 20px; }
+.discount-input-wrap { display: flex; gap: 10px; }
+.discount-input-wrap input { flex: 1; background: var(--card-bg); border: 1px solid var(--border-dark); border-radius: 10px; padding: 14px 16px; color: white; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+.discount-input-wrap input:focus { border-color: var(--primary); }
+.discount-input-wrap input::placeholder { color: #666; }
+.discount-btn { padding: 14px 20px; background: transparent; border: 1px solid var(--primary); color: var(--primary); border-radius: 10px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
+.discount-btn:hover { background: var(--primary); color: white; }
+.summary-totals { margin-bottom: 24px; }
+.total-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; color: #888; font-size: 0.95rem; }
+.total-row .info-icon { font-size: 0.8rem; cursor: pointer; transition: color 0.2s; }
+.total-row .info-icon:hover { color: var(--primary); }
+.free-shipping { color: var(--success); font-weight: 600; }
+.total-row.final { border-top: 1px solid var(--border-dark); padding-top: 20px; margin-top: 8px; }
+.total-row.final span:first-child { color: white; font-weight: 700; font-size: 1.1rem; }
+.final-price { display: flex; align-items: baseline; gap: 8px; }
+.final-price small { color: #666; font-size: 0.8rem; }
+.final-price strong { color: var(--primary); font-size: 1.5rem; font-weight: 700; }
+.trust-badges { display: flex; justify-content: space-between; gap: 12px; padding: 20px; background: var(--card-bg); border-radius: 12px; }
+.trust-badges .badge { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+.trust-badges .badge i { color: var(--primary); font-size: 1.2rem; }
+.trust-badges .badge span { color: #888; font-size: 0.7rem; }
+
+@media (max-width: 959px) {
+    .form-scroll-area { padding: 24px 20px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-group.full { grid-column: 1; }
+    .delivery-card { flex-wrap: wrap; }
+    .card-content { flex-basis: calc(100% - 100px); }
+    .card-price { flex-basis: 100%; text-align: right; margin-top: 8px; }
+    .trust-badges { flex-direction: column; gap: 16px; }
+    .trust-badges .badge { flex-direction: row; justify-content: flex-start; }
 }
 
-.brand-logo img {
-    display: inline-block;
+/* =====================================================
+   SISTEMA DE MODALES — ESTILO BARBERÍA (compartido)
+   ===================================================== */
+.modal-barber { background: #1a1a1a !important; overflow: hidden; }
+
+.modal-barber__header {
+    display: flex; align-items: center; gap: 16px;
+    padding: 22px 24px;
+    background: linear-gradient(135deg, #ee6f38 0%, #c95520 100%);
+    position: relative;
+}
+.modal-barber__header::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 12px);
+}
+.modal-barber__header-icon {
+    width: 48px; height: 48px; background: rgba(255,255,255,0.2);
+    border-radius: 12px; display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; color: white; flex-shrink: 0; position: relative; z-index: 1;
+}
+.modal-barber__header-title { color: white; font-size: 1.15rem; font-weight: 700; margin: 0; position: relative; z-index: 1; }
+.modal-barber__header-sub { color: rgba(255,255,255,0.75); font-size: 0.78rem; margin: 2px 0 0; position: relative; z-index: 1; }
+.modal-barber__close {
+    margin-left: auto; width: 36px; height: 36px; background: rgba(255,255,255,0.15);
+    border: none; border-radius: 8px; color: white; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s, transform 0.2s; position: relative; z-index: 1; flex-shrink: 0;
+}
+.modal-barber__close:hover { background: rgba(255,255,255,0.28); transform: rotate(90deg); }
+.modal-barber__body { padding: 24px; }
+.modal-barber__footer { display: flex; gap: 12px; padding: 0 24px 24px; }
+.modal-barber__footer.single { justify-content: flex-end; }
+
+.modal-barber__btn-primary {
+    flex: 1; padding: 14px 20px;
+    background: linear-gradient(135deg, #ee6f38, #d45a28);
+    color: white; border: none; border-radius: 10px;
+    font-weight: 700; font-size: 0.95rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all 0.25s; box-shadow: 0 4px 16px rgba(238,111,56,0.3);
+}
+.modal-barber__btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(238,111,56,0.45); }
+.modal-barber__btn-secondary {
+    flex: 1; padding: 14px 20px; background: #2a2a2a; color: #aaa;
+    border: 1px solid #333; border-radius: 10px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.2s;
+}
+.modal-barber__btn-secondary:hover { background: #333; color: white; }
+.modal-barber__btn-ghost { background: transparent; border: none; color: #555; font-size: 0.9rem; cursor: pointer; padding: 12px; transition: color 0.2s; text-align: center; }
+.modal-barber__btn-ghost:hover { color: #aaa; }
+.w-full { width: 100%; }
+
+/* — Política de envío — */
+.shipping-policy-item { display: flex; align-items: flex-start; gap: 16px; padding: 16px; background: #242424; border-radius: 12px; margin-bottom: 10px; border-left: 3px solid #ee6f38; }
+.shipping-policy-icon { width: 38px; height: 38px; background: rgba(238,111,56,0.12); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #ee6f38; font-size: 0.95rem; flex-shrink: 0; }
+.shipping-policy-item strong { display: block; color: white; font-size: 0.9rem; margin-bottom: 4px; }
+.shipping-policy-item p { color: #888; font-size: 0.82rem; line-height: 1.5; margin: 0; }
+.text-accent { color: #ee6f38; font-weight: 700; }
+.shipping-policy-contact { display: flex; align-items: center; gap: 14px; padding: 14px 18px; background: rgba(238,111,56,0.08); border: 1px solid rgba(238,111,56,0.2); border-radius: 12px; margin-top: 14px; }
+.shipping-policy-contact > i { font-size: 1.3rem; color: #ee6f38; }
+.shipping-policy-contact span { display: block; font-size: 0.78rem; color: #888; }
+.shipping-policy-contact strong { color: white; font-size: 0.95rem; }
+
+/* — Confirmar pedido — */
+.confirm-table { background: #242424; border-radius: 14px; overflow: hidden; margin-bottom: 16px; }
+.confirm-table__row { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid #2e2e2e; }
+.confirm-table__row:last-child { border-bottom: none; }
+.confirm-table__label { color: #888; font-size: 0.88rem; display: flex; align-items: center; gap: 8px; }
+.confirm-table__label i { color: #ee6f38; width: 14px; }
+.confirm-table__value { color: #ccc; font-size: 0.88rem; font-weight: 500; }
+.confirm-table__row--total { background: rgba(238,111,56,0.06); }
+.confirm-table__row--total .confirm-table__label { color: white; font-weight: 600; font-size: 0.95rem; }
+.confirm-table__total { color: #ee6f38; font-weight: 800; font-size: 1.15rem; }
+.confirm-secure-note { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: rgba(34,197,94,0.07); border: 1px solid rgba(34,197,94,0.2); border-radius: 10px; font-size: 0.82rem; color: #888; }
+.confirm-secure-note i { color: #22c55e; }
+
+/* — Login modal — */
+.modal-barber--login { text-align: center; }
+.login-modal-deco {
+    position: relative; height: 90px;
+    background: linear-gradient(135deg, #ee6f38 0%, #c95520 100%);
+    display: flex; align-items: flex-end; justify-content: center;
+}
+.login-modal-deco::after {
+    content: ''; position: absolute; inset: 0;
+    background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 12px);
+}
+.login-modal-deco__avatar {
+    position: relative; bottom: -28px; z-index: 2;
+    width: 64px; height: 64px; background: #1a1a1a;
+    border: 3px solid #ee6f38; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; color: #ee6f38;
+    box-shadow: 0 4px 20px rgba(238,111,56,0.35);
+}
+.login-modal-content { padding: 44px 28px 28px; }
+.login-modal-title { color: white; font-size: 1.3rem; font-weight: 700; margin: 0 0 8px; }
+.login-modal-sub { color: #888; font-size: 0.88rem; line-height: 1.6; margin: 0 0 24px; }
+.login-modal-benefits { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; text-align: left; }
+.login-modal-benefit { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #242424; border-radius: 10px; font-size: 0.88rem; color: #ccc; }
+.login-modal-benefit i { color: #ee6f38; width: 16px; text-align: center; }
+
+/* — Modal éxito — */
+.modal-barber--success { text-align: center; }
+
+.success-modal__top {
+    position: relative;
+    height: 130px;
+    background: linear-gradient(135deg, #ee6f38 0%, #c95520 100%);
+    display: flex; align-items: flex-end; justify-content: center;
+    overflow: hidden;
 }
 
-.cursor-pointer {
-    cursor: pointer;
+/* Rayos decorativos de fondo */
+.success-modal__rays {
+    position: absolute; inset: 0;
+    background: repeating-conic-gradient(rgba(255,255,255,0.06) 0deg 10deg, transparent 10deg 20deg);
+    animation: raysRotate 20s linear infinite;
+}
+@keyframes raysRotate { to { transform: rotate(360deg); } }
+
+.success-modal__check {
+    position: relative; bottom: -32px; z-index: 2;
+    width: 72px; height: 72px;
+    background: #1a1a1a;
+    border: 4px solid #ee6f38;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; color: #ee6f38;
+    box-shadow: 0 0 0 6px rgba(238,111,56,0.15), 0 8px 24px rgba(0,0,0,0.4);
+    animation: checkPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes checkPop {
+    0%   { transform: scale(0) rotate(-20deg); opacity: 0; }
+    100% { transform: scale(1) rotate(0deg);  opacity: 1; }
 }
 
-.form-column {
-    min-height: 100vh;
+.success-modal__body { padding: 48px 28px 28px; }
+
+.success-modal__title {
+    color: white; font-size: 1.4rem; font-weight: 800;
+    margin: 0 0 12px; letter-spacing: -0.3px;
 }
 
-.toggle-option {
-    background-color: #fff;
-    color: #666;
-    transition: all 0.2s;
+.success-modal__order-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 16px;
+    background: rgba(238,111,56,0.12);
+    border: 1px solid rgba(238,111,56,0.3);
+    border-radius: 20px;
+    color: #ee6f38; font-weight: 700; font-size: 0.95rem;
+    margin-bottom: 14px;
+}
+.success-modal__order-badge i { font-size: 0.8rem; }
+
+.success-modal__msg {
+    color: #888; font-size: 0.88rem; line-height: 1.6;
+    margin: 0 0 20px;
 }
 
-.toggle-option:hover {
-    background-color: #f5f5f5;
+.success-modal__info {
+    display: flex; flex-direction: column; gap: 8px;
+    background: #242424; border-radius: 12px;
+    padding: 14px 16px; margin-bottom: 24px; text-align: left;
 }
-
-.toggle-option.active {
-    background-color: #f0f0f0;
-    color: #000;
-    font-weight: bold;
-    border: 1px solid #000;
+.success-modal__info-row {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 0.85rem; color: #aaa;
 }
-
-.delivery-toggle {
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-}
-
-.min-vh-100 {
-    min-height: 100vh;
-}
-
-.sticky-top {
-    position: sticky;
-    top: 20px;
-}
-
-/* Customizing Vuetify inputs to look more like Shopify */
-:deep(.v-field__outline) {
-    --v-field-border-opacity: 0.15;
-}
-
-:deep(.v-field:hover .v-field__outline) {
-    --v-field-border-opacity: 0.3;
-}
-
-:deep(.v-field--focused .v-field__outline) {
-    --v-field-border-width: 2px;
-    --v-field-border-opacity: 1;
-    color: #ee6f38;
-}
-
-.qty-badge :deep(.v-badge__badge) {
-    background-color: rgba(100,100,100,0.9) !important;
-    font-size: 11px;
-    height: 20px;
-    min-width: 20px;
-    padding: 0 4px;
-}
-
-.payment-options {
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-}
-
-.border-bottom {
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.border-left {
-    border-left: 1px solid #e0e0e0;
-}
-
-.border-right {
-    border-right: 1px solid #e0e0e0;
-}
-
-@media (max-width: 960px) {
-    .border-right, .border-left {
-        border: none;
-    }
-    .form-column {
-        order: 2;
-    }
-    .bg-grey-lighten-5 {
-        order: 1;
-        border-bottom: 1px solid #e0e0e0;
-    }
-}
+.success-modal__info-row i { color: #ee6f38; width: 14px; text-align: center; flex-shrink: 0; }
 </style>

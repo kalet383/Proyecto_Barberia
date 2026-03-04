@@ -210,7 +210,7 @@ const policies = {
   },
   data: {
     title: 'POLÍTICA DE TRATAMIENTO DE DATOS',
-    content: `Tu presentación de información personal a través del sitio se rige por nuestra Política de Tratamiento y Protección de Datos Personales. En CAPITÁN BARBAS® nos comprometemos a proteger la privacidad de nuestros usuarios y clientes de acuerdo con la ley vigente en Colombia.`
+    content: `Tu presentación de información personal a través del sitio se rige por nuestra Política de Tratamiento y Protección de Datos Personales. En STYLEHUB® nos comprometemos a proteger la privacidad de nuestros usuarios y clientes de acuerdo con la ley vigente en Colombia.`
   }
 };
 

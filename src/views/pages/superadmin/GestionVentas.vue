@@ -2,11 +2,17 @@
 import { ref, computed, onMounted } from 'vue';
 import { useVentaStore, EstadoVenta, type Venta } from '@/stores/venta';
 import { useSuperAdminStore } from '@/stores/superadmin';
-import { useProductoStore } from '@/stores/producto'; // Added import for producto store
+import { useProductoStore } from '@/stores/producto';
+import { useAuthStore } from '@/stores/auth';
+
+const authStore = useAuthStore();
+const isAdmin = computed(() => {
+  return authStore.user && (authStore.user as any).Role === 'administrador';
+});
 
 const ventaStore = useVentaStore();
 const superAdminStore = useSuperAdminStore();
-const productosStore = useProductoStore(); // Added instance for producto store
+const productosStore = useProductoStore();
 
 const search = ref('');
 const fechaInicio = ref('');
@@ -235,7 +241,7 @@ const filtrar = async () => {
 
         <template v-slot:item.actions="{ item }">
           <v-btn color="primary" variant="text" size="small" @click="verDetalle(item)">
-            Ver / Editar
+            {{ isAdmin ? 'Ver / Editar' : 'Ver' }}
           </v-btn>
         </template>
       </v-data-table>
@@ -271,20 +277,28 @@ const filtrar = async () => {
               
               <v-divider class="my-4"></v-divider>
               
-              <h3 class="text-subtitle-1 font-weight-bold mb-4">Gestión de Estado</h3>
-              <v-select
-                v-model="nuevoEstado"
-                :items="estadosVenta"
-                label="Estado de la Venta"
-                variant="outlined"
-                density="compact"
-              ></v-select>
-              
-              <div class="d-flex flex-column gap-2 mt-2">
-                <div class="text-caption text-grey">
-                  Nota: Al cambiar a 'CANCELADA', se restaurará el stock automáticamente.
+              <template v-if="isAdmin">
+                <h3 class="text-subtitle-1 font-weight-bold mb-4">Gestión de Estado</h3>
+                <v-select
+                  v-model="nuevoEstado"
+                  :items="estadosVenta"
+                  label="Estado de la Venta"
+                  variant="outlined"
+                  density="compact"
+                ></v-select>
+                
+                <div class="d-flex flex-column gap-2 mt-2">
+                  <div class="text-caption text-grey">
+                    Nota: Al cambiar a 'CANCELADA', se restaurará el stock automáticamente.
+                  </div>
                 </div>
-              </div>
+              </template>
+              <template v-else>
+                <h3 class="text-subtitle-1 font-weight-bold mb-4">Estado Actual</h3>
+                <v-chip :color="getEstadoColor(selectedVenta.estado)" size="small" class="font-weight-bold mb-4">
+                  {{ selectedVenta.estado === 'ENTREGADA' ? 'ENTREGADA' : (selectedVenta.estado === 'PAGADA' ? 'PAGADA / RETIRADA' : selectedVenta.estado) }}
+                </v-chip>
+              </template>
             </v-col>
 
             <!-- Productos -->
@@ -315,8 +329,19 @@ const filtrar = async () => {
                       </div>
                     </td>
                     <td class="text-center">{{ detalle.cantidad }}</td>
-                    <td class="text-right">{{ formatCurrency(detalle.precioUnitario) }}</td>
-                    <td class="text-right font-weight-bold">{{ formatCurrency(detalle.subtotal) }}</td>
+                    <td class="text-right">
+                      <template v-if="detalle.en_oferta">
+                        <div class="d-flex flex-column align-end">
+                          <v-chip size="x-small" color="green" variant="flat" prepend-icon="mdi-sale" class="mb-1">OFERTA</v-chip>
+                          <span class="font-weight-bold text-green-darken-2">{{ formatCurrency(detalle.precioUnitario) }}</span>
+                          <span class="text-caption text-grey text-decoration-line-through">{{ formatCurrency(detalle.precio_original) }}</span>
+                        </div>
+                      </template>
+                      <template v-else>
+                        {{ formatCurrency(detalle.precioUnitario) }}
+                      </template>
+                    </td>
+                    <td class="text-right font-weight-bold" :class="detalle.en_oferta ? 'text-green-darken-2' : ''">{{ formatCurrency(detalle.subtotal) }}</td>
                   </tr>
                 </tbody>
                 <tfoot class="bg-grey-lighten-4"> 
@@ -339,6 +364,7 @@ const filtrar = async () => {
           <v-spacer></v-spacer>
           <v-btn variant="text" @click="detalleDialog = false">Cerrar</v-btn>
           <v-btn 
+            v-if="isAdmin"
             color="primary" 
             prepend-icon="mdi-content-save"
             @click="guardarCambioEstado"

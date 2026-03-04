@@ -23,8 +23,7 @@ import PaginaPrincipal from '@/views/pages/PaginaPrincipal.vue';
 import DashboardSuperAdmin from '@/views/pages/superadmin/DashboardSuperAdmin.vue';
 import GestionUsuarios from '@/views/pages/superadmin/GestionUsuarios.vue';
 import GestionVentas from '@/views/pages/superadmin/GestionVentas.vue';
-// Nueva importación para proveedores
-import GestionProveedores from '@/views/pages/superadmin/GestionProveedores.vue';
+import GestionProveedores from '@/views/pages/administrador/GestionProveedores.vue';
 
 const MainRoutes = {
   path: '/dashboard',
@@ -237,20 +236,8 @@ const MainRoutes = {
       component: DashboardSuperAdmin, // Reutilizamos el dashboard por ahora
       meta: { requiresAuth: true, requiresSuperAdmin: true }
     },
-    // Nueva ruta para Gestión de Proveedores (al final, como pediste)
-    {
-      path: '/superadmin/proveedores',
-      name: 'GestionProveedores',
-      component: GestionProveedores,
-      meta: { requiresAuth: true, requiresSuperAdmin: true }
-    },
-    // Compras - SuperAdmin
-    {
-      path: '/superadmin/compras/nueva',
-      name: 'NuevaCompraSuper',
-      component: () => import('@/views/pages/superadmin/GestionCompras.vue'),
-      meta: { requiresAuth: true, requiresSuperAdmin: true }
-    },
+    // Eliminamos las rutas operativas de Compras y Proveedores para SuperAdmin 
+    // ya que no debería crear compras ni gestionar proveedores.
     {
       path: '/superadmin/compras/historial',
       name: 'HistorialComprasSuper',

@@ -7,7 +7,48 @@
                 </v-col>
                 <v-col cols="12" md="6">
                     <h3 class="titulodialog">{{ productoSeleccionado?.nombre }}</h3>
-                    <p class="resumenproduc"> {{ productoSeleccionado?.resumen }} </p>
+                    
+                    <div class="precio-section my-3" v-if="productoSeleccionado">
+                        <template v-if="productoSeleccionado.en_oferta">
+                            <v-alert
+                                border="start"
+                                border-color="success"
+                                elevation="2"
+                                color="green-lighten-5"
+                                class="mb-3 pr-2 py-2"
+                            >
+                                <div class="d-flex align-center justify-space-between w-100">
+                                    <div>
+                                        <div class="d-flex align-center">
+                                            <v-icon color="success" class="mr-2">mdi-sale</v-icon>
+                                            <span class="text-subtitle-2 font-weight-bold text-success text-uppercase">
+                                                {{ productoSeleccionado.dias_oferta || 'OFERTA ESPECIAL' }}
+                                            </span>
+                                        </div>
+                                        <div class="text-caption text-grey-darken-1 mt-1" v-if="productoSeleccionado.informacion_oferta">
+                                            {{ productoSeleccionado.informacion_oferta }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </v-alert>
+                            <div class="d-flex align-end gap-3 mb-2">
+                                <span class="text-h4 font-weight-black text-green-darken-3">
+                                    ${{ Number(productoSeleccionado.precio_oferta).toLocaleString() }}
+                                </span>
+                                <span class="text-h6 text-decoration-line-through text-grey-darken-1 mb-1">
+                                    ${{ Number(productoSeleccionado.precio_venta).toLocaleString() }}
+                                </span>
+                            </div>
+                        </template>
+                        <template v-else>
+                            <div class="text-h4 font-weight-bold text-primary mb-3">
+                                ${{ Number(productoSeleccionado?.precio_venta).toLocaleString() }}
+                            </div>
+                        </template>
+                    </div>
+
+                    <p class="resumenproduc text-body-1 text-grey-darken-2"> {{ productoSeleccionado?.descripcion || productoSeleccionado?.resumen }} </p>
+                    <v-divider class="my-3"></v-divider>
                     <div class="detallesdelproduc">
                         <h4>Ingredientes</h4>
                             <p> {{ productoSeleccionado?.ingredientes }} </p> 

@@ -1,20 +1,7 @@
 <script setup lang="ts">
 import { shallowRef } from 'vue';
 
-const footerLink = shallowRef([
-  {
-    title: 'Home',
-    url: 'https://berrydashboard.io/vue/free'
-  },
-  {
-    title: 'Documentation',
-    url: 'https://codedthemes.gitbook.io/berry-vuetify/'
-  },
-  {
-    title: 'Support',
-    url: 'https://codedthemes.support-hub.io/'
-  }
-]);
+const footerLink = shallowRef([]);
 </script>
 <template>
   <v-footer class="px-0 footer mt-2">

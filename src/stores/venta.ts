@@ -20,6 +20,8 @@ export interface DetalleVenta {
   cantidad: number;
   precioUnitario: number;
   subtotal: number;
+  en_oferta?: boolean;
+  precio_original?: number | null;
 }
 
 export interface Venta {

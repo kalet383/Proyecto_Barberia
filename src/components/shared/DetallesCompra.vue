@@ -17,11 +17,28 @@
                                     <v-avatar size="80">
                                         <v-img :src="item.img" alt="PRODUCTO"></v-img>
                                     </v-avatar>
-                                    <span><strong>{{ item.nombre }}</strong></span>
+                                    <div>
+                                        <strong>{{ item.nombre }}</strong>
+                                        <div v-if="item.en_oferta" class="d-flex align-center gap-1 mt-1">
+                                            <v-chip size="x-small" color="green" variant="flat" prepend-icon="mdi-sale">OFERTA</v-chip>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            <template #item.precio="{ item }">
+                                <div>
+                                    <span class="font-weight-bold" :class="item.en_oferta ? 'text-green-darken-2' : ''">
+                                        ${{ Number(item.precio).toLocaleString() }}
+                                    </span>
+                                    <div v-if="item.en_oferta" class="text-caption text-grey text-decoration-line-through">
+                                        ${{ Number(item.precio_original).toLocaleString() }}
+                                    </div>
                                 </div>
                             </template>
                             <template #item.subtotal="{ item }">
-                                ${{ (item.precio_venta * item.cantidad).toLocaleString() }}
+                                <span class="font-weight-bold" :class="item.en_oferta ? 'text-green-darken-2' : ''">
+                                    ${{ (Number(item.precio) * item.cantidad).toLocaleString() }}
+                                </span>
                             </template>
                         </v-data-table>
                     </v-col>

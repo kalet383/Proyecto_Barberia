@@ -109,12 +109,20 @@
             <div class="mb-4">
               <div class="text-subtitle-2 text-grey mb-2">Productos:</div>
               <div v-for="(detalle, index) in venta.detalles" :key="index" class="mb-2">
-                <div class="d-flex justify-space-between">
+                <div class="d-flex justify-space-between align-center">
                   <span>
                     <strong>{{ detalle.producto?.nombre }}</strong> 
                     x {{ detalle.cantidad }}
+                    <v-chip v-if="detalle.en_oferta" size="x-small" color="green" variant="flat" prepend-icon="mdi-sale" class="ml-1">OFERTA</v-chip>
                   </span>
-                  <span class="text-grey">${{ detalle.subtotal.toLocaleString() }}</span>
+                  <div class="text-right">
+                    <span :class="detalle.en_oferta ? 'text-green-darken-2 font-weight-bold' : 'text-grey'">
+                      ${{ Number(detalle.subtotal).toLocaleString() }}
+                    </span>
+                    <div v-if="detalle.en_oferta" class="text-caption text-grey text-decoration-line-through">
+                      Normal: ${{ (Number(detalle.precio_original) * detalle.cantidad).toLocaleString() }}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
