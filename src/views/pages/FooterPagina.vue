@@ -29,8 +29,8 @@
               <a href="#" class="social-icon" aria-label="Instagram">
                 <i class="fab fa-instagram"></i>
               </a>
-              <a href="#" class="social-icon" aria-label="Twitter">
-                <i class="fab fa-twitter"></i>
+              <a href="#" class="social-icon" aria-label="X">
+                <i class="fab fa-x-twitter"></i>
               </a>
               <a href="#" class="social-icon" aria-label="TikTok">
                 <i class="fab fa-tiktok"></i>

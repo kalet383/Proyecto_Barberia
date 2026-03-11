@@ -134,7 +134,7 @@
     const serviciosPorCategoria = computed(() => {
         const agrupados = {}
         categoriasOrdenadas.value.forEach(cat => {
-            agrupados[cat.id] = ServicioStore.services.filter(
+            agrupados[cat.id] = ServicioStore.allPublishedServices.filter(
                 servicio => servicio.categoria?.id === cat.id
             )
         })
@@ -214,11 +214,19 @@
         if (categoriasOrdenadas.value.length > 0) {
             categoriaActiva.value = categoriasOrdenadas.value[0].id
         }
-
-        if (ReservaStore.serviciosSeleccionados.length > 0) {
-            serviciosSeleccionados.value = [...ReservaStore.serviciosSeleccionados]
-        }
     })
+
+    // Listen to store changes in case the modal doesn't remount
+    watch(() => ReservaStore.serviciosSeleccionados, (newVal) => {
+        // Only update if they are actually different
+        if (JSON.stringify(serviciosSeleccionados.value) !== JSON.stringify(newVal)) {
+            serviciosSeleccionados.value = [...newVal];
+            
+            // Re-emit immediately so the button state calculates
+            const habilitarBtnenServicio = serviciosSeleccionados.value.length > 0;
+            emit('estado-servicio-siguiente', habilitarBtnenServicio);
+        }
+    }, { immediate: true, deep: true })
 </script>
 
 <style scoped>

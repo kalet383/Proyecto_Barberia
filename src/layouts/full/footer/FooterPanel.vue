@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { shallowRef } from 'vue';
 
-const footerLink = shallowRef([]);
+interface FooterLink {
+  title: string;
+  url: string;
+}
+
+const footerLink = shallowRef<FooterLink[]>([]);
 </script>
 <template>
   <v-footer class="px-0 footer mt-2">

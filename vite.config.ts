@@ -28,10 +28,22 @@ export default defineConfig({
     }
   },
   build: {
-    chunkSizeWarningLimit: 1024 * 1024 // Set the limit to 1 MB
+    chunkSizeWarningLimit: 1024 * 1024
   },
   optimizeDeps: {
     exclude: ['vuetify'],
     entries: ['./src/**/*.vue']
+  },
+  server: {
+    proxy: {
+      '/imagenes/servicios': {
+        target: 'http://localhost:3000',
+        changeOrigin: true
+      },
+      '/videos': {
+        target: 'http://localhost:3000',
+        changeOrigin: true
+      }
+    }
   }
 });

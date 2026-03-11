@@ -42,6 +42,7 @@
                         <v-btn color="warning" size="small" @click="openOfertaDialog(producto)">
                             {{ producto.en_oferta ? 'Config. Oferta' : 'Ofertar' }}
                         </v-btn>
+                        <v-btn color="info" size="small" @click="openEditDialog(producto)">Editar</v-btn>
                     </v-card-actions>
                 </v-card>
 
@@ -153,6 +154,32 @@
             </v-card>
         </v-dialog>
 
+        <!-- Dialog para Editar producto (incluye Imagen como Enlace) -->
+        <v-dialog v-model="showEditDialog" max-width="600">
+            <v-card>
+                <v-card-title>Editar Producto</v-card-title>
+                <v-card-text>
+                    <v-form ref="editFormRef">
+                        <v-text-field label="Nombre del producto" v-model="editForm.nombre" :rules="[v => !!v || 'El nombre es requerido']" required variant="outlined" class="mb-3" />
+                        <v-textarea label="Descripción del producto" v-model="editForm.descripcion" :rules="[v => !!v || 'La descripción es requerida']" auto-grow required rows="2" variant="outlined" class="mb-3" />
+                        <v-text-field label="Precio de venta" v-model.number="editForm.precio_venta" type="number" prefix="$" step="0.01" :rules="[v => !!v || 'El precio es requerido', v => (v && !isNaN(Number(v))) || 'El precio debe ser un número']" required variant="outlined" class="mb-3" />
+                        <v-text-field label="Enlace de la Imagen (URL)" v-model="editForm.imagenUrl" hint="Pega el enlace web de la imagen del producto" placeholder="https://..." persistent-hint required variant="outlined" class="mb-3" />
+                        
+                        <div class="mb-3 d-flex flex-column align-center text-caption text-grey">
+                            <span>Previsualización de Imagen:</span>
+                            <v-img v-if="editForm.imagenUrl" :src="editForm.imagenUrl" max-height="150" class="mt-2 rounded" cover></v-img>
+                            <span v-else class="mt-1">Sin imagen referenciada</span>
+                        </div>
+                    </v-form>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn text @click="showEditDialog = false">Cancelar</v-btn>
+                    <v-btn color="primary" @click="confirmEdit" :loading="savingEdit">Guardar Cambios</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
         <!-- Tabla de control de publicaciones -->
         <v-card class="mt-6">
             <v-card-title>Control de publicaciones</v-card-title>
@@ -208,6 +235,18 @@
         informacion_oferta: ''
     });
 
+    // Edit State
+    const showEditDialog = ref(false);
+    const savingEdit = ref(false);
+    const selectedEditProduct = ref(null);
+    const editFormRef = ref(null);
+    const editForm = ref({
+        nombre: '',
+        descripcion: '',
+        precio_venta: 0,
+        imagenUrl: '',
+    });
+
     const openPublishDialog = (producto) => {
         selectedProduct.value = producto;
         
@@ -227,6 +266,38 @@
             informacion_oferta: producto.informacion_oferta || ''
         };
         showOfertaDialog.value = true;
+    };
+
+    const openEditDialog = (producto) => {
+        selectedEditProduct.value = producto;
+        editForm.value = {
+            nombre: producto.nombre || '',
+            descripcion: producto.descripcion || '',
+            precio_venta: Number(producto.precio_venta) || 0,
+            imagenUrl: producto.imagenUrl || '',
+        };
+        showEditDialog.value = true;
+    };
+
+    const confirmEdit = async () => {
+        if (!selectedEditProduct.value) return;
+        
+        const { valid } = await editFormRef.value.validate();
+        if (!valid) return;
+
+        savingEdit.value = true;
+        try {
+            const payload = { ...editForm.value };
+            await productoStore.updateProducto(selectedEditProduct.value.id, payload);
+            showEditDialog.value = false;
+            notify('Producto actualizado exitosamente');
+            await productoStore.getProductos();
+        } catch (e) {
+            console.error('Error al editar producto', e);
+            notify('Error al guardar cambios del producto');
+        } finally {
+            savingEdit.value = false;
+        }
     };
 
     const confirmOferta = async () => {
