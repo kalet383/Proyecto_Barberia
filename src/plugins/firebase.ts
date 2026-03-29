@@ -3,12 +3,12 @@ import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBnXFUb9dWokSw1NW401el2dHYUZj0TTHE",
-  authDomain: "barberiaweb-d116e.firebaseapp.com",
-  projectId: "barberiaweb-d116e",
-  storageBucket: "barberiaweb-d116e.firebasestorage.app",
-  messagingSenderId: "7123720182",
-  appId: "1:7123720182:web:68dbe4757406f46f4f19d7"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 // Initialize Firebase
