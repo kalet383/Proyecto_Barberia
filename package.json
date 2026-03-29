@@ -24,6 +24,7 @@
     "axios-mock-adapter": "2.1.0",
     "chance": "1.1.12",
     "date-fns": "4.1.0",
+    "firebase": "^12.11.0",
     "leaflet": "^1.9.4",
     "leaflet-control-geocoder": "^3.3.1",
     "leaflet-routing-machine": "^3.2.12",

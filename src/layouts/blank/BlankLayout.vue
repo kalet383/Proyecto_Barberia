@@ -1,9 +1,17 @@
-// ===============================|| Blank Layout ||=============================== //
 <template>
-  <v-app>
+  <div class="blank-layout">
     <RouterView />
-  </v-app>
+  </div>
 </template>
+
 <script setup lang="ts">
 import { RouterView } from 'vue-router';
 </script>
+
+<style scoped>
+.blank-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+</style>

@@ -1,568 +1,389 @@
 <template>
-    <v-container>
-        <div class="d-flex justify-space-between align-center mb-6">
-            <h2 class="text-h4 font-weight-bold">Gestión de Servicios</h2>
-            <v-chip color="primary" variant="tonal">
-                {{ serviceStore.services.length }} Servicios Totales
-            </v-chip>
+  <v-container>
+    <!-- ═══════════════════════════════════════
+         HEADER
+    ═══════════════════════════════════════ -->
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 24px;">
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #ee6f38, #ff9a6c); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; box-shadow: 0 4px 12px rgba(238,111,56,0.25);">
+          <i class="fas fa-scissors"></i>
         </div>
+        <div>
+          <h2 :style="{ fontSize: '1.25rem', fontWeight: '800', color: txtPrimary, margin: 0 }">Gestión de Servicios</h2>
+          <p :style="{ fontSize: '0.82rem', color: txtSecondary, margin: 0 }">Administra los servicios de tu barbería</p>
+        </div>
+      </div>
+      <span :style="{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '5px 14px', borderRadius: '8px', background: isDark ? 'rgba(230,81,0,0.15)' : '#fff3e0', color: isDark ? '#ffb74d' : '#e65100', fontSize: '0.82rem', fontWeight: '700' }">
+        <i class="fas fa-layer-group" style="font-size: 10px;"></i>
+        {{ serviceStore.services.length }} servicios
+      </span>
+    </div>
 
-        <!-- Loading & Error -->
-        <v-progress-linear v-if="serviceStore.loading" indeterminate color="primary" class="mb-4" />
-        <v-alert v-if="serviceStore.error" type="error" closable class="mb-4" @click:close="serviceStore.error = null">
-            {{ serviceStore.error }}
-        </v-alert>
+    <!-- Loading -->
+    <v-progress-linear v-if="serviceStore.loading" indeterminate color="#ee6f38" class="mb-4" rounded />
 
-        <!-- No hay servicios -->
-        <v-alert v-if="!serviceStore.loading && serviceStore.services.length === 0" type="info" variant="tonal" class="mb-4">
-            No hay servicios registrados. Comienza creando uno nuevo.
-        </v-alert>
+    <!-- Error -->
+    <v-alert
+      v-if="serviceStore.error"
+      type="error"
+      variant="tonal"
+      closable
+      rounded="lg"
+      class="mb-4"
+      @click:close="serviceStore.error = null"
+    >
+      {{ serviceStore.error }}
+    </v-alert>
 
-        <!-- Grid de Servicios -->
-        <v-row>
-            <v-col v-for="servicio in sortedServices" :key="servicio.id" cols="12" md="6" lg="4">
-                <v-card class="service-admin-card">
-                    <!-- Miniatura: video o imagen -->
-                    <div class="card-media-preview">
-                        <video v-if="servicio.videoUrl && isValidUrl(servicio.videoUrl)" class="card-preview-video" muted autoplay loop playsinline>
-                            <source :src="servicio.videoUrl" type="video/mp4" />
-                        </video>
-                        <v-img v-else-if="servicio.imagenUrl && isValidUrl(servicio.imagenUrl)"
-                            :src="servicio.imagenUrl"
-                            height="180"
-                            cover
-                            class="w-100"
-                        />
-                        <div v-else class="card-media-empty d-flex flex-column align-center justify-center">
-                            <v-icon size="48" color="grey-darken-1">mdi-image-off-outline</v-icon>
-                            <span class="text-caption text-grey mt-2">Sin imagen/video</span>
-                        </div>
-                        <div class="card-name-overlay">{{ servicio.nombre }}</div>
-                    </div>
+    <!-- Sin servicios -->
+    <div
+      v-if="!serviceStore.loading && serviceStore.services.length === 0"
+      :style="{ textAlign: 'center', padding: '48px 20px', background: headerBg, border: `1px dashed ${cardBorder}`, borderRadius: '12px', marginBottom: '16px' }"
+    >
+      <div :style="{ width: '64px', height: '64px', borderRadius: '50%', background: isDark ? 'rgba(238,111,56,0.1)' : '#fff3e0', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', fontSize: '24px', color: '#ee6f38' }">
+        <i class="fas fa-scissors"></i>
+      </div>
+      <p :style="{ fontWeight: '700', color: txtPrimary, margin: '0 0 4px' }">Sin servicios registrados</p>
+      <p :style="{ fontSize: '0.82rem', color: txtSecondary, margin: 0 }">Comienza creando tu primer servicio</p>
+    </div>
 
-                    <v-card-text class="pt-3">
-                        <div class="d-flex gap-2 mb-2 flex-wrap">
-                            <v-chip size="small" color="blue-grey" variant="tonal">
-                                {{ servicio.categoria?.nombre || 'Sin Categoria' }}
-                            </v-chip>
-                            <v-chip v-if="servicio.videoUrl && isValidUrl(servicio.videoUrl)" size="small" color="purple" variant="tonal">
-                                <v-icon start size="12">mdi-video</v-icon> Video
-                            </v-chip>
-                            <v-chip v-else-if="servicio.imagenUrl && isValidUrl(servicio.imagenUrl)" size="small" color="teal" variant="tonal">
-                                <v-icon start size="12">mdi-image</v-icon> Imagen
-                            </v-chip>
-                        </div>
+    <!-- ═══════════════════════════════════════
+         GRID DE SERVICIOS
+    ═══════════════════════════════════════ -->
+    <v-row>
+      <v-col v-for="servicio in sortedServices" :key="servicio.id" cols="10" sm="6" lg="4">
+        <v-card class="service-card" rounded="lg" elevation="0" :style="{ background: cardBg, border: `1px solid ${cardBorder}` }">
+          <!-- Media preview -->
+          <div class="card-media">
+            <video
+              v-if="servicio.videoUrl && isValidUrl(servicio.videoUrl)"
+              class="media-content"
+              muted autoplay loop playsinline
+            >
+              <source :src="servicio.videoUrl" type="video/mp4" />
+            </video>
+            <v-img
+              v-else-if="servicio.imagenUrl && isValidUrl(servicio.imagenUrl)"
+              :src="servicio.imagenUrl"
+              height="180"
+              cover
+            />
+            <div v-else class="media-empty" :style="{ background: isDark ? '#0d111b' : '#f5f5f5', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }">
+              <i class="fas fa-image" style="font-size: 32px; color: #ccc;"></i>
+              <span style="font-size: 0.75rem; color: #aaa; margin-top: 8px;">Sin multimedia</span>
+            </div>
 
-                        <p class="text-body-2 text-truncate-2 mb-3">{{ servicio.descripcion }}</p>
-                        
-                        <div class="d-flex justify-space-between align-center border-t pt-2">
-                            <div class="text-subtitle-1 font-weight-bold color-primary">
-                                ${{ Number(servicio.precio).toLocaleString() }}
-                            </div>
-                            <div class="text-caption text-grey">
-                                <v-icon size="14">mdi-clock-outline</v-icon> {{ servicio.duracionAprox }}
-                            </div>
-                        </div>
-                    </v-card-text>
+            <!-- Overlay nombre -->
+            <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 24px 14px 10px; background: linear-gradient(transparent, rgba(0,0,0,0.7));">
+              <span style="color: white; font-weight: 700; font-size: 0.92rem; line-height: 1.3;">{{ servicio.nombre }}</span>
+            </div>
 
-                    <v-divider></v-divider>
+            <!-- Badge destacado -->
+            <div
+              v-if="servicio.destacado"
+              style="position: absolute; top: 10px; right: 10px; width: 32px; height: 32px; border-radius: 8px; background: #fff8e1; display: flex; align-items: center; justify-content: center; color: #f57f17; font-size: 14px; box-shadow: 0 2px 8px rgba(245,158,11,0.3); z-index: 2;"
+            >
+              <i class="fas fa-star"></i>
+            </div>
 
-                    <v-card-actions class="pa-3">
-                        <v-btn 
-                            :color="servicio.publicado ? 'error' : 'success'" 
-                            variant="flat"
-                            size="small"
-                            :prepend-icon="servicio.publicado ? 'mdi-eye-off' : 'mdi-eye'"
-                            :loading="togglingId === servicio.id"
-                            @click="togglePublicado(servicio)"
-                        >
-                            {{ servicio.publicado ? 'Despublicar' : 'Publicar' }}
-                        </v-btn>
+            <!-- Estado publicado -->
+            <span
+              :style="{
+                position: 'absolute', top: '10px', left: '10px', zIndex: 2,
+                display: 'inline-flex', alignItems: 'center', gap: '4px',
+                padding: '3px 10px', borderRadius: '6px',
+                fontSize: '0.65rem', fontWeight: '700',
+                background: servicio.publicado ? (isDark ? 'rgba(76,175,80,0.2)' : '#e8f5e9') : (isDark ? 'rgba(255,255,255,0.1)' : '#f5f5f5'),
+                color: servicio.publicado ? (isDark ? '#4caf50' : '#2e7d32') : (isDark ? '#9ca3af' : '#888'),
+              }"
+            >
+              <i :class="servicio.publicado ? 'fas fa-check-circle' : 'fas fa-circle'" style="font-size: 8px;"></i>
+              {{ servicio.publicado ? 'Publicado' : 'Borrador' }}
+            </span>
+          </div>
 
-                        <v-spacer></v-spacer>
+          <!-- Info -->
+          <div style="padding: 14px 14px 8px; flex: 1; display: flex; flex-direction: column;">
+            <!-- Tags -->
+            <div style="display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap;">
+              <!-- Categoría -->
+              <span :style="{ display: 'inline-flex', alignItems: 'center', gap: '3px', padding: '3px 8px', borderRadius: '4px', background: isDark ? 'rgba(230,81,0,0.15)' : '#fff3e0', color: isDark ? '#ffb74d' : '#e65100', fontSize: '0.62rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.3px' }">
+                <i class="fas fa-tag" style="font-size: 7px;"></i>
+                {{ servicio.categoria?.nombre || 'Sin categoría' }}
+              </span>
+            </div>
 
-                        <v-btn
-                            color="blue-darken-1"
-                            variant="flat"
-                            size="small"
-                            prepend-icon="mdi-pencil"
-                            class="mr-1"
-                            @click="editService(servicio)"
-                        >
-                            Editar
-                        </v-btn>
-                        <v-btn
-                            color="red-darken-1"
-                            variant="flat"
-                            size="small"
-                            prepend-icon="mdi-delete"
-                            @click="confirmDelete(servicio)"
-                        >
-                            Eliminar
-                        </v-btn>
-                    </v-card-actions>
-                </v-card>
+            <!-- Descripción -->
+            <p class="desc-truncate" :style="{ fontSize: '0.82rem', color: txtSecondary, lineHeight: '1.5', margin: '0 0 10px' }">
+              {{ servicio.descripcion }}
+            </p>
+
+            <!-- Precio y duración -->
+            <div :style="{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: `1px solid ${cardBorder}`, marginTop: 'auto' }">
+              <span style="font-size: 1.1rem; font-weight: 800; color: #ee6f38;">
+                ${{ (Number(servicio.precio) || 0).toLocaleString() }}
+              </span>
+              <span :style="{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '5px', background: isDark ? 'rgba(255,255,255,0.05)' : '#f5f5f5', color: txtSecondary, fontSize: '0.72rem', fontWeight: '600' }">
+                <i class="far fa-clock" style="font-size: 10px; color: #ee6f38;"></i>
+                {{ servicio.duracionAprox }}
+              </span>
+            </div>
+          </div>
+
+          <v-divider />
+
+          <!-- ACCIONES -->
+          <div style="padding: 10px 14px 14px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px;">
+            <span
+              :style="{
+                display: 'inline-flex', alignItems: 'center', gap: '5px',
+                padding: '5px 12px', borderRadius: '7px', cursor: 'pointer',
+                fontSize: '0.72rem', fontWeight: '700',
+                background: servicio.publicado ? (isDark ? 'rgba(244,67,54,0.1)' : '#ffebee') : (isDark ? 'rgba(76,175,80,0.1)' : '#e8f5e9'),
+                color: servicio.publicado ? (isDark ? '#ef5350' : '#c62828') : (isDark ? '#4caf50' : '#2e7d32'),
+                opacity: togglingId === servicio.id ? '0.5' : '1',
+              }"
+              @click="togglePublicado(servicio)"
+            >
+              <i :class="servicio.publicado ? 'fas fa-eye-slash' : 'fas fa-eye'" style="font-size: 10px;"></i>
+              {{ servicio.publicado ? 'Ocultar' : 'Publicar' }}
+            </span>
+
+            <!-- Botón Destacar (Estrella) -->
+            <span
+              :style="{
+                width: '32px', height: '32px', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: servicio.publicado ? 'pointer' : 'not-allowed',
+                background: servicio.destacado ? (isDark ? 'rgba(245,158,11,0.15)' : '#fff8e1') : (isDark ? 'rgba(255,255,255,0.05)' : '#f5f5f5'),
+                color: servicio.destacado ? (isDark ? '#ffb74d' : '#f57f17') : (isDark ? '#6b7280' : '#9e9e9e'),
+                transition: 'all 0.2s ease',
+                border: servicio.destacado ? `1px solid ${isDark ? 'rgba(245,158,11,0.3)' : '#ffe082'}` : '1px solid transparent',
+                opacity: servicio.publicado ? '1' : '0.4'
+              }"
+              @click="toggleDestacado(servicio)"
+              :title="servicio.publicado ? 'Destacar servicio' : 'Debes publicar el servicio primero'"
+            >
+              <i :class="servicio.destacado ? 'fas fa-star' : 'far fa-star'" style="font-size: 12px;"></i>
+            </span>
+
+            <div style="flex: 1;"></div>
+
+            <span
+              :style="{ width: '30px', height: '30px', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: isDark ? 'rgba(30,136,229,0.1)' : '#e3f2fd', color: isDark ? '#42a5f5' : '#1565c0' }"
+              @click="editService(servicio)"
+              title="Editar"
+            >
+              <i class="fas fa-pen" style="font-size: 12px;"></i>
+            </span>
+          </div>
+        </v-card>
+      </v-col>
+    </v-row>
+    <!-- Snackbar para notificaciones local -->
+    <v-snackbar v-model="snackbar" :color="snackbarColor" :timeout="3000" rounded="lg">
+      {{ snackbarText }}
+    </v-snackbar>
+  </v-container>
+
+  <!-- DIALOGS -->
+  <v-dialog v-model="editDialog" max-width="600" persistent>
+    <v-card rounded="lg" :style="{ background: cardBg, border: `1px solid ${cardBorder}` }">
+      <div :style="{ padding: '18px 20px', borderBottom: `1px solid ${cardBorder}`, background: headerBg, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(238,111,56,0.1); color: #ee6f38; display: flex; align-items: center; justify-content: center; font-size: 14px;">
+            <i class="fas fa-edit"></i>
+          </div>
+          <span :style="{ fontSize: '1rem', fontWeight: '700', color: txtPrimary }">Editar Servicio</span>
+        </div>
+        <v-btn icon variant="text" size="small" @click="editDialog = false" :color="txtSecondary"><i class="fas fa-times"></i></v-btn>
+      </div>
+
+      <v-card-text class="pa-5">
+        <v-form v-model="editValid" @submit.prevent="saveService">
+          <v-row dense>
+            <v-col cols="12">
+              <v-text-field
+                label="Nombre *" v-model="currentService.nombre"
+                :rules="[v => !!v || 'Campo requerido']"
+                variant="outlined" density="comfortable" rounded="lg"
+              />
             </v-col>
-        </v-row>
+            <v-col cols="12">
+              <v-textarea
+                label="Descripción *" v-model="currentService.descripcion"
+                :rules="[v => !!v || 'Campo requerido']"
+                variant="outlined" density="comfortable" rounded="lg" rows="2" auto-grow
+              />
+            </v-col>
+            <v-col cols="12" sm="6">
+              <v-text-field
+                label="Precio *" v-model.number="currentService.precio"
+                type="number" prefix="$"
+                variant="outlined" density="comfortable" rounded="lg"
+              />
+            </v-col>
+            <v-col cols="12" sm="6">
+              <v-text-field
+                label="Duración *" v-model="currentService.duracionAprox"
+                placeholder="00:30"
+                variant="outlined" density="comfortable" rounded="lg"
+              />
+            </v-col>
+            <v-col cols="12">
+              <v-select
+                label="Categoría" v-model="currentService.categoriaId"
+                :items="categoriaStore.categoriasServicio"
+                item-title="nombre" item-value="id"
+                variant="outlined" density="comfortable" rounded="lg"
+              />
+            </v-col>
+          </v-row>
+        </v-form>
+      </v-card-text>
 
-        <!-- ============================================================
-             Dialog de Edición
-        ============================================================ -->
-        <v-dialog v-model="editDialog" max-width="680px" persistent>
-            <v-card rounded="xl">
-                <v-card-title class="pa-5 text-h5 font-weight-bold d-flex align-center">
-                    <v-icon start color="blue">mdi-pencil</v-icon>
-                    Editar Servicio
-                    <v-spacer></v-spacer>
-                    <v-btn icon="mdi-close" variant="text" @click="editDialog = false" :disabled="loadingAction"></v-btn>
-                </v-card-title>
-                <v-divider></v-divider>
-                <v-card-text class="pa-5">
-                    <v-form ref="editForm" v-model="editValid">
-                        <v-row>
-                            <v-col cols="12" md="6">
-                                <v-text-field label="Nombre" v-model="currentService.nombre" required variant="outlined" density="compact" />
-                            </v-col>
-                            <v-col cols="12" md="6">
-                                <v-select label="Categoría" v-model="currentService.categoriaId" :items="categorias" item-title="nombre" item-value="id" variant="outlined" density="compact" />
-                            </v-col>
-                            <v-col cols="12">
-                                <v-textarea label="Descripción" v-model="currentService.descripcion" rows="2" variant="outlined" density="compact" />
-                            </v-col>
-                            <v-col cols="12" md="6">
-                                <v-text-field label="Precio" v-model.number="currentService.precio" type="number" prefix="$" variant="outlined" density="compact" />
-                            </v-col>
-                            <v-col cols="12" md="6">
-                                <v-text-field label="Duración (HH:MM:SS)" v-model="currentService.duracionAprox" variant="outlined" density="compact" />
-                            </v-col>
+      <v-divider />
 
+      <v-card-actions class="pa-4">
+        <v-spacer />
+        <v-btn variant="text" :color="txtSecondary" @click="editDialog = false">Cancelar</v-btn>
+        <span
+          :style="{
+            padding: '8px 24px', borderRadius: '8px', cursor: editValid && !loadingAction ? 'pointer' : 'not-allowed',
+            fontSize: '0.88rem', fontWeight: '700',
+            background: editValid && !loadingAction ? 'linear-gradient(135deg, #ee6f38, #ff9a6c)' : '#f5f5f5',
+            color: editValid && !loadingAction ? 'white' : '#bdbdbd',
+            transition: 'all 0.2s ease',
+          }"
+          @click="editValid && !loadingAction && saveService()"
+        >
+          {{ loadingAction ? 'Guardando...' : 'Guardar Cambios' }}
+        </span>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 
-                            <!-- Media selector -->
-                            <v-col cols="12">
-                                <p class="text-subtitle-2 font-weight-bold mb-1">📎 Media del servicio <span class="text-grey text-caption">(opcional)</span></p>
-                                <p class="text-caption text-grey mb-3">Elige imagen <strong>O</strong> video. Solo uno por servicio.</p>
-
-                                <v-btn-toggle v-model="mediaType" mandatory color="primary" variant="outlined" density="compact" class="mb-3">
-                                    <v-btn value="imagen" prepend-icon="mdi-image">Imagen</v-btn>
-                                    <v-btn value="video" prepend-icon="mdi-video">Video</v-btn>
-                                </v-btn-toggle>
-
-                                <!-- IMAGEN -->
-                                <div v-if="mediaType === 'imagen'">
-                                    <input ref="imgFileEdit" type="file" accept="image/*" style="display:none" @change="onImgFileEdit" />
-                                    <div v-if="!imgPreviewUrl" class="edit-drop-zone" @click="$refs.imgFileEdit.click()">
-                                        <v-icon size="40" color="grey">mdi-image-plus</v-icon>
-                                        <p class="text-body-2 text-grey mt-1">Haz clic para seleccionar una imagen</p>
-                                    </div>
-                                    <div v-else class="edit-preview-container">
-                                        <img :src="imgPreviewUrl" class="edit-preview-media" />
-                                        <div class="edit-preview-overlay">
-                                            <v-btn color="white" variant="text" size="small" prepend-icon="mdi-pencil" @click="$refs.imgFileEdit.click()">Cambiar</v-btn>
-                                            <v-btn color="error" variant="text" size="small" prepend-icon="mdi-delete" @click="clearEditImagen">Quitar</v-btn>
-                                        </div>
-                                        <v-chip class="edit-preview-badge" color="teal" size="small">Imagen</v-chip>
-                                    </div>
-                                </div>
-
-                                <!-- VIDEO -->
-                                <div v-if="mediaType === 'video'">
-                                    <input ref="videoFileEdit" type="file" accept="video/mp4,video/*" style="display:none" @change="onVideoFileEdit" />
-                                    <div v-if="!videoPreviewUrl" class="edit-drop-zone" @click="$refs.videoFileEdit.click()">
-                                        <v-icon size="40" color="grey">mdi-video-plus</v-icon>
-                                        <p class="text-body-2 text-grey mt-1">Haz clic para seleccionar un video</p>
-                                    </div>
-                                    <div v-else class="edit-preview-container">
-                                        <video :src="videoPreviewUrl" class="edit-preview-media" muted autoplay loop playsinline></video>
-                                        <div class="edit-preview-overlay">
-                                            <v-btn color="white" variant="text" size="small" prepend-icon="mdi-pencil" @click="$refs.videoFileEdit.click()">Cambiar</v-btn>
-                                            <v-btn color="error" variant="text" size="small" prepend-icon="mdi-delete" @click="clearEditVideo">Quitar</v-btn>
-                                        </div>
-                                        <v-chip class="edit-preview-badge" color="purple" size="small">Video</v-chip>
-                                    </div>
-                                </div>
-
-                                <!-- Progreso -->
-                                <div v-if="uploadingMedia" class="mt-3">
-                                    <v-progress-linear :model-value="uploadProgress" color="primary" rounded height="8" />
-                                    <p class="text-caption text-center text-primary mt-1">Subiendo archivo... {{ uploadProgress }}%</p>
-                                </div>
-                            </v-col>
-                        </v-row>
-                    </v-form>
-                </v-card-text>
-                <v-alert v-if="saveError" type="error" variant="tonal" class="mx-5 mb-2" density="compact">
-                    {{ saveError }}
-                </v-alert>
-                <v-divider></v-divider>
-                <v-card-actions class="pa-5">
-                    <v-spacer></v-spacer>
-                    <v-btn variant="text" @click="editDialog = false" :disabled="loadingAction">Cancelar</v-btn>
-                    <v-btn
-                        color="primary"
-                        variant="elevated"
-                        @click="saveEdit"
-                        :loading="loadingAction"
-                        :disabled="!editValid"
-                    >
-                        Guardar Cambios
-                    </v-btn>
-                </v-card-actions>
-            </v-card>
-        </v-dialog>
-
-        <!-- Dialog Confirmar Borrar -->
-        <v-dialog v-model="deleteDialog" max-width="400px">
-            <v-card class="pa-4 text-center">
-                <v-icon color="error" size="64" class="mb-4">mdi-alert-circle</v-icon>
-                <h3 class="text-h6 mb-2">¿Eliminar este servicio?</h3>
-                <p class="text-body-2 mb-6">Esta acción no se puede deshacer y podría afectar citas agendadas.</p>
-                <div class="d-flex gap-4 justify-center">
-                    <v-btn variant="text" @click="deleteDialog = false">Cancelar</v-btn>
-                    <v-btn color="error" @click="handleDelete" :loading="loadingAction">Eliminar</v-btn>
-                </div>
-            </v-card>
-        </v-dialog>
-    </v-container>
+  <!-- Delete Dialog -->
+  <v-dialog v-model="deleteDialog" max-width="400">
+    <v-card rounded="lg" :style="{ background: cardBg }">
+      <v-card-text class="pa-6 text-center">
+        <div style="width: 50px; height: 50px; border-radius: 50%; background: #ffebee; color: #c62828; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 20px;">
+          <i class="fas fa-trash"></i>
+        </div>
+        <h3 :style="{ color: txtPrimary, marginBottom: '8px' }">¿Eliminar servicio?</h3>
+        <p :style="{ color: txtSecondary, fontSize: '0.88rem', marginBottom: '24px' }">
+          Esta acción no se puede deshacer. Se eliminará el servicio "<strong>{{ currentService.nombre }}</strong>".
+        </p>
+        <div style="display: flex; gap: 10px;">
+          <v-btn block variant="text" :color="txtSecondary" @click="deleteDialog = false" style="flex: 1;">Cancelar</v-btn>
+          <v-btn block color="error" rounded="lg" @click="confirmDelete" :loading="loadingAction" style="flex: 1;" class="text-none">Eliminar</v-btn>
+        </div>
+      </v-card-text>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
-    import { ref, computed, onMounted } from 'vue';
-    import { useServiceStore } from '@/stores/services';
-    import { useCategoriaServicioStore } from '@/stores/CategoriaServicio';
-    import api from '@/plugins/axios';
+import { ref, computed, onMounted } from 'vue'
+import { useServiceStore } from '@/stores/services'
+import { useCategoriaServicioStore } from '@/stores/CategoriaServicio'
+import api from '@/plugins/axios'
+import { useCustomizerStore } from '@/stores/customizer';
 
-    const serviceStore = useServiceStore();
-    const categoriaStore = useCategoriaServicioStore();
+const serviceStore = useServiceStore()
+const categoriaStore = useCategoriaServicioStore()
+const customizer = useCustomizerStore();
+const isDark = computed(() => customizer.activeTheme === 'DarkTheme');
 
-    const editDialog = ref(false);
-    const deleteDialog = ref(false);
-    const editValid = ref(false);
-    const loadingAction = ref(false);
-    const uploadingMedia = ref(false);
-    const uploadProgress = ref(0);
-    const currentService = ref({});
-    const serviceToDelete = ref(null);
-    const togglingId = ref(null);
-    const saveError = ref('');
+// Adaptive Colors
+const txtPrimary = computed(() => isDark.value ? '#f3f4f6' : '#1a1a2e');
+const txtSecondary = computed(() => isDark.value ? '#9ca3af' : '#888');
+const cardBg = computed(() => isDark.value ? '#111827' : '#ffffff');
+const cardBorder = computed(() => isDark.value ? '#1f2937' : '#eee');
+const headerBg = computed(() => isDark.value ? '#161d2f' : '#fafafa');
 
-    // Media state
-    const mediaType = ref('imagen'); // 'imagen' | 'video'
-    const videoFile = ref(null);
-    const imgFile = ref(null);
-    const imgPreviewUrl = ref(null);
-    const videoPreviewUrl = ref(null);
+const editDialog = ref(false)
+const deleteDialog = ref(false)
+const editValid = ref(false)
+const loadingAction = ref(false)
+const currentService = ref({})
+const togglingId = ref(null)
 
-    const categorias = computed(() => categoriaStore.categoriasServicio);
+const snackbar = ref(false)
+const snackbarText = ref('')
+const snackbarColor = ref('success')
 
-    const sortedServices = computed(() => {
-        return [...serviceStore.services].sort((a, b) => b.id - a.id);
-    });
+const showHint = (msg, color = 'warning') => {
+  snackbarText.value = msg
+  snackbarColor.value = color
+  snackbar.value = true
+}
 
-    onMounted(async () => {
-        await serviceStore.getServices();
-        await categoriaStore.getCategoriasServicio();
-    });
+const sortedServices = computed(() => [...serviceStore.services].sort((a, b) => b.id - a.id))
 
-    // Helper: comprueba si la URL es una ruta real y no una base64 o nombre de archivo
-    function isValidUrl(url) {
-        if (!url) return false;
-        if (url.startsWith('data:')) return false;
-        if (url.startsWith('📁')) return false;
-        return true;
-    }
+onMounted(async () => {
+  await serviceStore.getServices()
+  await categoriaStore.getCategoriasServicio()
+})
 
-    const togglePublicado = async (servicio) => {
-        togglingId.value = servicio.id;
-        try {
-            await serviceStore.updateService(servicio.id, { publicado: !servicio.publicado });
-        } catch (error) {
-            console.error(error);
-        } finally {
-            togglingId.value = null;
-        }
-    };
+const isValidUrl = (url) => url && !url.startsWith('data:') && !url.startsWith('📁')
 
-    const editService = (servicio) => {
-        currentService.value = { ...servicio };
-        // Ensure categoriaId
-        if (servicio.categoria && !servicio.categoriaId) {
-            currentService.value.categoriaId = servicio.categoria.id;
-        }
-        // Determine media type based on existing data
-        if (isValidUrl(servicio.videoUrl)) {
-            mediaType.value = 'video';
-            videoPreviewUrl.value = servicio.videoUrl;
-        } else {
-            mediaType.value = 'imagen';
-            imgPreviewUrl.value = isValidUrl(servicio.imagenUrl) ? servicio.imagenUrl : null;
-        }
-        // Clear pending files
-        videoFile.value = null;
-        imgFile.value = null;
-        saveError.value = '';
-        editDialog.value = true;
-    };
+const togglePublicado = async (servicio) => {
+  togglingId.value = servicio.id
+  try {
+    await serviceStore.updateService(servicio.id, { publicado: !servicio.publicado })
+  } finally {
+    togglingId.value = null
+  }
+}
 
-    const onImgFileEdit = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        imgFile.value = file;
-        // Local blob preview
-        imgPreviewUrl.value = URL.createObjectURL(file);
-        currentService.value.imagenUrl = '';
-    };
+const toggleDestacado = async (servicio) => {
+  if (!servicio.publicado) {
+    showHint('Debes publicar el servicio antes de poder destacarlo', 'error')
+    return
+  }
+  try {
+    await serviceStore.updateService(servicio.id, { destacado: !servicio.destacado })
+    showHint(servicio.destacado ? 'Servicio ya no destacado' : '¡Servicio destacado con éxito!', 'success')
+  } catch (err) {
+    console.error('Error al destacar:', err)
+    showHint('Error al actualizar estado destacado', 'error')
+  }
+}
 
-    const clearEditImagen = () => {
-        if (imgPreviewUrl.value?.startsWith('blob:')) URL.revokeObjectURL(imgPreviewUrl.value);
-        imgPreviewUrl.value = null;
-        imgFile.value = null;
-    };
+const editService = (servicio) => {
+  currentService.value = { ...servicio }
+  editDialog.value = true
+}
 
-    const onVideoFileEdit = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        videoFile.value = file;
-        videoPreviewUrl.value = URL.createObjectURL(file);
-        currentService.value.videoUrl = '';
-    };
+const saveService = async () => {
+  loadingAction.value = true
+  try {
+    await serviceStore.updateService(currentService.value.id, {
+      nombre: currentService.value.nombre,
+      descripcion: currentService.value.descripcion,
+      precio: currentService.value.precio,
+      duracionAprox: currentService.value.duracionAprox,
+      categoriaId: currentService.value.categoriaId
+    })
+    editDialog.value = false
+  } finally {
+    loadingAction.value = false
+  }
+}
 
-    const clearEditVideo = () => {
-        if (videoPreviewUrl.value?.startsWith('blob:')) URL.revokeObjectURL(videoPreviewUrl.value);
-        videoPreviewUrl.value = null;
-        videoFile.value = null;
-    };
-
-    const uploadMedia = async (fileRaw) => {
-        uploadProgress.value = 0;
-        uploadingMedia.value = true;
-
-        try {
-            const formData = new FormData();
-            formData.append('file', fileRaw);
-
-            const response = await api.post('/servicio/upload-media', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-                onUploadProgress: (e) => {
-                    if (e.total) {
-                        uploadProgress.value = Math.round((e.loaded / e.total) * 100);
-                    }
-                },
-            });
-
-            return response.data.url; // e.g. /imagenes/servicios/abc123.jpg
-        } finally {
-            uploadingMedia.value = false;
-            uploadProgress.value = 0;
-        }
-    };
-
-    const saveEdit = async () => {
-        loadingAction.value = true;
-        try {
-            // Build a clean payload with only DTO-accepted fields
-            const svc = currentService.value;
-            const payload = {
-                nombre: svc.nombre,
-                descripcion: svc.descripcion,
-                precio: Number(svc.precio),
-                duracionAprox: svc.duracionAprox,
-                categoriaId: svc.categoriaId,
-                publicado: svc.publicado,
-                imagenUrl: svc.imagenUrl || '',
-                videoUrl: svc.videoUrl || '',
-            };
-
-            if (mediaType.value === 'imagen') {
-                if (imgFile.value) {
-                    const url = await uploadMedia(imgFile.value);
-                    payload.imagenUrl = url;
-                }
-                payload.videoUrl = ''; // clear video
-            } else if (mediaType.value === 'video') {
-                if (videoFile.value) {
-                    const url = await uploadMedia(videoFile.value);
-                    payload.videoUrl = url;
-                }
-                payload.imagenUrl = ''; // clear image
-            }
-
-            await serviceStore.updateService(currentService.value.id, payload);
-
-            // Clean up blob URLs
-            if (imgPreviewUrl.value?.startsWith('blob:')) URL.revokeObjectURL(imgPreviewUrl.value);
-            if (videoPreviewUrl.value?.startsWith('blob:')) URL.revokeObjectURL(videoPreviewUrl.value);
-
-            editDialog.value = false;
-        } catch (error) {
-            const msg = error?.response?.data?.message;
-            saveError.value = Array.isArray(msg) ? msg.join(', ') : (msg || 'Error al guardar los cambios.');
-            console.error('Error al guardar:', error);
-        } finally {
-            loadingAction.value = false;
-        }
-    };
-
-    const confirmDelete = (servicio) => {
-        serviceToDelete.value = servicio;
-        deleteDialog.value = true;
-    };
-
-    const handleDelete = async () => {
-        loadingAction.value = true;
-        try {
-            await serviceStore.deleteService(serviceToDelete.value.id);
-            deleteDialog.value = false;
-        } catch (error) {
-            console.error(error);
-        } finally {
-            loadingAction.value = false;
-        }
-    };
+const confirmDelete = async () => {
+  loadingAction.value = true
+  try {
+    await serviceStore.deleteService(currentService.value.id)
+    deleteDialog.value = false
+  } finally {
+    loadingAction.value = false
+  }
+}
 </script>
 
 <style scoped>
-    .service-admin-card {
-        border-radius: 16px;
-        transition: all 0.3s ease;
-        border: 1px solid rgba(0,0,0,0.06);
-        overflow: hidden;
-    }
-
-    .service-admin-card:hover {
-        box-shadow: 0 6px 20px rgba(0,0,0,0.12);
-        transform: translateY(-2px);
-    }
-
-    /* Card media preview area */
-    .card-media-preview {
-        position: relative;
-        width: 100%;
-        height: 180px;
-        overflow: hidden;
-        background: #1a1a2e;
-    }
-
-    .card-preview-video {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .card-media-empty {
-        width: 100%;
-        height: 100%;
-    }
-
-    .card-name-overlay {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        padding: 8px 12px;
-        background: linear-gradient(transparent, rgba(0,0,0,0.75));
-        color: white;
-        font-weight: 700;
-        font-size: 0.9rem;
-    }
-
-    .bg-black-transparent {
-        background: rgba(0,0,0,0.6);
-        backdrop-filter: blur(4px);
-    }
-
-    .text-truncate-2 {
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-
-    .color-primary { color: #ee6f38; }
-    .gap-2 { gap: 8px; }
-    .gap-4 { gap: 16px; }
-    .w-100 { width: 100%; }
-    .flex-1-1 { flex: 1 1 0; }
-
-    /* Preview boxes */
-    .media-preview-box {
-        position: relative;
-        width: 100%;
-        border-radius: 10px;
-        overflow: hidden;
-        border: 2px solid #1976d2;
-        background: #000;
-    }
-
-    .preview-img {
-        width: 100%;
-        max-height: 200px;
-        object-fit: cover;
-        display: block;
-    }
-
-    .preview-video {
-        width: 100%;
-        max-height: 200px;
-        display: block;
-        object-fit: contain;
-    }
-
-    .preview-badge {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-    }
-
-    /* Edit dialog - drop zones */
-    .edit-drop-zone {
-        border: 2px dashed rgba(0,0,0,0.18);
-        border-radius: 12px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 120px;
-        cursor: pointer;
-        background: rgba(0,0,0,0.02);
-        transition: all 0.25s ease;
-        padding: 20px;
-        text-align: center;
-    }
-
-    .edit-drop-zone:hover {
-        border-color: #1976d2;
-        background: rgba(25,118,210,0.04);
-    }
-
-    .edit-preview-container {
-        position: relative;
-        border-radius: 12px;
-        overflow: hidden;
-        border: 2px solid #1976d2;
-        background: #000;
-        min-height: 150px;
-    }
-
-    .edit-preview-media {
-        width: 100%;
-        max-height: 240px;
-        object-fit: cover;
-        display: block;
-    }
-
-    .edit-preview-overlay {
-        position: absolute;
-        top: 0; left: 0; right: 0;
-        padding: 6px 8px;
-        display: flex;
-        gap: 4px;
-        background: linear-gradient(rgba(0,0,0,0.5), transparent);
-    }
-
-    .edit-preview-badge {
-        position: absolute;
-        bottom: 8px;
-        right: 8px;
-    }
+.service-card { transition: all 0.25s ease; height: 100%; display: flex; flex-direction: column; }
+.card-media { position: relative; width: 100%; height: 180px; overflow: hidden; background: #000; }
+.media-content { width: 100%; height: 100%; object-fit: cover; }
+.desc-truncate { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 </style>

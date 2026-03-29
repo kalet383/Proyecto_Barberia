@@ -1,36 +1,36 @@
 <template>
-  <div class="text-center pa-4">
-    <v-dialog v-model="props.modelValue" transition="dialog-bottom-transition" fullscreen>
-      <v-card>
+  <div>
+    <v-dialog v-model="isOpen" transition="dialog-bottom-transition" fullscreen persistent no-click-animation class="reserva-dialog">
+      <v-card class="reserva-modal-card" :style="{ background: cardBg }">
 
-        <div class="boton-cerrar">
-          <i class="fa-solid fa-x" @click="closeDialog"></i>
+        <div class="boton-cerrar" :style="{ background: isDark ? '#1f2937' : 'white', color: isDark ? '#f3f4f6' : '#333' }">
+          <i class="fa-solid fa-xmark" @click="closeDialog"></i>
         </div>
         
-        <v-card-title class="titulo-reserva text-center justify-center py-6">
-          <h3>RESERVACION DE CITAS</h3>
+        <v-card-title class="titulo-reserva text-center justify-center py-8" :style="{ background: headerBg, borderBottom: `2px solid ${cardBorder}` }">
+          <h3 :style="{ color: txtPrimary, fontWeight: '900', letterSpacing: '2px' }">RESERVACIÓN DE CITAS</h3>
         </v-card-title>
 
         <!-- Contenedor principal con layout de dos columnas -->
-        <div class="d-flex" style="height: calc(100vh - 120px);">
+        <div class="d-flex flex-container">
           
           <!-- Columna izquierda: Tabs y contenido -->
-          <div style="flex: 1; overflow-y: auto;">
+          <div style="flex: 1; overflow-y: auto;" class="tab-content-wrapper">
             <!-- Tabs - SIN tab de Profesional -->
-            <v-tabs v-model="currentTab" class="custom-tabs" bg-color="transparent">
+            <v-tabs v-model="currentTab" class="custom-tabs" bg-color="transparent" :color="isDark ? '#ee6f38' : '#ee6f38'">
               <v-tab v-for="(item, index) in items" :key="item" :value="item" :disabled="!isTabEnabled(index)"> 
                 <span class="tab-content">
-                  <span class="tab-number">
+                  <span class="tab-number" :style="{ color: currentTab === item ? '#ee6f38' : (isDark ? '#4b5563' : '#999') }">
                     <i :class="`fa-solid fa-${index + 1}`"></i>
                   </span>
-                  {{ item }}
-                  <i v-if="index < items.length - 1" class="fa-solid fa-arrow-right arrow-icon"></i>
+                  <span :style="{ color: currentTab === item ? (isDark ? '#f3f4f6' : '#1a1a1a') : (isDark ? '#4b5563' : '#999'), fontWeight: currentTab === item ? '800' : '600' }">{{ item }}</span>
+                  <i v-if="index < items.length - 1" class="fa-solid fa-chevron-right arrow-icon" :style="{ color: isDark ? '#1e293b' : '#eee' }"></i>
                 </span>
               </v-tab>
             </v-tabs>
 
             <!-- Contenido de tabs -->
-            <v-tabs-window v-model="currentTab">
+            <v-tabs-window v-model="currentTab" class="mt-4">
               
               <!-- TAB: Servicios -->
               <v-tabs-window-item value="Servicios">
@@ -48,14 +48,14 @@
 
               <!-- TAB: Confirmacion -->
               <v-tabs-window-item value="Confirmacion">
-                <ConfirmaciontabBarbero @estado-confirmacion-agendar="actualizarEstadoBoton"></ConfirmacionTabBarbero>
+                <ConfirmaciontabBarbero @estado-confirmacion-agendar="actualizarEstadoBoton"></ConfirmaciontabBarbero>
               </v-tabs-window-item>
 
             </v-tabs-window>
           </div>
 
           <!-- Columna derecha: Detalles de la cita (fija) -->
-          <div style="width: 600px; padding: 16px; overflow-y: auto; border-left: 2px solid #e0e0e0;">
+          <div :style="{ width: '420px', padding: '24px', overflowY: 'auto', borderLeft: `2px solid ${cardBorder}`, background: headerBg }" class="detalle-sidebar">
             <DetallereservaBarbero
             :servicios="serviciosSeleccionados"
             :barbero="reservaBarberoStore.barberoPreseleccionado"
@@ -68,29 +68,31 @@
 
         </div>
       </v-card>
-      <!-- Modales de notificación -->
-      <ModalConfirmacionCita
-        v-model="mostrarModalConfirmacion"
-        :servicios="serviciosSeleccionados"
-        :barbero="reservaBarberoStore.barberoPreseleccionado"
-        :fecha="fechaFormateada"
-        :hora="horaFormateada"
-        @confirmar="agendarCita"
-      />
-
-      <NotificacionExito
-        v-model="mostrarNotificacionExito"
-        :mensaje="mensajeNotificacion"
-        @cerrar-todo="closeDialog"
-      />
-
-      <NotificacionError
-        v-model="mostrarNotificacionError"
-        :mensaje="mensajeNotificacion"
-        :horarios-alternativos="horariosAlternativos"
-        :barberos-alternativos="barberosAlternativos"
-      />
     </v-dialog>
+
+    <!-- Modales de notificación (afuera del diálogo principal) -->
+    <ModalConfirmacionCita
+      v-model="mostrarModalConfirmacion"
+      :servicios="serviciosSeleccionados"
+      :barbero="reservaBarberoStore.barberoPreseleccionado"
+      :fecha="fechaFormateada"
+      :hora="horaFormateada"
+      :cargando="agendando"
+      @confirmar="agendarCita"
+    />
+
+    <NotificacionExito
+      v-model="mostrarNotificacionExito"
+      :mensaje="mensajeNotificacion"
+      @cerrar-todo="closeDialog"
+    />
+
+    <NotificacionError
+      v-model="mostrarNotificacionError"
+      :mensaje="mensajeNotificacion"
+      :horarios-alternativos="horariosAlternativos"
+      :barberos-alternativos="barberosAlternativos"
+    />
   </div>
 </template>
 
@@ -100,6 +102,7 @@
   import { useReservaBarberoStore } from '@/stores/reservaBarbero'
   import { useCitaStore } from '@/stores/cita'
   import { useAuthStore } from '@/stores/auth'
+  import { useCustomizerStore } from '@/stores/customizer'
   import ServiciostabBarbero from '@/components/shared/ReservacitaBarbero/ServiciostabBarbero.vue'
   import FechayhoratabBarbero from '@/components/shared/ReservacitaBarbero/FechayhoratabBarbero.vue'
   import ConfirmaciontabBarbero from '@/components/shared/ReservacitaBarbero/ConfirmaciontabBarbero.vue'
@@ -112,8 +115,17 @@
   const reservaBarberoStore = useReservaBarberoStore()
   const citaStore = useCitaStore()
   const authStore = useAuthStore()
+  const customizer = useCustomizerStore()
 
-  // ✅ Props y emits
+  const isDark = computed(() => customizer.activeTheme === 'DarkTheme');
+  
+  // Adaptive Colors
+  const txtPrimary = computed(() => isDark.value ? '#f3f4f6' : '#111827');
+  const txtSecondary = computed(() => isDark.value ? '#9ca3af' : '#64748b');
+  const cardBg = computed(() => isDark.value ? '#0f172a' : '#ffffff');
+  const cardBorder = computed(() => isDark.value ? '#1e293b' : '#f0f0f0');
+  const headerBg = computed(() => isDark.value ? '#161d2f' : '#f8f9fa');
+
   const props = defineProps({
     modelValue: {
       type: Boolean,
@@ -123,18 +135,22 @@
   })
   const emit = defineEmits(['update:modelValue'])
 
-  // ✅ Estado - SIN tab de Profesional
   const items = ['Servicios', 'Fecha y Hora', 'Confirmacion']
   const currentIndex = ref(reservaBarberoStore.currentTab)
   const botonActivo = ref(false)
   
-  // Estados para los modales
   const mostrarModalConfirmacion = ref(false)
   const mostrarNotificacionExito = ref(false)
   const mostrarNotificacionError = ref(false)
   const mensajeNotificacion = ref('')
+  const agendando = ref(false)
   const horariosAlternativos = ref([])
   const barberosAlternativos = ref([])
+
+  const isOpen = computed({
+    get: () => props.modelValue,
+    set: (val) => emit('update:modelValue', val)
+  })
 
   const currentTab = computed({
     get: () => items[currentIndex.value],
@@ -147,29 +163,23 @@
     }
   })
 
-  // ✅ Función para controlar qué tabs están activos
   const isTabEnabled = (index) => index <= currentIndex.value
 
-  // ✅ Computed para obtener los objetos completos de los servicios
   const serviciosSeleccionados = computed(() => {
     return ServicioStore.services.filter(servicio => 
       reservaBarberoStore.serviciosSeleccionados.includes(servicio.id)
     )
   })
 
-  // ✅ Formatear la fecha
   const fechaFormateada = computed(() => {
     if (!reservaBarberoStore.fechaSeleccionada) return null
-    
     const fecha = new Date(reservaBarberoStore.fechaSeleccionada + 'T00:00:00')
     const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
     return fecha.toLocaleDateString('es-ES', opciones)
   })
 
-  // ✅ Formatear la hora
   const horaFormateada = computed(() => {
     if (!reservaBarberoStore.horaSeleccionada) return null
-    
     const [hoursStr, minutes] = reservaBarberoStore.horaSeleccionada.split(':')
     const h = parseInt(hoursStr, 10)
     const ampm = h >= 12 ? 'PM' : 'AM'
@@ -177,7 +187,6 @@
     return `${h12}:${minutes} ${ampm}`
   })
 
-  // ✅ Watch para verificar el estado del botón
   watch(currentIndex, async (nuevoIndex) => {
     reservaBarberoStore.setCurrentTab(nuevoIndex)
     botonActivo.value = false
@@ -185,64 +194,41 @@
     verificarEstadoTabActual()
   })
 
-  // ✅ Watch para sincronizar currentIndex cuando cambia en la store
   watch(() => reservaBarberoStore.currentTab, (nuevoTab) => {
     currentIndex.value = nuevoTab
   })
 
-  // ⭐ NUEVO: Watch para sincronizar cuando se abre el modal
   watch(() => props.modelValue, (nuevoValor) => {
     if (nuevoValor) {
       currentIndex.value = reservaBarberoStore.currentTab
-      nextTick(() => {
-        verificarEstadoTabActual()
-      })
+      nextTick(() => { verificarEstadoTabActual() })
+    } else {
+      reservaBarberoStore.resetReserva()
+      currentIndex.value = 0
     }
   })
 
-  // ✅ Función para verificar estado del botón
   function verificarEstadoTabActual() {
     botonActivo.value = reservaBarberoStore.botonHabilitadoPorTab
   }
 
-  // 🔥 LISTENER PARA REABRIR DIALOG
-  const handleOpenReservaBarbero = () => {
-    emit('update:modelValue', true)
-    currentIndex.value = reservaBarberoStore.currentTab
-    nextTick(() => {
-      verificarEstadoTabActual()
-    })
-  }
+  const handleOpenReservaBarbero = () => { emit('update:modelValue', true) }
 
-  onMounted(() => {
-    console.log('👂 Listener de reserva barbero montado')
+  onMounted(async () => {
     window.addEventListener('open-reserva-barbero-dialog', handleOpenReservaBarbero)
+    if (ServicioStore.services.length === 0) await ServicioStore.getServices()
     verificarEstadoTabActual()
   })
 
   onUnmounted(() => {
-    console.log('🔇 Listener de reserva barbero desmontado')
     window.removeEventListener('open-reserva-barbero-dialog', handleOpenReservaBarbero)
   })
 
-  // ✅ Métodos
-  function closeDialog() {
-    emit('update:modelValue', false)
-  }
+  function closeDialog() { emit('update:modelValue', false) }
+  function actualizarServicios(idsSeleccionados) { reservaBarberoStore.setServicios(idsSeleccionados) }
+  function actualizarEstadoBoton(estado) { botonActivo.value = estado }
+  function actualizarFechayHora(data) { reservaBarberoStore.setFechaHora(data.fecha, data.hora) }
 
-  function actualizarServicios(idsSeleccionados) {
-    reservaBarberoStore.setServicios(idsSeleccionados)
-  }
-
-  function actualizarEstadoBoton(estado) {
-    botonActivo.value = estado
-  }
-
-  function actualizarFechayHora(data) {
-    reservaBarberoStore.setFechaHora(data.fecha, data.hora)
-  }
-
-  // Avanzar al siguiente tab
   async function avanzarTab() {
     if (currentIndex.value === items.length - 1) {
       mostrarModalConfirmacion.value = true
@@ -253,34 +239,23 @@
 
   async function agendarCita() {
     try {
-      console.log('🎯 Iniciando proceso de agendado con barbero...')
-      
-      // Validaciones
-      if (!reservaBarberoStore.serviciosSeleccionados || reservaBarberoStore.serviciosSeleccionados.length === 0) {
+      if (!reservaBarberoStore.serviciosSeleccionados?.length) {
         mensajeNotificacion.value = 'Debes seleccionar al menos un servicio'
-        mostrarNotificacionError.value = true
-        return
+        mostrarNotificacionError.value = true; return
       }
-      
       if (!reservaBarberoStore.barberoPreseleccionado) {
-        mensajeNotificacion.value = 'Error: No hay barbero seleccionado'
-        mostrarNotificacionError.value = true
-        return
+        mensajeNotificacion.value = 'No hay barbero seleccionado'
+        mostrarNotificacionError.value = true; return
       }
-      
       if (!reservaBarberoStore.fechaSeleccionada || !reservaBarberoStore.horaSeleccionada) {
         mensajeNotificacion.value = 'Debes seleccionar fecha y hora'
-        mostrarNotificacionError.value = true
-        return
+        mostrarNotificacionError.value = true; return
       }
-      
       if (!authStore.isAuthenticated) {
         mensajeNotificacion.value = 'Debes iniciar sesión para agendar'
-        mostrarNotificacionError.value = true
-        return
+        mostrarNotificacionError.value = true; return
       }
 
-      // Preparar datos
       const datosReserva = {
         clienteId: authStore.user.id,
         barberoId: reservaBarberoStore.barberoPreseleccionado.id,
@@ -289,102 +264,114 @@
         fecha: reservaBarberoStore.fechaSeleccionada
       }
 
-      console.log('📋 Datos a enviar:', datosReserva)
-
-      // Llamar al store
+      agendando.value = true
       const resultado = await citaStore.crearCita(datosReserva)
 
       if (resultado.success) {
         mensajeNotificacion.value = resultado.mensaje
         mostrarModalConfirmacion.value = false
-        await nextTick()
         reservaBarberoStore.resetReserva()
         currentIndex.value = 0
-        mostrarNotificacionExito.value = true
-        console.log('✅ Citas creadas:', resultado.citas)
+        emit('update:modelValue', false)
+        setTimeout(() => { mostrarNotificacionExito.value = true }, 400)
       } else {
         mensajeNotificacion.value = resultado.mensaje
         horariosAlternativos.value = resultado.horariosAlternativos || []
         barberosAlternativos.value = resultado.barberosAlternativos || []
         mostrarModalConfirmacion.value = false
         mostrarNotificacionError.value = true
-        console.log('🕐 Horarios alternativos:', resultado.horariosAlternativos)
-        console.log('💈 Barberos alternativos:', resultado.barberosAlternativos)
       }
     } catch (error) {
-      console.error('💥 Error inesperado:', error)
-      mensajeNotificacion.value = 'Ocurrió un error inesperado al agendar la cita'
+      console.error('Error agendando:', error)
+      mensajeNotificacion.value = 'Error inesperado al agendar'
       mostrarModalConfirmacion.value = false
       mostrarNotificacionError.value = true
+    } finally {
+      agendando.value = false
     }
   }
 </script>
 
 <style scoped>
+  .reserva-dialog { z-index: 2000 !important; }
+
   .titulo-reserva {
-    background-color: #f8f9fa;
-    border-bottom: 2px solid #e0e0e0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 16px 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
   }
 
-  .titulo-reserva h3 {
-    font-size: 1.6rem;
-    font-weight: 600;
-    color: #222;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+  .reserva-modal-card {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding-top: 0;
   }
 
   .boton-cerrar {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    font-size: 20px;
+    position: fixed;
+    top: 28px;
+    right: 32px;
+    font-size: 1.2rem;
     cursor: pointer;
-    color: #333;
-    transition: transform 0.2s ease, color 0.2s ease;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 1001;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
   .boton-cerrar:hover {
-    transform: scale(1.2);
-    color: #000;
+    transform: rotate(90deg) scale(1.1);
+    background: #ee6f38 !important;
+    color: white !important;
   }
 
-  .custom-tabs {
-    padding-left: 30px;
+  .flex-container {
+    flex: 1;
+    display: flex;
+    height: calc(100vh - 120px);
+    overflow: hidden;
   }
 
-  .custom-tabs :deep(.v-slide-group__content) {
-    gap: 0;
-    justify-content: flex-start;
+  .tab-content-wrapper {
+    padding: 30px;
   }
 
   .custom-tabs :deep(.v-tab) {
     min-width: auto !important;
-    padding: 10px 16px !important;
-    text-transform: none !important;
-    letter-spacing: normal !important;
-    font-size: 0.813rem;
-    min-height: 40px !important;
+    padding: 12px 20px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    font-size: 0.75rem;
+    font-weight: 800;
   }
 
   .tab-content {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
   }
 
   .tab-number {
     display: inline-flex;
     align-items: center;
-    color: black;
+    font-size: 14px;
   }
 
   .arrow-icon {
-    font-size: 0.75rem;
-    opacity: 0.7;
+    font-size: 10px;
+    margin-left: 8px;
+    opacity: 0.3;
+  }
+
+  @media (max-width: 960px) {
+    .flex-container { flex-direction: column; height: auto; overflow: visible; }
+    .detalle-sidebar { width: 100% !important; border-left: none !important; border-top: 2px solid v-bind(cardBorder); }
+    .reserva-modal-card { overflow-y: auto; }
   }
 </style>

@@ -98,6 +98,19 @@ const cancelarVenta = async () => {
   }
 };
 
+const formatTipoPago = (tipo: string) => {
+  if (!tipo) return 'N/A';
+  switch (tipo) {
+    case 'TRANSFERENCIA': return 'Transferencia';
+    case 'TRANSFERENCIA_BANCOLOMBIA': return 'Transferencia Bancolombia';
+    case 'TRANSFERENCIA_DAVIVIENDA': return 'Transferencia Davivienda';
+    case 'WOMPI': return 'Pago con Wompi';
+    case 'EFECTIVO': return 'Efectivo';
+    case 'PAGO_CONTRA_ENTREGA': return 'Pago Contra Entrega';
+    default: return tipo.replace(/_/g, ' ');
+  }
+};
+
 const puedeCancelar = (venta: Venta) => {
   return venta.estado === EstadoVenta.PENDIENTE;
 };
@@ -166,7 +179,7 @@ const ventasOrdenadas = computed(() => {
 
                     <div class="mb-3">
                       <div class="text-caption text-grey">Método de pago</div>
-                      <div class="font-weight-medium">{{ venta.tipoPago.replace('_', ' ') }}</div>
+                      <div class="font-weight-medium">{{ formatTipoPago(venta.tipoPago) }}</div>
                     </div>
 
                     <div class="mb-3">
@@ -227,7 +240,7 @@ const ventasOrdenadas = computed(() => {
                 </v-chip>
               </div>
               <div class="mb-2"><strong>Fecha:</strong> {{ formatDate(selectedVenta.fechaVenta) }}</div>
-              <div class="mb-2"><strong>Método de pago:</strong> {{ selectedVenta.tipoPago.replace('_', ' ') }}</div>
+              <div class="mb-2"><strong>Método de pago:</strong> {{ formatTipoPago(selectedVenta.tipoPago) }}</div>
               <div class="mb-2" v-if="selectedVenta.direccionEnvio">
                 <strong>Dirección de envío:</strong> {{ selectedVenta.direccionEnvio }}
               </div>

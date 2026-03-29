@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia';
 import config from '@/config';
 
+export type ThemeMode = 'light' | 'dark' | 'system';
+
 export const useCustomizerStore = defineStore({
   id: 'customizer',
   state: () => ({
@@ -8,10 +10,21 @@ export const useCustomizerStore = defineStore({
     Customizer_drawer: config.Customizer_drawer,
     mini_sidebar: config.mini_sidebar,
     fontTheme: config.fontTheme,
-    inputBg: config.inputBg
+    inputBg: config.inputBg,
+    // Persist theme choice
+    themeMode: (localStorage.getItem('themeMode') as ThemeMode) || 'light',
   }),
 
-  getters: {},
+  getters: {
+    activeTheme(state) {
+      if (state.themeMode === 'system') {
+        const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        return isDark ? 'DarkTheme' : 'PurpleTheme';
+      }
+      return state.themeMode === 'dark' ? 'DarkTheme' : 'PurpleTheme';
+    }
+  },
+
   actions: {
     SET_SIDEBAR_DRAWER() {
       this.Sidebar_drawer = !this.Sidebar_drawer;
@@ -24,6 +37,10 @@ export const useCustomizerStore = defineStore({
     },
     SET_FONT(payload: string) {
       this.fontTheme = payload;
+    },
+    SET_THEME_MODE(mode: ThemeMode) {
+      this.themeMode = mode;
+      localStorage.setItem('themeMode', mode);
     }
   }
 });

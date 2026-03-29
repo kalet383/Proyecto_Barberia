@@ -1,197 +1,306 @@
-<script setup lang="ts">
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import Google from '@/assets/images/auth/social-google.svg';
-import { useAuthStore } from '@/stores/auth';
-import { Form } from 'vee-validate';
+<template>
+  <div class="auth-page-container">
+    <v-card class="auth-page-card" rounded="lg" elevation="0">
+      <!-- Header -->
+      <div class="text-center mb-6">
+        <div class="page-icon mb-3">
+          <i class="fas fa-user-lock"></i>
+        </div>
+        <h2 class="auth-title">Iniciar sesión</h2>
+        <p class="auth-subtitle">Accede a tu cuenta de StyleHub</p>
+      </div>
 
-const router = useRouter();
-import { useRoute } from 'vue-router';
-const route = useRoute();
-const checkbox = ref(false);
-const valid = ref(false);
-const show1 = ref(false);
-const password = ref('');
-const email = ref('');
-const passwordRules = ref([
-  (v: string) => !!v || 'La contraseña es obligatoria',
-]);
+      <!-- Google -->
+      <v-btn
+        block
+        variant="outlined"
+        class="google-btn mb-5"
+        size="large"
+        rounded="lg"
+        @click="loginWithGoogle"
+      >
+        <img :src="Google" alt="google" width="18" class="mr-2" />
+        <span class="google-text">Continuar con Google</span>
+      </v-btn>
+
+      <!-- Divider -->
+      <div class="divider-line mb-5">
+        <span>o con correo electrónico</span>
+      </div>
+
+      <!-- Form -->
+      <Form @submit="validate" class="loginForm" v-slot="{ errors, isSubmitting }">
+        <v-text-field
+          v-model="email"
+          :rules="emailRules"
+          label="Correo electrónico"
+          class="mb-4"
+          required
+          density="comfortable"
+          hide-details="auto"
+          variant="outlined"
+          color="#ee6f38"
+          rounded="lg"
+        />
+
+        <v-text-field
+          v-model="password"
+          :rules="passwordRules"
+          label="Contraseña"
+          required
+          density="comfortable"
+          variant="outlined"
+          color="#ee6f38"
+          hide-details="auto"
+          rounded="lg"
+          :append-inner-icon="show1 ? '$eye' : '$eyeOff'"
+          :type="show1 ? 'text' : 'password'"
+          @click:append-inner="show1 = !show1"
+        />
+
+        <div class="d-flex align-center justify-space-between mt-3 mb-5">
+          <v-checkbox
+            v-model="checkbox"
+            label="Recuérdame"
+            color="#ee6f38"
+            hide-details
+            density="compact"
+            class="remember-check"
+          />
+          <a href="javascript:void(0)" class="forgot-link">¿Olvidaste tu contraseña?</a>
+        </div>
+
+        <v-btn
+          block
+          size="large"
+          type="submit"
+          :loading="isSubmitting"
+          :disabled="isSubmitting"
+          class="submit-btn text-none font-weight-bold"
+          rounded="lg"
+          elevation="2"
+        >
+          Iniciar sesión
+        </v-btn>
+
+        <v-alert
+          v-if="errors.apiError"
+          type="error"
+          variant="tonal"
+          density="compact"
+          rounded="lg"
+          class="mt-4"
+        >
+          {{ errors.apiError }}
+        </v-alert>
+      </Form>
+
+      <!-- Register link -->
+      <v-divider class="my-5" />
+      <div class="text-center">
+        <span class="text-medium-emphasis" style="font-size: 0.88rem;">¿No tienes cuenta?</span>
+        <v-btn
+          variant="text"
+          color="#ee6f38"
+          class="text-none font-weight-bold ml-1"
+          size="small"
+          to="/register"
+        >
+          Regístrate aquí
+        </v-btn>
+      </div>
+    </v-card>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import Google from '@/assets/images/auth/social-google.svg'
+import { useAuthStore } from '@/stores/auth'
+import { Form } from 'vee-validate'
+import { auth as firebaseAuth, googleProvider, signInWithPopup } from '@/plugins/firebase'
+
+const router = useRouter()
+const route = useRoute()
+const checkbox = ref(false)
+const show1 = ref(false)
+const password = ref('')
+const email = ref('')
+
+const passwordRules = ref([(v: string) => !!v || 'Contraseña obligatoria'])
 const emailRules = ref([
-  (v: string) => !!v || 'El correo electrónico es obligatorio', 
-  (v: string) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) || 'Formato de correo inválido',
-]);
+  (v: string) => !!v || 'Correo obligatorio',
+  (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) || 'Formato inválido',
+])
+
+const handlePostLoginRoles = () => {
+  const authStore = useAuthStore()
+  
+  // Reserva desde servicios
+  const returnToReserva = sessionStorage.getItem('returnToReserva')
+  if (returnToReserva === 'true') {
+    sessionStorage.removeItem('returnToReserva')
+    router.push('/')
+    setTimeout(() => window.dispatchEvent(new CustomEvent('open-reserva-dialog')), 100)
+    return
+  }
+
+  // Reserva desde barberos
+  const returnToReservaBarbero = sessionStorage.getItem('returnToReservaBarbero')
+  if (returnToReservaBarbero === 'true') {
+    sessionStorage.removeItem('returnToReservaBarbero')
+    router.push('/')
+    setTimeout(() => window.dispatchEvent(new CustomEvent('open-reserva-barbero-dialog')), 100)
+    return
+  }
+
+  // Redirect URL
+  const redirectPath = route.query.redirect as string
+  if (redirectPath) {
+    router.push(redirectPath)
+    return
+  }
+
+  // Redirigir según rol
+  const userRole = (authStore.user?.role || authStore.user?.Role || '').toLowerCase()
+  if (userRole === 'cliente') {
+    router.push('/')
+  } else if (userRole === 'superadmin') {
+    router.push('/superadmin/dashboard')
+  } else {
+    router.push('/dashboard')
+  }
+}
+
+const loginWithGoogle = async () => {
+  const authStore = useAuthStore()
+  try {
+    const result = await signInWithPopup(firebaseAuth, googleProvider)
+    const idToken = await result.user.getIdToken()
+    await authStore.loginWithGoogle(idToken)
+    handlePostLoginRoles()
+  } catch (error) {
+    console.error('Error con Google Login:', error)
+    alert('Fallo al iniciar sesión con Google')
+  }
+}
 
 async function validate(values: any, { setErrors }: any) {
-  const authStore = useAuthStore();
-  
+  const authStore = useAuthStore()
   try {
-    console.log('🔄 Iniciando login...');
-    const result = await authStore.login({ email: email.value, password: password.value });
-    console.log('✅ Login exitoso:', result);
-    
-    // 🎯 FORZAR LA CARGA DEL USUARIO
-    await authStore.loadUser();
-    
-    console.log('👤 Usuario después de loadUser:', authStore.user);
-    console.log('🔐 Rol del usuario:', (authStore.user as any)?.Role);
-    
-    // 🔍 VERIFICAR SI VIENE DE LA RESERVA DESDE SERVICIOS
-    const returnToReserva = sessionStorage.getItem('returnToReserva');
-    console.log('🔙 ¿Volver a reserva desde servicios?', returnToReserva);
-    
-    if (returnToReserva === 'true') {
-      sessionStorage.removeItem('returnToReserva');
-      console.log('📍 Redirigiendo de vuelta a reserva desde servicios');
-      router.push('/');
-      
-      setTimeout(() => {
-        const event = new CustomEvent('open-reserva-dialog');
-        window.dispatchEvent(event);
-      }, 100);
-      
-      return;
-    }
-    
-    // ⭐ NUEVO: VERIFICAR SI VIENE DE LA RESERVA DESDE BARBEROS
-    const returnToReservaBarbero = sessionStorage.getItem('returnToReservaBarbero');
-    console.log('🔙 ¿Volver a reserva desde barbero?', returnToReservaBarbero);
-    
-    if (returnToReservaBarbero === 'true') {
-      sessionStorage.removeItem('returnToReservaBarbero');
-      console.log('📍 Redirigiendo de vuelta a reserva desde barbero');
-      router.push('/'); // O la ruta donde está la sección de barberos
-      
-      setTimeout(() => {
-        const event = new CustomEvent('open-reserva-barbero-dialog');
-        window.dispatchEvent(event);
-      }, 100);
-      
-      return;
-    }
-    
-    // 🔍 VERIFICAR SI HAY UN REDIRECT EN LA URL (Prioridad Alta)
-    const redirectPath = route.query.redirect as string;
-    if (redirectPath) {
-      console.log('📍 Redirigiendo a url solicitada:', redirectPath);
-      router.push(redirectPath);
-      return;
-    }
+    await authStore.login({ email: email.value, password: password.value })
+    await authStore.loadUser()
+    handlePostLoginRoles()
 
-    // 🚀 REDIRIGIR SEGÚN EL ROL (solo si NO viene de reserva y NO hay redirect)
-    const userRole = (authStore.user as any)?.Role;
-    
-    if (userRole === 'cliente') {
-      console.log('📍 Cliente - Redirigiendo a página principal');
-      router.push('/');
-    } else if (userRole === 'administrador' || userRole === 'barbero') {
-      console.log('📍 Admin/Barbero - Redirigiendo a dashboard');
-      router.push('/dashboard');
-    } else {
-      console.log('📍 Rol desconocido - Redirigiendo a dashboard');
-      router.push('/dashboard');
-    }
-    
   } catch (error: unknown) {
-    console.log('❌ Error en login:', error);
-    setErrors({ apiError: error });
+    setErrors({ apiError: error })
   }
 }
 </script>
 
-<template>
-  <v-btn block color="primary" variant="outlined" class="text-lightText googleBtn">
-    <img :src="Google" alt="google" />
-    <span class="ml-2">Inicia sesion con tu cuenta de Google</span></v-btn
-  >
-  <v-row>
-    <v-col class="d-flex align-center">
-      <v-divider class="custom-devider" />
-      <p rounded="md" size="small" class="orbtn"> O </p>
-      <v-divider class="custom-devider" />
-    </v-col>
-  </v-row>
-  <h5 class="text-h5 text-center my-4 mb-8">Iniciar sesión con dirección de correo electrónico</h5>
-  <Form @submit="validate" class="mt-7 loginForm" v-slot="{ errors, isSubmitting }">
-    <v-text-field
-      v-model="email"
-      :rules="emailRules"
-      label="Ingrese su correo electronico"
-      class="mt-4 mb-8"
-      required
-      density="comfortable"
-      hide-details="auto"
-      variant="outlined"
-      color="#ee6f38"
-    ></v-text-field>
-    <v-text-field
-      v-model="password"
-      :rules="passwordRules"
-      label="Ingrese su contraseña"
-      required
-      density="comfortable"
-      variant="outlined"
-      color="#ee6f38"
-      hide-details="auto"
-      :append-icon="show1 ? '$eye' : '$eyeOff'"
-      :type="show1 ? 'text' : 'password'"
-      @click:append="show1 = !show1"
-      class="pwdInput"
-    ></v-text-field>
+<style scoped>
+.auth-page-container {
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 20px 16px;
+}
 
-    <div class="d-sm-flex align-center mt-2 mb-7 mb-sm-0">
-      <v-checkbox
-        v-model="checkbox"
-        :rules="[(v: any) => !!v || 'You must agree to continue!']"
-        label="¿Acuerdate de mi?"
-        required
-        color="#ee6f38"
-        class="ms-n2"
-        hide-details
-      ></v-checkbox>
-      <div class="ml-auto">
-        <a href="javascript:void(0)" class="text-primary text-decoration-none">¿Has olvidado tu contraseña?</a>
-      </div>
-    </div>
-    <v-btn color="#ee6f38" :loading="isSubmitting" block class="mt-2" variant="flat" size="large" :disabled="valid" type="submit"> Iniciar sesion </v-btn>
-    <div v-if="errors.apiError" class="mt-2">
-      <v-alert color="error">{{ errors.apiError }}</v-alert>
-    </div>
-  </Form>
-  <div class="mt-5 text-right">
-    <v-divider />
-    <v-btn variant="plain" to="/register" class="mt-2 text-capitalize mr-n2">¿No tienes una cuenta?</v-btn>
-  </div>
-</template>
-<style lang="scss">
-  .custom-devider {
-    border-color: rgba(0, 0, 0, 0.08) !important;
-  }
-  .googleBtn {
-    border-color: rgba(0, 0, 0, 0.08);
-    margin: 30px 0 20px 0;
-  }
-  .outlinedInput .v-field {
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    box-shadow: none;
-  }
+.auth-page-card {
+  border: 1px solid #f0f0f0;
+  padding: 32px;
+}
 
-  .orbtn {
-    padding: 2px 15px;
-  } 
+.page-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #ee6f38, #ff9a6c);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  color: white;
+  font-size: 22px;
+  box-shadow: 0 4px 14px rgba(238, 111, 56, 0.25);
+}
 
-  .pwdInput {
-    position: relative;
-    .v-input__append {
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-  }
-  .loginForm {
-    .v-text-field .v-field--active input {
-      font-weight: 500;
-    }
-  }
+.auth-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.auth-subtitle {
+  font-size: 0.88rem;
+  color: #888;
+  margin: 4px 0 0;
+}
+
+.google-btn {
+  border-color: #e0e0e0 !important;
+  text-transform: none;
+  background: white !important;
+}
+
+.google-btn:hover {
+  background: #fafafa !important;
+}
+
+.google-text {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.divider-line {
+  display: flex;
+  align-items: center;
+  color: #aaa;
+  font-size: 0.8rem;
+}
+
+.divider-line::before,
+.divider-line::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #eee;
+}
+
+.divider-line span {
+  padding: 0 12px;
+}
+
+.remember-check {
+  margin-left: -8px;
+}
+
+.remember-check :deep(.v-label) {
+  font-size: 0.82rem;
+  color: #666;
+}
+
+.forgot-link {
+  color: #ee6f38;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.forgot-link:hover {
+  text-decoration: underline;
+}
+
+.submit-btn {
+  background: linear-gradient(135deg, #ee6f38, #ff9a6c) !important;
+  color: white !important;
+  box-shadow: 0 4px 14px rgba(238, 111, 56, 0.25) !important;
+  transition: all 0.3s ease !important;
+}
+
+.submit-btn:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(238, 111, 56, 0.35) !important;
+}
 </style>

@@ -1,46 +1,55 @@
 <template>
-  <div id="servicios-section">
+  <div id="servicios-section" class="servicios-section">
+
     <!-- Promo Ticker -->
     <div class="promo-ticker">
       <div class="promo-track">
-        <span>💈🔥 RECUERDA TODOS NUESTROS MIERCOLES DE CANDELA, CON TODA LA BARBERIA EN UN 20% DE DESCUENTO 💈🔥 | VEN Y DISFRUTA DE NUESTRO ESPACIO DE DISTRACCION CON NUESTRAS CONSOLAS DE VIDEOJUEGOS 🎮 | FINES DE SEMANA SERVICIO ESTANDAR CON GRANIZADO GRATIS 🥤</span>
+        <span>
+          💈🔥 MIÉRCOLES DE CANDELA — 20% DE DESCUENTO EN TODA LA BARBERÍA &nbsp;|&nbsp;
+          🎮 ZONA DE VIDEOJUEGOS PARA TU ESPERA &nbsp;|&nbsp;
+          🥤 FINES DE SEMANA: SERVICIO ESTÁNDAR + GRANIZADO GRATIS &nbsp;|&nbsp;
+          💈🔥 MIÉRCOLES DE CANDELA — 20% DE DESCUENTO EN TODA LA BARBERÍA &nbsp;|&nbsp;
+          🎮 ZONA DE VIDEOJUEGOS PARA TU ESPERA &nbsp;|&nbsp;
+          🥤 FINES DE SEMANA: SERVICIO ESTÁNDAR + GRANIZADO GRATIS
+        </span>
       </div>
     </div>
 
-    <v-container class="py-10" fluid>
-      <!-- Sin servicios publicados -->
-      <div v-if="serviceStore.featuredServices.length === 0" class="text-center py-16">
-        <v-icon size="80" color="grey-lighten-1">mdi-scissors-cutting</v-icon>
-        <p class="text-grey mt-4">Pronto mostraremos nuestros servicios aquí</p>
+    <v-container class="py-16" fluid>
+
+      <!-- Sin servicios -->
+      <div v-if="serviceStore.featuredServices.length === 0" class="sin-servicios text-center py-16">
+        <i class="fas fa-cut sin-icon"></i>
+        <p>Pronto mostraremos nuestros servicios aquí</p>
       </div>
 
-      <!-- Carrusel de Servicios Publicados -->
       <div v-else>
-        <h2 class="section-title">NUESTROS SERVICIOS <span style="font-weight: 400; text-transform: none; font-size: 0.7em;">| Lo que ofrecemos</span></h2>
+        <!-- Encabezado -->
+        <div class="seccion-header text-center mb-14">
+          <span class="seccion-eyebrow">
+            <span class="eyebrow-line"></span>
+            LO QUE OFRECEMOS
+            <span class="eyebrow-line"></span>
+          </span>
+          <h2 class="seccion-titulo">Nuestros <span class="titulo-accent">Servicios</span></h2>
+          <div class="titulo-subline"></div>
+        </div>
 
+        <!-- Carrusel -->
         <div class="carousel-root">
-          <!-- Flecha izquierda -->
-          <button
-            class="carousel-arrow left"
-            @click="prev"
-            :class="{ disabled: currentIndex === 0 }"
-          >
-            <span class="arrow-symbol">‹</span>
+          <button class="carousel-arrow left" @click="prev" :class="{ disabled: currentIndex === 0 }">
+            <span class="arrow-sym">‹</span>
           </button>
 
-          <!-- Viewport -->
           <div class="carousel-viewport" ref="viewportRef">
-            <div
-              class="carousel-track"
-              :style="trackStyle"
-            >
+            <div class="carousel-track" :style="trackStyle">
               <div
                 v-for="servicio in serviceStore.featuredServices"
                 :key="servicio.id"
                 class="carousel-item"
                 :style="slideStyle"
               >
-                <v-card class="service-card" height="100%">
+                <div class="service-card">
                   <!-- Media -->
                   <div class="card-media">
                     <video
@@ -56,38 +65,34 @@
                       class="card-media-inner"
                     />
                     <div v-else class="card-media-placeholder">
-                      <v-icon size="56" color="grey-darken-2">mdi-image-off</v-icon>
+                      <i class="fas fa-cut"></i>
                     </div>
-                    <div class="card-title-overlay">{{ servicio.nombre }}</div>
+                    <div class="card-nombre-overlay">{{ servicio.nombre }}</div>
+                    <!-- Tag de precio sobre imagen -->
+                    <div class="card-precio-tag">${{ Number(servicio.precio).toLocaleString() }}</div>
                   </div>
 
                   <!-- Info -->
                   <div class="card-info">
                     <div class="card-meta">
-                      <span class="meta-precio">💰 ${{ Number(servicio.precio).toLocaleString() }} COP</span>
-                      <span class="meta-sep">|</span>
-                      <span class="meta-tiempo">⏱️ {{ formatDuracion(servicio.duracionAprox) }}</span>
+                      <span class="meta-tiempo">
+                        <i class="fas fa-clock mr-1"></i>
+                        {{ formatDuracion(servicio.duracionAprox) }}
+                      </span>
                     </div>
                     <p class="card-desc">{{ servicio.descripcion }}</p>
-                    <div class="card-btn-wrapper">
-                      <button class="btn-agendar" @click="agendarServicio(servicio.id)">
-                        <v-icon start size="18">mdi-calendar-plus</v-icon>
-                        AGENDAR
-                      </button>
-                    </div>
+                    <button class="btn-agendar" @click="agendarServicio(servicio.id)">
+                      <i class="fas fa-calendar-plus mr-2"></i>
+                      AGENDAR
+                    </button>
                   </div>
-                </v-card>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Flecha derecha -->
-          <button
-            class="carousel-arrow right"
-            @click="next"
-            :class="{ disabled: currentIndex >= maxIndex }"
-          >
-            <span class="arrow-symbol">›</span>
+          <button class="carousel-arrow right" @click="next" :class="{ disabled: currentIndex >= maxIndex }">
+            <span class="arrow-sym">›</span>
           </button>
         </div>
 
@@ -103,18 +108,16 @@
         </div>
       </div>
 
-      <!-- Botón inferior -->
-      <div class="cta-section text-center mt-12 mb-4">
-        <p class="cta-text mb-6">¿No encontraste lo que buscas? Tenemos más servicios disponibles.</p>
+      <!-- CTA -->
+      <div class="cta-section text-center mt-14">
+        <p class="cta-text">¿No encontraste lo que buscas? Tenemos más servicios disponibles.</p>
         <button class="cta-btn" @click="agendarSinServicio">
-          <v-icon start>mdi-calendar-check</v-icon>
+          <i class="fas fa-calendar-check mr-2"></i>
           VER TODOS LOS SERVICIOS Y AGENDAR
         </button>
       </div>
-    </v-container>
 
-    <!-- Modal de Reserva -->
-    <vistareserva-cita v-model="showModal"></vistareserva-cita>
+    </v-container>
   </div>
 </template>
 
@@ -128,16 +131,12 @@
   const reservaStore = useReservaStore()
   const showModal = ref(false)
 
-  // Carrusel
   const currentIndex = ref(0)
   const viewportRef = ref(null)
   const visibleCount = ref(3)
 
-  const maxIndex = computed(() => {
-    return Math.max(0, serviceStore.featuredServices.length - visibleCount.value)
-  })
+  const maxIndex = computed(() => Math.max(0, serviceStore.featuredServices.length - visibleCount.value))
 
-  // Width de cada slide = 100% / visibleCount (usando %)
   const slideStyle = computed(() => ({
     width: `calc(100% / ${visibleCount.value})`,
     minWidth: `calc(100% / ${visibleCount.value})`,
@@ -154,7 +153,6 @@
     if (w < 600) visibleCount.value = 1
     else if (w < 960) visibleCount.value = 2
     else visibleCount.value = 3
-    // reset si el índice supera el máximo
     if (currentIndex.value > maxIndex.value) currentIndex.value = maxIndex.value
   }
 
@@ -183,12 +181,12 @@
   function agendarServicio(id) {
     reservaStore.resetReserva()
     reservaStore.setServicios([id])
-    showModal.value = true
+    window.dispatchEvent(new CustomEvent('open-reserva-dialog'))
   }
 
   function agendarSinServicio() {
     reservaStore.resetReserva()
-    showModal.value = true
+    window.dispatchEvent(new CustomEvent('open-reserva-dialog'))
   }
 
   onMounted(async () => {
@@ -197,356 +195,360 @@
     window.addEventListener('resize', updateVisibleCount)
   })
 
-  onUnmounted(() => {
-    window.removeEventListener('resize', updateVisibleCount)
-  })
+  onUnmounted(() => window.removeEventListener('resize', updateVisibleCount))
 </script>
 
 <style scoped>
-  #servicios-section {
-    background-color: #0c0c0c;
-    min-height: 100vh;
-  }
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap');
 
-  /* ─── Título ─── */
-  .section-title {
-    color: white;
-    text-align: center;
-    font-size: 2.4rem;
-    margin-bottom: 40px;
-    font-weight: 800;
-    margin-top: 2%;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-  }
+.servicios-section {
+  background: #0c0c0c;
+  min-height: 100vh;
+}
 
-  .section-title::after {
-    content: '';
-    display: block;
-    width: 200px;
-    height: 4px;
-    margin: 12px auto 0;
-    background: linear-gradient(to right, transparent, #ee6f38, transparent);
-    border-radius: 2px;
-  }
+/* Ticker */
+.promo-ticker {
+  height: 40px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+  border-bottom: 1px solid rgba(238,111,56,0.3);
+  color: rgba(255,255,255,0.85);
+  font-weight: 700;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  font-size: 0.75rem;
+  letter-spacing: 0.8px;
+  font-family: 'DM Sans', sans-serif;
+}
 
-  /* ─── Carrusel raíz ─── */
-  .carousel-root {
-    display: flex;
-    align-items: stretch;
-    gap: 8px;
-  }
+.promo-track {
+  display: inline-block;
+  padding-left: 100%;
+  animation: scroll-left 35s linear infinite;
+}
 
-  /* ─── Flechas ─── */
-  .carousel-arrow {
-    flex-shrink: 0;
-    width: 60px;
-    height: 60px;
-    align-self: center;
-    border-radius: 50%;
-    border: 2.5px solid #ee6f38;
-    background: linear-gradient(135deg, #ff9a5c, #ee6f38);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 0 0 20px rgba(238,111,56,0.8), inset 0 1px 0 rgba(255,255,255,0.2);
-    position: relative;
-    overflow: hidden;
-  }
+@keyframes scroll-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
 
-  .carousel-arrow::before {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4), transparent);
-    animation: pulse-arrow 2.5s ease-in-out infinite;
-  }
+/* Encabezado */
+.seccion-header { position: relative; }
 
-  .icon-arrow {
-    color: white !important;
-    z-index: 2;
-    position: relative;
-  }
+.seccion-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: #ee6f38;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  font-family: 'DM Sans', sans-serif;
+}
 
-  .arrow-symbol {
-    color: white;
-    font-size: 54px;
-    font-weight: bold;
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2;
-    position: relative;
-    text-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
-    filter: drop-shadow(0 2px 4px rgba(238,111,56,0.6));
-  }
+.eyebrow-line {
+  display: inline-block;
+  width: 32px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #ee6f38);
+}
+.eyebrow-line:last-child { background: linear-gradient(90deg, #ee6f38, transparent); }
 
-  .carousel-arrow:hover:not(.disabled) {
-    background: linear-gradient(135deg, #ff9a5c, #ff8c3d);
-    transform: scale(1.2) translateY(-2px);
-    box-shadow: 0 0 30px rgba(238,111,56,1), inset 0 1px 0 rgba(255,255,255,0.3);
-    filter: brightness(1.15);
-  }
+.seccion-titulo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.4rem, 5vw, 3.8rem);
+  font-weight: 400;
+  color: white;
+  letter-spacing: 2px;
+  margin: 0 0 16px;
+  line-height: 1;
+}
 
-  .carousel-arrow.disabled {
-    opacity: 0.35;
-    cursor: default;
-    pointer-events: none;
-    background: linear-gradient(135deg, #888, #666);
-    border-color: #666;
-    box-shadow: 0 0 10px rgba(100,100,100,0.3);
-  }
+.titulo-accent { color: #ee6f38; }
 
-  /* ─── Viewport: oculta lo que sobre ─── */
-  .carousel-viewport {
-    flex: 1;
-    overflow: hidden;
-    border-radius: 16px;
-  }
+.titulo-subline {
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, #ee6f38, #ff9a6c);
+  border-radius: 2px;
+  margin: 0 auto;
+}
 
-  /* ─── Track: fila de slides ─── */
-  .carousel-track {
-    display: flex;
-    align-items: stretch;
-    /* transform se aplica inline */
-  }
+/* Sin servicios */
+.sin-servicios { color: rgba(255,255,255,0.3); }
+.sin-icon { font-size: 56px; display: block; margin-bottom: 16px; }
 
-  /* ─── Cada slide ─── */
-  .carousel-item {
-    flex-shrink: 0;
-    padding: 0 8px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-  }
+/* Carrusel */
+.carousel-root {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+}
 
-  /* ─── Card ─── */
-  .service-card {
-    background: #1a1a1a !important;
-    border: 1px solid rgba(238,111,56,0.18);
-    border-radius: 18px !important;
-    overflow: hidden;
-    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-    display: flex;
-    flex-direction: column;
-    animation: fadeInUp 0.7s ease backwards;
-  }
+.carousel-arrow {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  align-self: center;
+  border-radius: 50%;
+  border: 2px solid #ee6f38;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  position: relative;
+}
 
-  .service-card:hover {
-    transform: translateY(-8px);
-    border-color: #ee6f38;
-    box-shadow: 0 14px 28px rgba(238,111,56,0.28);
-  }
+.carousel-arrow:not(.disabled):hover {
+  background: linear-gradient(135deg, #ee6f38, #ff9a6c);
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(238,111,56,0.5);
+}
 
-  /* Media */
-  .card-media {
-    position: relative;
-    width: 100%;
-    height: 340px;
-    overflow: hidden;
-    background: #111;
-    flex-shrink: 0;
-  }
+.carousel-arrow.disabled {
+  opacity: 0.2;
+  cursor: default;
+  pointer-events: none;
+  border-color: #444;
+}
 
-  .card-media-inner {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
+.arrow-sym {
+  color: #ee6f38;
+  font-size: 40px;
+  font-weight: 300;
+  line-height: 1;
+  transition: color 0.3s;
+}
 
-  .card-media-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #222;
-  }
+.carousel-arrow:not(.disabled):hover .arrow-sym { color: white; }
 
-  .card-title-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 20px 14px 12px;
-    background: linear-gradient(transparent, rgba(0,0,0,0.88));
-    color: white;
-    font-weight: 800;
-    font-size: 1rem;
-    text-align: center;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
+.carousel-viewport {
+  flex: 1;
+  overflow: hidden;
+  border-radius: 16px;
+}
 
-  /* Info */
-  .card-info {
-    padding: 14px 16px;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
+.carousel-track {
+  display: flex;
+  align-items: stretch;
+}
 
-  .card-meta {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: wrap;
-    font-size: 0.85rem;
-  }
+.carousel-item {
+  flex-shrink: 0;
+  padding: 0 10px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
 
-  .meta-precio {
-    color: #4caf50;
-    font-weight: 800;
-  }
+/* Service card */
+.service-card {
+  background: #141414;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 18px;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  animation: fadeInUp 0.6s ease both;
+}
 
-  .meta-sep {
-    color: #555;
-  }
+.service-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(238,111,56,0.4);
+  box-shadow: 0 20px 50px rgba(238,111,56,0.2);
+}
 
-  .meta-tiempo {
-    color: #ccc;
-  }
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
-  .card-desc {
-    color: #bbb;
-    font-size: 0.85rem;
-    line-height: 1.5;
-    flex: 1;
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    margin: 0;
-  }
+/* Media */
+.card-media {
+  position: relative;
+  width: 100%;
+  height: 320px;
+  overflow: hidden;
+  background: #111;
+  flex-shrink: 0;
+}
 
-  .card-btn-wrapper {
-    display: flex;
-    justify-content: center;
-    padding-top: 4px;
-    padding-bottom: 4px;
-  }
+.card-media-inner {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
 
-  .btn-agendar {
-    background: transparent;
-    border: 2px solid #ee6f38;
-    color: #ee6f38;
-    font-weight: 700;
-    font-size: 0.85rem;
-    border-radius: 50px;
-    padding: 8px 28px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.3s ease;
-    letter-spacing: 0.5px;
-  }
+.service-card:hover .card-media-inner { transform: scale(1.06); }
 
-  .btn-agendar:hover {
-    background: #ee6f38;
-    color: white;
-    transform: scale(1.05);
-    box-shadow: 0 4px 14px rgba(238,111,56,0.4);
-  }
+.card-media-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a1a1a;
+  font-size: 48px;
+  color: #333;
+}
 
-  /* ─── Dots ─── */
-  .carousel-dots {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 20px;
-  }
+.card-nombre-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 28px 16px 14px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.9));
+  color: white;
+  font-weight: 800;
+  font-size: 0.95rem;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-family: 'DM Sans', sans-serif;
+}
 
-  .dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.25);
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
+.card-precio-tag {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: linear-gradient(135deg, #ee6f38, #ff9a6c);
+  color: white;
+  font-weight: 800;
+  font-size: 0.82rem;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: 0.3px;
+  box-shadow: 0 4px 12px rgba(238,111,56,0.4);
+}
 
-  .dot.active {
-    background: #ee6f38;
-    transform: scale(1.4);
-  }
+/* Card info */
+.card-info {
+  padding: 16px 18px 18px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
-  /* ─── Promo ticker ─── */
-  .promo-ticker {
-    height: 40px;
-    overflow: hidden;
-    background: #ee6f38;
-    color: white;
-    font-weight: 800;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    font-size: 14px;
-    text-transform: uppercase;
-  }
+.card-meta { display: flex; align-items: center; }
 
-  .promo-track {
-    display: inline-block;
-    padding-left: 100%;
-    animation: scroll-left 30s linear infinite;
-  }
+.meta-tiempo {
+  display: flex;
+  align-items: center;
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.4);
+  font-family: 'DM Sans', sans-serif;
+}
 
-  @keyframes scroll-left {
-    0%   { transform: translateX(0); }
-    100% { transform: translateX(-100%); }
-  }
+.meta-tiempo i { color: #ee6f38; }
 
-  @keyframes pulse-arrow {
-    0%, 100% {
-      box-shadow: 0 0 15px rgba(238,111,56,0.6), inset 0 1px 0 rgba(255,255,255,0.2);
-    }
-    50% {
-      box-shadow: 0 0 30px rgba(238,111,56,0.9), inset 0 1px 0 rgba(255,255,255,0.3);
-    }
-  }
+.card-desc {
+  color: rgba(255,255,255,0.55);
+  font-size: 0.83rem;
+  line-height: 1.6;
+  flex: 1;
+  overflow: hidden;
+  display: -webkit-box;
+  line-clamp: 3;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  margin: 0;
+  font-family: 'DM Sans', sans-serif;
+}
 
-  /* ─── CTA ─── */
-  .cta-section {
-    border-top: 1px solid rgba(255,255,255,0.08);
-    padding-top: 40px;
-  }
+.btn-agendar {
+  background: transparent;
+  border: 1.5px solid rgba(238,111,56,0.5);
+  color: #ee6f38;
+  font-weight: 700;
+  font-size: 0.78rem;
+  border-radius: 8px;
+  padding: 10px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.25s ease;
+  letter-spacing: 0.8px;
+  font-family: 'DM Sans', sans-serif;
+}
 
-  .cta-text {
-    color: rgba(255,255,255,0.55);
-    font-size: 1rem;
-    letter-spacing: 0.4px;
-  }
+.btn-agendar:hover {
+  background: linear-gradient(135deg, #ee6f38, #ff9a6c);
+  border-color: transparent;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(238,111,56,0.35);
+}
 
-  .cta-btn {
-    background: linear-gradient(135deg, #ee6f38, #ff9a5c);
-    color: white;
-    font-weight: 800;
-    font-size: 1rem;
-    letter-spacing: 1px;
-    border: none;
-    border-radius: 50px;
-    padding: 14px 40px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
+/* Dots */
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+}
 
-  .cta-btn:hover {
-    transform: scale(1.07) translateY(-3px);
-    box-shadow: 0 14px 28px rgba(238,111,56,0.55);
-  }
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
 
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(24px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+.dot.active {
+  background: #ee6f38;
+  transform: scale(1.5);
+  box-shadow: 0 0 8px rgba(238,111,56,0.6);
+}
+
+/* CTA */
+.cta-section {
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 48px;
+}
+
+.cta-text {
+  color: rgba(255,255,255,0.4);
+  font-size: 0.95rem;
+  margin-bottom: 24px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.cta-btn {
+  background: linear-gradient(135deg, #ee6f38, #ff9a6c);
+  color: white;
+  font-weight: 800;
+  font-size: 0.875rem;
+  letter-spacing: 1.2px;
+  border: none;
+  border-radius: 8px;
+  padding: 16px 44px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+  font-family: 'DM Sans', sans-serif;
+  box-shadow: 0 6px 25px rgba(238,111,56,0.4);
+}
+
+.cta-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 35px rgba(238,111,56,0.5);
+}
 </style>

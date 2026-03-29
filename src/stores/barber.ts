@@ -142,7 +142,6 @@ export const useBarberStore = defineStore('barber', {
 
     // En barber.ts - agregar al final de actions
     async getHorariosBarbero(barberoId: number) {
-      this.loading = true
       try {
         const { data } = await api.get(`/horario-barbero/barbero/${barberoId}`, { withCredentials: true })
         console.log('📅 Horarios recibidos del backend:', data)
@@ -155,8 +154,6 @@ export const useBarberStore = defineStore('barber', {
         }
         console.error('❌ Error:', this.error)
         throw this.error
-      } finally {
-        this.loading = false
       }
     }
   },

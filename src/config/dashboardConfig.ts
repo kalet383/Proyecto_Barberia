@@ -329,16 +329,10 @@ export default {
         {
             title: "Clientes",
             icon: UsersIcon,
-            to: "/clientes"
-        },
-        {
-            title: "Ventas",
-            icon: Receipt2Icon, 
-            to: "/superadmin/ventas" 
+            to: "/lista-clientes"
         },
         { divider: true },
         { header: 'Utilidades' },
-        commonItems.colors,
         commonItems.icons
     ],
 
@@ -403,16 +397,9 @@ export default {
             to: "/superadmin/compras/historial"
         },
         {
-            title: "Inventario (Productos)",
-            icon: PackageIcon,
-            to: "/lista-productos"
-        },
-        { divider: true },
-        { header: 'Reportes' },
-        {
-            title: "Estadísticas Globales",
-            icon: ChartInfographicIcon,
-            to: "/superadmin/dashboard"
-        }
-    ]
-};
+             title: "Inventario (Productos)",
+             icon: PackageIcon,
+             to: "/lista-productos"
+         }
+     ]
+ };

@@ -2,7 +2,7 @@
 import { useProductosStore } from '@/stores/useProductosStore';
 import { ShoppingCartIcon, XIcon, PlusIcon, MinusIcon, TrashIcon } from 'vue-tabler-icons';
 import { useRouter } from 'vue-router';
-import { nextTick } from 'vue';
+import { nextTick, computed } from 'vue';
 
 const productosStore = useProductosStore();
 const router = useRouter();
@@ -23,6 +23,8 @@ const formatCurrency = (value: number) => {
     }).format(value);
 };
 
+const subtotalAnimado = computed(() => productosStore.subtotalCarrito);
+
 const goToCheckout = () => {
     productosStore.cerrarCarrito();
     router.push('/checkout');
@@ -30,18 +32,15 @@ const goToCheckout = () => {
 
 const goToStore = async () => {
     productosStore.cerrarCarrito();
-
     const scrollToProducts = () => {
         const el = document.getElementById('productos-section');
         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
-
     if (router.currentRoute.value.path === '/') {
         await nextTick();
         scrollToProducts();
         return;
     }
-
     await router.push('/');
     setTimeout(scrollToProducts, 120);
 };
@@ -50,579 +49,603 @@ const goToStore = async () => {
 <template>
     <v-dialog 
         v-model="productosStore.carritoAbierto" 
-        max-width="1000" 
+        max-width="820" 
         scrollable
         transition="dialog-bottom-transition"
+        :z-index="10000"
     >
-        <v-card class="cart-modal elevation-24">
-            <!-- Header del Modal -->
-            <v-card-title class="cart-header pa-6">
-                <div class="d-flex align-center w-100">
-                    <div class="header-icon-wrapper mr-3">
-                        <ShoppingCartIcon size="32" class="header-icon" />
-                    </div>
-                    <div class="flex-grow-1">
-                        <h2 class="cart-title mb-1">Mi Carrito de Compras</h2>
-                        <p class="cart-subtitle mb-0">
-                            {{ productosStore.ComprasCarrito.length }} 
-                            {{ productosStore.ComprasCarrito.length === 1 ? 'producto' : 'productos' }}
-                        </p>
-                    </div>
-                    <v-btn 
-                        icon 
-                        variant="text" 
-                        class="close-btn"
-                        @click="productosStore.cerrarCarrito()"
-                    >
-                        <XIcon size="28" />
-                    </v-btn>
-                </div>
-            </v-card-title>
-
-            <v-divider class="divider-orange"></v-divider>
-
-            <!-- Contenido del Modal -->
-            <v-card-text class="pa-0 cart-content">
-                <!-- Carrito con Productos -->
-                <div v-if="productosStore.ComprasCarrito.length > 0">
-                    <!-- Header de la tabla (Desktop) -->
-                    <v-row class="table-header py-3 px-6 ma-0 d-none d-md-flex">
-                        <v-col cols="5" class="text-uppercase font-weight-bold">Producto</v-col>
-                        <v-col cols="2" class="text-center text-uppercase font-weight-bold">Cantidad</v-col>
-                        <v-col cols="2" class="text-center text-uppercase font-weight-bold">Precio</v-col>
-                        <v-col cols="2" class="text-center text-uppercase font-weight-bold">Subtotal</v-col>
-                        <v-col cols="1" class="text-center"></v-col>
-                    </v-row>
-
-                    <!-- Lista de Productos -->
-                    <v-list class="pa-0 products-list">
-                        <v-list-item 
-                            v-for="item in (productosStore.ComprasCarrito as Product[])" 
-                            :key="item.id" 
-                            class="product-item px-6 py-5"
-                        >
-                            <v-row align="center" class="ma-0">
-                                <!-- Producto Info -->
-                                <v-col cols="12" md="5" class="d-flex align-center pa-2">
-                                    <div class="product-image-wrapper mr-4">
-                                        <v-img 
-                                            :src="item.img" 
-                                            width="100" 
-                                            height="100" 
-                                            cover 
-                                            class="product-image rounded-lg"
-                                        >
-                                            <template v-slot:placeholder>
-                                                <div class="d-flex align-center justify-center fill-height">
-                                                    <v-progress-circular
-                                                        color="orange-darken-1"
-                                                        indeterminate
-                                                    ></v-progress-circular>
-                                                </div>
-                                            </template>
-                                        </v-img>
-                                    </div>
-                                    <div class="product-info">
-                                        <h3 class="product-name mb-2">{{ item.nombre }}</h3>
-                                        <!-- Botón Eliminar Mobile -->
-                                        <v-btn 
-                                            variant="text" 
-                                            color="error" 
-                                            size="small" 
-                                            class="pa-0 d-md-none remove-btn-mobile"
-                                            @click="productosStore.EliminarDelCarrito(item.id)"
-                                        >
-                                            <TrashIcon size="16" class="mr-1" /> 
-                                            <span>Eliminar</span>
-                                        </v-btn>
-                                    </div>
-                                </v-col>
-                                
-                                <!-- Cantidad -->
-                                <v-col cols="6" md="2" class="d-flex justify-center align-center pa-2">
-                                    <div class="quantity-selector">
-                                        <v-btn 
-                                            icon 
-                                            size="small" 
-                                            variant="flat"
-                                            class="quantity-btn minus"
-                                            @click="productosStore.QuitarUno(item.id)"
-                                        >
-                                            <MinusIcon size="16" />
-                                        </v-btn>
-                                        <div class="quantity-value">
-                                            {{ item.cantidad }}
-                                        </div>
-                                        <v-btn 
-                                            icon 
-                                            size="small" 
-                                            variant="flat"
-                                            class="quantity-btn plus"
-                                            @click="productosStore.AgregaralCarrito(item)"
-                                        >
-                                            <PlusIcon size="16" />
-                                        </v-btn>
-                                    </div>
-                                </v-col>
-
-                                <!-- Precio Unitario -->
-                                <v-col cols="6" md="2" class="text-center pa-2">
-                                    <div class="price-unit">
-                                        {{ formatCurrency(item.precio) }}
-                                    </div>
-                                </v-col>
-
-                                <!-- Subtotal -->
-                                <v-col cols="6" md="2" class="text-center pa-2">
-                                    <div class="price-subtotal">
-                                        {{ formatCurrency(item.precio * item.cantidad) }}
-                                    </div>
-                                </v-col>
-
-                                <!-- Botón Eliminar Desktop -->
-                                <v-col cols="6" md="1" class="text-center pa-2 d-none d-md-flex justify-center">
-                                    <v-btn 
-                                        icon 
-                                        variant="text" 
-                                        class="remove-btn"
-                                        @click="productosStore.EliminarDelCarrito(item.id)"
-                                    >
-                                        <TrashIcon size="22" />
-                                    </v-btn>
-                                </v-col>
-                            </v-row>
-                        </v-list-item>
-                    </v-list>
-                </div>
-
-                <!-- Carrito Vacío -->
-                <div v-else class="empty-cart-container pa-12 text-center">
-                    <div class="empty-cart-icon mb-6">
-                        <v-icon size="120" color="#ee6f38">mdi-cart-off</v-icon>
-                    </div>
-                    <h2 class="empty-cart-title mb-3">Tu carrito está vacío</h2>
-                    <p class="empty-cart-text mb-6">
-                        ¡Descubre nuestros increíbles productos y añade lo que más te guste!
-                    </p>
-                    <v-btn 
-                        color="#ee6f38" 
-                        size="x-large"
-                        class="shop-now-btn elevation-4"
-                        @click="goToStore"
-                    >
-                        <ShoppingCartIcon size="20" class="mr-2" />
-                        <span class="font-weight-bold">Explorar Productos</span>
-                    </v-btn>
-                </div>
-            </v-card-text>
-
-            <v-divider class="divider-orange"></v-divider>
-
-            <!-- Footer del Modal -->
-            <v-card-actions class="cart-footer pa-6" v-if="productosStore.ComprasCarrito.length > 0">
-                <v-container fluid class="pa-0">
-                    <v-row align="center" class="ma-0">
-                        <!-- Botones de Acción Izquierda -->
-                        <v-col cols="12" md="6" class="pa-2 d-flex flex-column flex-md-row gap-2">
-                            <v-btn 
-                                variant="outlined" 
-                                color="error"
-                                class="action-btn"
-                                @click="productosStore.VaciarCarrito()"
-                            >
-                                <TrashIcon size="18" class="mr-2" />
-                                <span>Vaciar Carrito</span>
-                            </v-btn>
-                            <v-btn 
-                                variant="text" 
-                                color="#ee6f38"
-                                class="action-btn"
-                                @click="goToStore"
-                            >
-                                <v-icon class="mr-2">mdi-arrow-left</v-icon>
-                                <span>Seguir Comprando</span>
-                            </v-btn>
-                        </v-col>
-
-                        <!-- Total y Checkout -->
-                        <v-col cols="12" md="6" class="pa-2">
-                            <div class="checkout-section">
-                                <!-- Total -->
-                                <div class="total-row mb-3">
-                                    <span class="total-label">TOTAL:</span>
-                                    <span class="total-amount">
-                                        {{ formatCurrency(productosStore.subtotalCarrito) }}
-                                    </span>
-                                </div>
-                                
-                                <!-- Nota de Envío -->
-                                <p class="shipping-note mb-4">
-                                    *Impuestos incluidos. Los gastos de envío se calculan en el checkout.
-                                </p>
-                                
-                                <!-- Botón Checkout -->
-                                <v-btn 
-                                    block
-                                    size="x-large"
-                                    class="checkout-btn elevation-4"
-                                    @click="goToCheckout"
-                                >
-                                    <v-icon class="mr-2">mdi-lock-outline</v-icon>
-                                    <span class="font-weight-bold">PROCEDER AL PAGO</span>
-                                </v-btn>
+        <v-theme-provider theme="PurpleTheme">
+            <v-card class="cart-modal rounded-xl">
+                <!-- ═══════════════════════════════════════
+                     HEADER
+                ═══════════════════════════════════════ -->
+                <div class="cart-header">
+                    <div class="header-pattern"></div>
+                    <div class="d-flex align-center justify-space-between position-relative" style="z-index: 1;">
+                        <div class="d-flex align-center ga-3">
+                            <div class="header-icon-box">
+                                <ShoppingCartIcon size="24" stroke-width="2" />
                             </div>
-                        </v-col>
-                    </v-row>
-                </v-container>
-            </v-card-actions>
-        </v-card>
+                            <div>
+                                <h2 class="text-white font-weight-bold" style="font-size: 1.25rem; line-height: 1.2;">
+                                    Mi Carrito
+                                </h2>
+                                <p class="mb-0" style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">
+                                    <span style="color: #ff9a6c; font-weight: 700;">
+                                        {{ productosStore.ComprasCarrito.length }}
+                                    </span>
+                                    {{ productosStore.ComprasCarrito.length === 1 ? 'producto' : 'productos' }}
+                                </p>
+                            </div>
+                        </div>
+                        <v-btn 
+                            icon 
+                            variant="tonal" 
+                            size="small"
+                            class="close-btn"
+                            @click="productosStore.cerrarCarrito()"
+                        >
+                            <XIcon size="20" stroke-width="2.5" />
+                        </v-btn>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════════════
+                     CONTENIDO
+                ═══════════════════════════════════════ -->
+                <v-card-text class="cart-content pa-0">
+                    <!-- ════════ CON PRODUCTOS ════════ -->
+                    <div v-if="productosStore.ComprasCarrito.length > 0" class="pa-4 pa-md-5">
+                        <div class="products-list">
+                            <transition-group name="product-anim" tag="div" class="d-flex flex-column" style="gap: 14px;">
+                                <v-card
+                                    v-for="item in (productosStore.ComprasCarrito as Product[])" 
+                                    :key="item.id"
+                                    variant="outlined"
+                                    rounded="xl"
+                                    class="product-card"
+                                >
+                                    <v-row no-gutters align="center">
+                                        <!-- Imagen -->
+                                        <v-col cols="3" sm="2" class="pa-3">
+                                            <v-img 
+                                                :src="item.img" 
+                                                :aspect-ratio="1"
+                                                cover 
+                                                class="product-img rounded-lg"
+                                            >
+                                                <template v-slot:placeholder>
+                                                    <div class="d-flex align-center justify-center fill-height bg-grey-lighten-4">
+                                                        <v-progress-circular color="#ee6f38" indeterminate size="20" width="2" />
+                                                    </div>
+                                                </template>
+                                            </v-img>
+                                        </v-col>
+
+                                        <!-- Info del producto -->
+                                        <v-col cols="9" sm="4" class="pa-3 pl-1">
+                                            <h3 class="product-name">{{ item.nombre }}</h3>
+                                            <p class="text-caption text-medium-emphasis mb-0 mt-1">
+                                                {{ formatCurrency(item.precio) }} c/u
+                                            </p>
+                                            <!-- Subtotal visible en mobile -->
+                                            <p class="d-sm-none mb-0 mt-1 font-weight-bold" style="color: #ee6f38; font-size: 1rem;">
+                                                {{ formatCurrency(item.precio * item.cantidad) }}
+                                            </p>
+                                        </v-col>
+
+                                        <!-- Cantidad -->
+                                        <v-col cols="6" sm="3" class="pa-3 d-flex justify-center">
+                                            <div class="quantity-control">
+                                                <v-btn 
+                                                    icon 
+                                                    size="x-small" 
+                                                    variant="tonal"
+                                                    color="grey-darken-1"
+                                                    :disabled="item.cantidad <= 1"
+                                                    @click="productosStore.QuitarUno(item.id)"
+                                                    class="qty-btn"
+                                                >
+                                                    <MinusIcon size="14" stroke-width="2.5" />
+                                                </v-btn>
+                                                <span class="qty-value">{{ item.cantidad }}</span>
+                                                <v-btn 
+                                                    icon 
+                                                    size="x-small" 
+                                                    variant="tonal"
+                                                    color="orange-darken-1"
+                                                    @click="productosStore.AgregaralCarrito(item)"
+                                                    class="qty-btn"
+                                                >
+                                                    <PlusIcon size="14" stroke-width="2.5" />
+                                                </v-btn>
+                                            </div>
+                                        </v-col>
+
+                                        <!-- Subtotal desktop -->
+                                        <v-col cols="3" sm="2" class="pa-3 text-center d-none d-sm-flex align-center justify-center">
+                                            <span class="product-subtotal">
+                                                {{ formatCurrency(item.precio * item.cantidad) }}
+                                            </span>
+                                        </v-col>
+
+                                        <!-- Eliminar -->
+                                        <v-col cols="6" sm="1" class="pa-3 d-flex justify-center align-center">
+                                            <v-btn 
+                                                icon 
+                                                size="small" 
+                                                variant="text"
+                                                class="remove-btn"
+                                                @click="productosStore.EliminarDelCarrito(item.id)"
+                                            >
+                                                <TrashIcon size="18" stroke-width="2" />
+                                            </v-btn>
+                                        </v-col>
+                                    </v-row>
+                                </v-card>
+                            </transition-group>
+                        </div>
+                    </div>
+
+                    <!-- ════════ CARRITO VACÍO ════════ -->
+                    <div v-else class="empty-cart">
+                        <div class="empty-visual">
+                            <div class="empty-circle">
+                                <ShoppingCartIcon size="48" stroke-width="1.5" />
+                            </div>
+                        </div>
+                        <h2 class="text-h6 font-weight-bold mb-2">Tu carrito está vacío</h2>
+                        <p class="text-body-2 text-medium-emphasis mb-6" style="max-width: 280px;">
+                            Explora nuestra tienda y descubre productos increíbles
+                        </p>
+                        <v-btn 
+                            color="#ee6f38" 
+                            rounded="lg" 
+                            size="large"
+                            class="text-none font-weight-bold explore-btn"
+                            elevation="3"
+                            @click="goToStore"
+                        >
+                            <i class="fas fa-store mr-2"></i>
+                            Explorar Productos
+                        </v-btn>
+                    </div>
+                </v-card-text>
+
+                <!-- ═══════════════════════════════════════
+                     FOOTER
+                ═══════════════════════════════════════ -->
+                <div v-if="productosStore.ComprasCarrito.length > 0" class="cart-footer">
+                    <!-- Acciones secundarias -->
+                    <div class="d-flex align-center justify-space-between mb-4 pb-3" style="border-bottom: 1px dashed #e0e0e0;">
+                        <v-btn 
+                            variant="text" 
+                            color="grey-darken-1" 
+                            size="small" 
+                            class="text-none font-weight-medium"
+                            @click="goToStore"
+                        >
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            Seguir comprando
+                        </v-btn>
+                        <v-btn 
+                            variant="text" 
+                            color="red-darken-1" 
+                            size="small" 
+                            class="text-none font-weight-medium"
+                            @click="productosStore.VaciarCarrito()"
+                        >
+                            <TrashIcon size="14" class="mr-1" />
+                            Vaciar
+                        </v-btn>
+                    </div>
+
+                    <!-- Resumen -->
+                    <v-card variant="flat" class="checkout-card rounded-xl" color="grey-lighten-5">
+                        <v-card-text class="pa-4">
+                            <!-- Subtotal -->
+                            <div class="d-flex justify-space-between align-center mb-2">
+                                <span class="text-body-2 text-medium-emphasis">Subtotal</span>
+                                <span class="text-body-2 font-weight-bold">{{ formatCurrency(subtotalAnimado) }}</span>
+                            </div>
+                            <!-- Envío -->
+                            <div class="d-flex justify-space-between align-center mb-3">
+                                <span class="text-body-2 text-medium-emphasis">Envío</span>
+                                <span class="text-caption text-medium-emphasis font-italic">Calcular al pagar</span>
+                            </div>
+
+                            <v-divider class="mb-3" />
+
+                            <!-- Total -->
+                            <div class="d-flex justify-space-between align-center mb-4">
+                                <span class="text-subtitle-1 font-weight-bold text-uppercase" style="letter-spacing: 0.5px;">
+                                    Total
+                                </span>
+                                <span class="total-price">{{ formatCurrency(subtotalAnimado) }}</span>
+                            </div>
+
+                            <!-- Botón pagar -->
+                            <v-btn 
+                                block 
+                                size="x-large" 
+                                class="checkout-btn text-none font-weight-bold"
+                                elevation="3"
+                                @click="goToCheckout"
+                            >
+                                <i class="fas fa-lock mr-2" style="font-size: 14px;"></i>
+                                Proceder al pago
+                                <i class="fas fa-arrow-right ml-2" style="font-size: 14px;"></i>
+                            </v-btn>
+
+                            <!-- Nota seguridad -->
+                            <p class="text-center text-caption text-medium-emphasis mt-3 mb-0">
+                                <i class="fas fa-shield-alt mr-1" style="color: #ee6f38;"></i>
+                                Pago 100% seguro · Envío a toda Colombia
+                            </p>
+                        </v-card-text>
+                    </v-card>
+                </div>
+            </v-card>
+        </v-theme-provider>
     </v-dialog>
 </template>
 
 <style scoped>
-/* =========================
-   MODAL PRINCIPAL
-   ========================= */
+/* ═══════════════════════════════════════
+   MODAL BASE
+═══════════════════════════════════════ */
 .cart-modal {
-    border-radius: 16px !important;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.28) !important;
 }
 
-/* =========================
+/* ═══════════════════════════════════════
    HEADER
-   ========================= */
+═══════════════════════════════════════ */
 .cart-header {
-    background: linear-gradient(135deg, #ee6f38 0%, #ff8c61 100%);
-    color: white;
-}
-
-.header-icon-wrapper {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
-    padding: 10px;
-    backdrop-filter: blur(10px);
-}
-
-.header-icon {
-    color: white;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-}
-
-.cart-title {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: white;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-    margin: 0;
-}
-
-.cart-subtitle {
-    font-size: 0.95rem;
-    color: rgba(255, 255, 255, 0.95);
-    font-weight: 500;
-}
-
-.close-btn {
-    color: white !important;
-    transition: all 0.3s ease;
-}
-
-.close-btn:hover {
-    background: rgba(255, 255, 255, 0.2) !important;
-    transform: rotate(90deg);
-}
-
-.divider-orange {
-    border-color: #ee6f38;
-    border-width: 2px;
-    opacity: 0.3;
-}
-
-/* =========================
-   CONTENIDO
-   ========================= */
-.cart-content {
-    min-height: 300px;
-    max-height: 500px;
-    background-color: #fafafa;
-}
-
-.table-header {
-    background-color: #f5f5f5;
-    border-bottom: 2px solid #ee6f38;
-    font-size: 0.875rem;
-    color: #424242;
-    letter-spacing: 0.5px;
-}
-
-.products-list {
-    background-color: white;
-}
-
-.product-item {
-    border-bottom: 1px solid #e0e0e0;
-    transition: all 0.3s ease;
-}
-
-.product-item:hover {
-    background-color: #fff8f5;
-    transform: translateX(4px);
-}
-
-.product-item:last-child {
-    border-bottom: none;
-}
-
-/* =========================
-   PRODUCTO
-   ========================= */
-.product-image-wrapper {
+    position: relative;
+    background: linear-gradient(135deg, #1a1a2e, #252540);
+    padding: 18px 22px;
+    overflow: hidden;
     flex-shrink: 0;
 }
 
-.product-image {
-    border: 2px solid #f5f5f5;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
+.header-pattern {
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(circle at 15% 50%, rgba(238, 111, 56, 0.12) 0%, transparent 50%),
+        radial-gradient(circle at 85% 80%, rgba(238, 111, 56, 0.08) 0%, transparent 40%);
+    pointer-events: none;
 }
 
-.product-item:hover .product-image {
-    border-color: #ee6f38;
-    box-shadow: 0 4px 12px rgba(238, 111, 56, 0.3);
-}
-
-.product-info {
-    flex-grow: 1;
-}
-
-.product-name {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #212121;
-    line-height: 1.4;
-    margin: 0;
-}
-
-.remove-btn-mobile {
-    text-transform: none;
-    font-size: 0.85rem;
-}
-
-/* =========================
-   CANTIDAD
-   ========================= */
-.quantity-selector {
+.header-icon-box {
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+    background: linear-gradient(135deg, #ee6f38, #ff9a6c);
     display: flex;
     align-items: center;
-    gap: 8px;
-    background: #f5f5f5;
-    border-radius: 50px;
-    padding: 4px;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+    justify-content: center;
+    color: white;
+    box-shadow: 0 4px 14px rgba(238, 111, 56, 0.3);
+    flex-shrink: 0;
 }
 
-.quantity-btn {
-    background: white !important;
-    color: #ee6f38 !important;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-    transition: all 0.3s ease;
+.close-btn {
+    background: rgba(255, 255, 255, 0.12) !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+    transition: all 0.25s ease !important;
 }
 
-.quantity-btn:hover {
-    background: #ee6f38 !important;
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.25) !important;
     color: white !important;
-    transform: scale(1.1);
+    transform: rotate(90deg);
 }
 
-.quantity-value {
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: #212121;
-    min-width: 35px;
-    text-align: center;
+/* ═══════════════════════════════════════
+   CONTENIDO
+═══════════════════════════════════════ */
+.cart-content {
+    flex: 1;
+    overflow-y: auto;
+    background: #f7f7f8;
 }
 
-/* =========================
-   PRECIOS
-   ========================= */
-.price-unit {
-    font-size: 1rem;
-    font-weight: 500;
-    color: #616161;
+/* Scrollbar */
+.cart-content::-webkit-scrollbar { width: 5px; }
+.cart-content::-webkit-scrollbar-track { background: transparent; }
+.cart-content::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #ee6f38, #ff9a6c);
+    border-radius: 10px;
 }
 
-.price-subtotal {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #ee6f38;
-    text-shadow: 0 1px 2px rgba(238, 111, 56, 0.2);
+/* ═══════════════════════════════════════
+   PRODUCT CARDS — HORIZONTAL
+═══════════════════════════════════════ */
+.product-card {
+    border-color: #eee !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
 }
 
-.remove-btn {
-    color: #9e9e9e !important;
-    transition: all 0.3s ease;
-}
-
-.remove-btn:hover {
-    color: #f44336 !important;
-    background: rgba(244, 67, 54, 0.1) !important;
-    transform: rotate(90deg) scale(1.1);
-}
-
-/* =========================
-   CARRITO VACÍO
-   ========================= */
-.empty-cart-container {
-    background: linear-gradient(135deg, #fff 0%, #fff8f5 100%);
-}
-
-.empty-cart-icon {
-    animation: float 3s ease-in-out infinite;
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-}
-
-.empty-cart-title {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: #424242;
-}
-
-.empty-cart-text {
-    font-size: 1.05rem;
-    color: #757575;
-    max-width: 400px;
-    margin: 0 auto;
-}
-
-.shop-now-btn {
-    background: linear-gradient(135deg, #ee6f38 0%, #ff8c61 100%) !important;
-    color: white !important;
-    border-radius: 50px;
-    text-transform: none;
-    font-size: 1.1rem;
-    padding: 24px 48px !important;
-    transition: all 0.3s ease;
-}
-
-.shop-now-btn:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(238, 111, 56, 0.4) !important;
-}
-
-/* =========================
-   FOOTER
-   ========================= */
-.cart-footer {
-    background: linear-gradient(135deg, #fafafa 0%, #ffffff 100%);
-    border-top: 2px solid #f5f5f5;
-}
-
-.action-btn {
-    text-transform: none;
-    font-weight: 600;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-}
-
-.action-btn:hover {
+.product-card:hover {
+    border-color: #ee6f38 !important;
+    box-shadow: 0 6px 24px rgba(238, 111, 56, 0.15) !important;
     transform: translateY(-2px);
 }
 
-.checkout-section {
-    background: white;
-    padding: 24px;
-    border-radius: 12px;
-    border: 2px solid #ee6f38;
-    box-shadow: 0 4px 12px rgba(238, 111, 56, 0.15);
+.product-img {
+    border: 2px solid #f0f0f0;
+    transition: border-color 0.3s ease;
 }
 
-.total-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-bottom: 12px;
-    border-bottom: 2px dashed #ee6f38;
+.product-card:hover .product-img {
+    border-color: #ee6f38;
 }
 
-.total-label {
-    font-size: 1.25rem;
+.product-name {
+    font-size: 0.95rem;
     font-weight: 700;
-    color: #424242;
-    letter-spacing: 1px;
+    color: #1a1a2e;
+    margin: 0;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
-.total-amount {
-    font-size: 2rem;
+/* ═══════════════════════════════════════
+   CANTIDAD
+═══════════════════════════════════════ */
+.quantity-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #f5f5f5;
+    border-radius: 12px;
+    padding: 4px 6px;
+    border: 1px solid #e8e8e8;
+}
+
+.qty-btn {
+    transition: transform 0.2s ease !important;
+}
+
+.qty-btn:hover {
+    transform: scale(1.1);
+}
+
+.qty-value {
+    min-width: 32px;
+    text-align: center;
+    font-weight: 800;
+    font-size: 1rem;
+    color: #1a1a2e;
+    user-select: none;
+}
+
+/* ═══════════════════════════════════════
+   SUBTOTAL Y ELIMINAR
+═══════════════════════════════════════ */
+.product-subtotal {
+    font-size: 1.05rem;
     font-weight: 800;
     color: #ee6f38;
-    text-shadow: 0 2px 4px rgba(238, 111, 56, 0.2);
+    white-space: nowrap;
 }
 
-.shipping-note {
-    font-size: 0.85rem;
-    color: #757575;
+.remove-btn {
+    color: #bbb !important;
+    transition: all 0.25s ease !important;
+}
+
+.remove-btn:hover {
+    color: #ef4444 !important;
+    background: rgba(239, 68, 68, 0.08) !important;
+    transform: scale(1.15);
+}
+
+/* ═══════════════════════════════════════
+   CARRITO VACÍO
+═══════════════════════════════════════ */
+.empty-cart {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     text-align: center;
-    font-style: italic;
-    margin: 0;
+    padding: 52px 28px;
+    min-height: 360px;
+    background: linear-gradient(180deg, #f7f7f8 0%, #fff5f0 100%);
+}
+
+.empty-visual {
+    margin-bottom: 20px;
+}
+
+.empty-circle {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fff5f0, #ffe8dc);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ee6f38;
+    opacity: 0.8;
+    animation: floatCart 3.5s ease-in-out infinite;
+}
+
+@keyframes floatCart {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.explore-btn {
+    box-shadow: 0 6px 20px rgba(238, 111, 56, 0.3) !important;
+    transition: all 0.3s ease !important;
+    letter-spacing: 0.5px;
+}
+
+.explore-btn:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 10px 30px rgba(238, 111, 56, 0.4) !important;
+}
+
+/* ═══════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════ */
+.cart-footer {
+    background: white;
+    border-top: 1px solid #eee;
+    padding: 16px 20px 20px;
+    flex-shrink: 0;
+}
+
+.checkout-card {
+    border: 1px solid #e8e8e8 !important;
+}
+
+.total-price {
+    font-size: 1.55rem;
+    font-weight: 800;
+    color: #ee6f38;
+    letter-spacing: -0.5px;
 }
 
 .checkout-btn {
-    background: #000000 !important;
+    background: linear-gradient(135deg, #1a1a2e, #2d2d4a) !important;
     color: white !important;
-    border-radius: 8px;
+    border-radius: 14px !important;
+    letter-spacing: 0.5px;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 .checkout-btn:hover {
-    background: #ee6f38 !important;
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+    background: linear-gradient(135deg, #ee6f38, #d4561f) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(238, 111, 56, 0.35) !important;
 }
 
-/* =========================
+/* ═══════════════════════════════════════
+   ANIMACIONES DE ITEMS
+═══════════════════════════════════════ */
+.product-anim-enter-active {
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.product-anim-leave-active {
+    transition: all 0.25s ease;
+}
+.product-anim-enter-from {
+    opacity: 0;
+    transform: translateX(-16px);
+}
+.product-anim-leave-to {
+    opacity: 0;
+    transform: translateX(16px) scale(0.96);
+}
+.product-anim-move {
+    transition: transform 0.35s ease;
+}
+
+/* ═══════════════════════════════════════
    RESPONSIVE
-   ========================= */
-@media (max-width: 960px) {
-    .cart-title {
-        font-size: 1.4rem;
+═══════════════════════════════════════ */
+@media (max-width: 600px) {
+    .cart-modal {
+        border-radius: 20px 20px 0 0 !important;
+        max-height: 88vh;
     }
 
-    .cart-subtitle {
+    .cart-header {
+        padding: 14px 16px;
+    }
+
+    .header-icon-box {
+        width: 40px;
+        height: 40px;
+        border-radius: 11px;
+    }
+
+    .product-name {
         font-size: 0.85rem;
+        -webkit-line-clamp: 1;
+        line-clamp: 1;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .product-subtotal {
+        font-size: 0.95rem;
+    }
+
+    .quantity-control {
+        padding: 3px 5px;
+    }
+
+    .qty-value {
+        min-width: 28px;
+        font-size: 0.9rem;
+    }
+
+    .total-price {
+        font-size: 1.3rem;
+    }
+
+    .cart-footer {
+        padding: 14px 16px 16px;
+    }
+
+    .empty-cart {
+        padding: 36px 20px;
+        min-height: 300px;
+    }
+
+    .empty-circle {
+        width: 90px;
+        height: 90px;
+    }
+
+    .empty-circle svg {
+        width: 38px;
+        height: 38px;
+    }
+}
+
+@media (min-width: 601px) and (max-width: 959px) {
+    .product-name {
+        font-size: 0.9rem;
+    }
+}
+
+@media (min-width: 1200px) {
+    .cart-modal {
+        max-height: 82vh;
+    }
+
+    .cart-header {
+        padding: 22px 26px;
     }
 
     .product-name {
         font-size: 1rem;
     }
 
-    .total-amount {
-        font-size: 1.5rem;
+    .product-subtotal {
+        font-size: 1.1rem;
     }
 
-    .checkout-section {
-        padding: 16px;
-    }
-}
-
-@media (max-width: 600px) {
-    .product-image {
-        width: 80px;
-        height: 80px;
-    }
-
-    .empty-cart-icon {
-        font-size: 80px !important;
-    }
-
-    .shop-now-btn {
-        padding: 20px 32px !important;
-        font-size: 1rem;
+    .total-price {
+        font-size: 1.7rem;
     }
 }
 </style>

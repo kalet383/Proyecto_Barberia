@@ -1,159 +1,134 @@
 <template>
     <v-container class="d-flex align-center justify-center" style="min-height: 70vh;">
-        <v-card class="rounded-xl elevation-4" max-width="550" width="100%">
-            <v-card-text class="text-center pa-8">
-                <div class="mb-4 d-flex justify-center">
-                    <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #e65100, #ff6f00); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
-                        <i class="fas fa-user-check" style="font-size: 40px; color: white;"></i>
-                    </div>
+        <div class="confirmacion-card" :style="{ background: cardBg, border: `1.5px solid ${cardBorder}` }">
+            <!-- Header -->
+            <div class="confirmacion-header" :style="{ background: headerBg }">
+                <div class="header-icon" :style="{ background: isDark ? 'rgba(238, 111, 56, 0.15)' : 'rgba(238, 111, 56, 0.1)', border: `2px solid ${isDark ? 'rgba(238, 111, 56, 0.5)' : 'rgba(238, 111, 56, 0.3)'}` }">
+                    <i class="fas fa-user-check"></i>
                 </div>
-                <h2 class="text-h5 font-weight-bold mb-2">Confirmación de Usuario</h2>
-                <p class="text-body-2 text-grey-darken-1">
-                    Verifica tu información para continuar
-                </p>
-            </v-card-text>
+                <h2 class="header-titulo" :style="{ color: isDark ? '#fff' : '#1a1a2e' }">Confirmación de Usuario</h2>
+                <p class="header-subtitulo" :style="{ color: txtSecondary }">Verifica tu información para continuar</p>
+            </div>
 
-            <v-divider></v-divider>
+            <div class="confirmacion-divider"></div>
 
             <!-- Usuario Logueado -->
-            <v-card-text v-if="isAuthenticated" class="pa-6">
-                <!-- Alerta de usuario autenticado -->
-                <v-alert color="green-lighten-5" border="start" border-color="green-darken-2" class="mb-6">
-                    <div class="d-flex align-center">
-                        <i class="fa-solid fa-circle-check" style="font-size: 24px; color: #2e7d32; margin-right: 12px;"></i>
-                        <div>
-                            <p class="font-weight-bold mb-0">¡Sesión activa!</p>
-                            <p class="text-caption mb-0">Tu cita será agendada con esta cuenta</p>
-                        </div>
+            <div v-if="isAuthenticated" class="confirmacion-body">
+                <!-- Banner sesión activa -->
+                <div class="status-banner success mb-6" :style="{ background: isDark ? 'rgba(46, 125, 50, 0.08)' : 'rgba(46, 125, 50, 0.05)', borderColor: isDark ? 'rgba(46, 125, 50, 0.2)' : 'rgba(46, 125, 50, 0.15)' }">
+                    <div class="banner-icon-wrap success" :style="{ background: isDark ? 'rgba(46, 125, 50, 0.15)' : 'rgba(46, 125, 50, 0.12)' }">
+                        <i class="fa-solid fa-circle-check"></i>
                     </div>
-                </v-alert>
-
-                <!-- Card de usuario -->
-                <v-card variant="outlined" class="mb-6" color="grey-lighten-4">
-                    <v-card-text class="pa-5">
-                        <div class="d-flex align-center">
-                            <v-avatar size="60" color="orange-darken-1" class="mr-4">
-                                <v-img v-if="userData.foto" :src="userData.foto"></v-img>
-                                <i v-else class="fa-solid fa-user" style="font-size: 30px; color: white;"></i>
-                            </v-avatar>
-                            <div class="flex-grow-1">
-                                <p class="text-h6 font-weight-bold mb-1">
-                                    {{ userData.nombre }} {{ userData.apellido }}
-                                </p>
-                                <p class="text-body-2 text-grey-darken-1 mb-1">
-                                    <i class="fa-solid fa-envelope" style="font-size: 14px; margin-right: 4px;"></i>
-                                    {{ userData.email }}
-                                </p>
-                                <p class="text-body-2 text-grey-darken-1 mb-0">
-                                    <i class="fa-solid fa-phone" style="font-size: 14px; margin-right: 4px;"></i>
-                                    {{ userData.telefono }}
-                                </p>
-                            </div>
-                        </div>
-                    </v-card-text>
-                </v-card>
-
-                <!-- Botón de cambiar cuenta -->
-                <v-btn block variant="outlined" color="grey-darken-2" size="large" class="text-none mb-4" @click="cerrarSesion">
-                    <i class="fa-solid fa-arrow-right-arrow-left" style="margin-right: 8px;"></i>
-                    Usar Otra Cuenta
-                </v-btn>
-
-                <!-- Términos -->
-                <v-checkbox v-model="aceptaTerminos" color="orange-darken-1" hide-details="auto" class="mb-4">
-                    <template v-slot:label>
-                        <span class="text-body-2">
-                            Acepto los
-                            <a href="#" class="text-orange-darken-2 font-weight-bold">términos</a>
-                            y
-                            <a href="#" class="text-orange-darken-2 font-weight-bold">condiciones</a>
-                        </span>
-                    </template>
-                </v-checkbox>
-
-                <!-- Info adicional -->
-                <v-alert color="blue-lighten-5" border="start" border-color="blue" density="compact" class="text-caption">
-                    <i class="fa-solid fa-info-circle" style="font-size: 16px; margin-right: 8px;"></i>
-                    Recibirás una confirmación por correo y SMS
-                </v-alert>
-            </v-card-text>
-
-            <!-- Usuario NO Logueado -->
-            <v-card-text v-else class="pa-6">
-                <!-- Alerta para iniciar sesión -->
-                <v-alert color="orange-lighten-5" border="start" border-color="orange-darken-2" class="mb-6">
-                    <div class="d-flex align-center">
-                        <i class="fa-solid fa-triangle-exclamation" style="font-size: 24px; color: #e65100; margin-right: 12px;"></i>
-                        <div>
-                            <p class="font-weight-bold mb-1">Cuenta requerida</p>
-                            <p class="text-caption mb-0">Inicia sesión o regístrate para continuar</p>
-                        </div>
+                    <div>
+                        <p class="banner-titulo" :style="{ color: isDark ? '#81c784' : '#2e7d32' }">¡Sesión activa!</p>
+                        <p class="banner-subtitulo" :style="{ color: txtSecondary }">Tu cita será agendada con esta cuenta</p>
                     </div>
-                </v-alert>
-
-                <!-- Opciones para continuar con la reserva -->
-                <div class="mb-4">
-                    <p class="text-subtitle-2 font-weight-bold mb-3">
-                        <i class="fa-solid fa-user-shield" style="color: #e65100; margin-right: 8px;"></i>
-                        ¿Cómo deseas continuar?
-                    </p>
-
-                    <!-- Botón para iniciar sesion -->
-                    <v-btn block size="x-large" color="orange-darken-1" class="text-none mb-3" @click="irALogin">
-                        <i class="fa-solid fa-right-to-bracket" style="margin-right: 8px;"></i>
-                        Iniciar Sesión
-                    </v-btn>
-
-                    <!-- Divider -->
-                    <div class="d-flex align-center my-4">
-                        <v-divider></v-divider>
-                        <span class="px-3 text-grey-darken-1 text-caption">o</span>
-                        <v-divider></v-divider>
-                    </div>
-
-                    <!-- Botón para crear una cuenta -->
-                    <v-btn block size="x-large" variant="outlined" color="orange-darken-1" class="text-none" @click="irARegistro">
-                        <i class="fa-solid fa-user-plus" style="margin-right: 8px;"></i>
-                        Crear Cuenta Nueva
-                    </v-btn>
                 </div>
 
-                <!-- Beneficios de tener cuenta -->
-                <v-card variant="tonal" color="grey-lighten-4" class="pa-4">
-                    <p class="text-subtitle-2 font-weight-bold mb-3">
-                        <i class="fa-solid fa-star" style="font-size: 18px; margin-right: 4px;"></i>
-                        Beneficios de tener cuenta
+                <!-- Card de usuario -->
+                <div class="usuario-card mb-6" :style="{ background: innerBg, borderColor: cardBorder }">
+                    <div class="usuario-avatar-wrap">
+                        <v-avatar size="64" class="usuario-avatar" :style="{ border: `2px solid ${isDark ? '#ee6f38' : '#ee6f38'}` }">
+                            <v-img v-if="userData.foto" :src="userData.foto"></v-img>
+                            <i v-else class="fa-solid fa-user" style="font-size: 30px; color: white;"></i>
+                        </v-avatar>
+                    </div>
+                    <div class="usuario-info ml-2">
+                        <p class="usuario-nombre" :style="{ color: txtPrimary }">{{ userData.nombre }} {{ userData.apellido }}</p>
+                        <p class="usuario-detalle" :style="{ color: txtSecondary }">
+                            <i class="fa-solid fa-envelope" style="color: #ee6f38;"></i>
+                            {{ userData.email }}
+                        </p>
+                        <p class="usuario-detalle" :style="{ color: txtSecondary }">
+                            <i class="fa-solid fa-phone" style="color: #ee6f38;"></i>
+                            {{ userData.telefono || 'Sin teléfono' }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Cambiar cuenta -->
+                <button class="btn-cambiar-cuenta mb-6" @click="cerrarSesion" :style="{ borderColor: cardBorder, color: txtSecondary }">
+                    <i class="fa-solid fa-arrow-right-arrow-left mr-2"></i>
+                    Usar otra cuenta
+                </button>
+
+                <!-- Términos -->
+                <div class="terminos-container mb-6">
+                    <label class="terminos-label" @click="aceptaTerminos = !aceptaTerminos" :style="{ color: txtPrimary }">
+                        <div class="checkbox-custom" :class="{ checked: aceptaTerminos }" :style="!aceptaTerminos ? { borderColor: cardBorder } : {}">
+                            <i class="fas fa-check" v-if="aceptaTerminos"></i>
+                        </div>
+                        <span>
+                            Acepto los
+                            <a href="#" class="terminos-link" @click.stop>términos y condiciones</a>
+                        </span>
+                    </label>
+                </div>
+
+                <!-- Info adicional -->
+                <div class="info-banner" :style="{ background: innerBg, borderColor: cardBorder }">
+                    <i class="fa-solid fa-shield-halved info-icon"></i>
+                    <span :style="{ color: txtSecondary }">Recibirás confirmación por correo y SMS</span>
+                </div>
+            </div>
+
+            <!-- Usuario NO Logueado -->
+            <div v-else class="confirmacion-body">
+                <!-- Alerta -->
+                <div class="status-banner warning mb-6" :style="{ background: isDark ? 'rgba(238, 111, 56, 0.08)' : 'rgba(238, 111, 56, 0.05)', borderColor: isDark ? 'rgba(238, 111, 56, 0.25)' : 'rgba(238, 111, 56, 0.2)' }">
+                    <div class="banner-icon-wrap warning" :style="{ background: isDark ? 'rgba(238, 111, 56, 0.15)' : 'rgba(238, 111, 56, 0.12)' }">
+                        <i class="fa-solid fa-unlock-keyhole"></i>
+                    </div>
+                    <div>
+                        <p class="banner-titulo" :style="{ color: '#ee6f38' }">Cuenta requerida</p>
+                        <p class="banner-subtitulo" :style="{ color: txtSecondary }">Inicia sesión o regístrate para continuar</p>
+                    </div>
+                </div>
+
+                <p class="seccion-titulo mb-4" :style="{ color: txtPrimary, fontWeight: '800' }">
+                    <i class="fa-solid fa-user-lock mr-2" style="color: #ee6f38;"></i>
+                    ¿Cómo deseas continuar?
+                </p>
+
+                <button class="btn-primary mb-4" @click="irALogin">
+                    <i class="fa-solid fa-sign-in-alt mr-2"></i>
+                    INICIAR SESIÓN
+                </button>
+
+                <div class="divisor-o mb-4">
+                    <span class="linea" :style="{ background: cardBorder }"></span>
+                    <span class="texto-o" :style="{ color: txtSecondary }">o</span>
+                    <span class="linea" :style="{ background: cardBorder }"></span>
+                </div>
+
+                <button class="btn-outlined mb-6" @click="irARegistro" :style="{ borderColor: '#ee6f38', color: '#ee6f38' }">
+                    <i class="fa-solid fa-user-plus mr-2"></i>
+                    CREAR CUENTA NUEVA
+                </button>
+
+                <!-- Beneficios -->
+                <div class="beneficios-card" :style="{ background: innerBg, borderColor: cardBorder }">
+                    <p class="beneficios-titulo" :style="{ color: txtPrimary }">
+                        <i class="fa-solid fa-gift mr-2" style="color: #ee6f38;"></i>
+                        Ventajas de ser miembro
                     </p>
-                    <div class="d-flex flex-column" style="gap: 8px;">
-                        <div class="d-flex align-center">
-                            <i class="fa-solid fa-check" style="font-size: 16px; color: #2e7d32; margin-right: 8px;"></i>
-                            <span class="text-caption">Historial de citas</span>
-                        </div>
-                        <div class="d-flex align-center">
-                            <i class="fa-solid fa-check" style="font-size: 16px; color: #2e7d32; margin-right: 8px;"></i>
-                            <span class="text-caption">Reservas más rápidas</span>
-                        </div>
-                        <div class="d-flex align-center">
-                            <i class="fa-solid fa-check" style="font-size: 16px; color: #2e7d32; margin-right: 8px;"></i>
-                            <span class="text-caption">Ofertas exclusivas</span>
-                        </div>
-                        <div class="d-flex align-center">
-                            <i class="fa-solid fa-check" style="font-size: 16px; color: #2e7d32; margin-right: 8px;"></i>
-                            <span class="text-caption">Recordatorios automáticos</span>
+                    <div class="beneficios-lista">
+                        <div class="beneficio-item" v-for="b in beneficios" :key="b" :style="{ color: txtSecondary }">
+                            <div class="beneficio-check" :style="{ background: isDark ? 'rgba(46, 125, 50, 0.15)' : 'rgba(46, 125, 50, 0.1)', color: isDark ? '#81c784' : '#2e7d32' }">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <span>{{ b }}</span>
                         </div>
                     </div>
-                </v-card>
-            </v-card-text>
+                </div>
+            </div>
 
-            <!-- Footer con texto de seguridad -->
-            <v-divider></v-divider>
-            <v-card-text class="text-center pa-4">
-                <p class="text-caption text-grey-darken-1 mb-0">
-                    <i class="fa-solid fa-lock" style="font-size: 14px; margin-right: 4px;"></i>
-                    Tus datos están seguros y protegidos
-                </p>
-            </v-card-text>
-        </v-card>
+            <!-- Footer seguridad -->
+            <div class="confirmacion-footer" :style="{ background: headerBg, borderTop: `1px solid ${cardBorder}` }">
+                <i class="fa-solid fa-fingerprint footer-icon" :style="{ opacity: 0.5 }"></i>
+                <span :style="{ color: txtSecondary, fontSize: '0.75rem', fontWeight: '700' }">CONEXIÓN SEGURA Y CIFRADA</span>
+            </div>
+        </div>
     </v-container>
 </template>
 
@@ -161,17 +136,25 @@
     import { ref, computed, watch } from 'vue';
     import { useRouter } from 'vue-router';
     import { useAuthStore } from '@/stores/auth';
+    import { useCustomizerStore } from '@/stores/customizer'
 
     const router = useRouter();
     const authStore = useAuthStore();
+    const customizer = useCustomizerStore()
     const emit = defineEmits(['estado-confirmacion-agendar']);
 
-    // Estado
+    const isDark = computed(() => customizer.activeTheme === 'DarkTheme');
+    
+    // Adaptive Colors
+    const txtPrimary = computed(() => isDark.value ? '#f3f4f6' : '#1a1a2e');
+    const txtSecondary = computed(() => isDark.value ? '#a1a1aa' : '#64748b');
+    const cardBg = computed(() => isDark.value ? '#111827' : '#ffffff');
+    const cardBorder = computed(() => isDark.value ? '#1f2937' : '#f0f0f0');
+    const headerBg = computed(() => isDark.value ? '#1e293b' : '#fafafa');
+    const innerBg = computed(() => isDark.value ? '#1e293b' : '#fafafa');
+
     const aceptaTerminos = ref(false);
-
-    // Computed
     const isAuthenticated = computed(() => authStore.isAuthenticated);
-
     const userData = computed(() => ({
         nombre: authStore.user?.nombre || '',
         apellido: authStore.user?.apellido || '',
@@ -180,65 +163,165 @@
         foto: authStore.user?.foto || null
     }));
 
-    // ✅ Watch para habilitar/deshabilitar el botón
+    const beneficios = ['Historial de citas y servicios', 'Reservas ágiles en un clic', 'Ofertas y descuentos VIP', 'Recordatorios personalizados'];
+
     watch(
         [isAuthenticated, aceptaTerminos],
         ([autenticado, terminos]) => {
-            // El botón se habilita solo si:
-            // 1. El usuario está autenticado
-            // 2. Aceptó los términos
-            const habilitar = autenticado && terminos;
-            emit('estado-confirmacion-agendar', habilitar);
+            emit('estado-confirmacion-agendar', autenticado && terminos);
         },
         { immediate: true }
     );
 
-    // Métodos
-    const irALogin = () => {
-        // Guardar la ruta actual para volver después del login
-        sessionStorage.setItem('returnToReserva', 'true');
-        router.push('/login1');
-    };
-
-    const irARegistro = () => {
-        // Guardar la ruta actual para volver después del registro
-        sessionStorage.setItem('returnToReserva', 'true');
-        router.push('/register');
-    };
+    const irALogin = () => { window.dispatchEvent(new CustomEvent('open-login-dialog')); };
+    const irARegistro = () => { window.dispatchEvent(new CustomEvent('open-register-dialog')); };
 
     const cerrarSesion = async () => {
-        aceptaTerminos.value = false; // Resetear términos al cerrar sesión
+        aceptaTerminos.value = false;
         await authStore.logout();
-        router.replace('/');
     };
 
-    // Exponer validación para componente padre
     const validarConfirmacion = () => {
-        if (!isAuthenticated.value) {
-            return {
-                valido: false,
-                mensaje: 'Debes iniciar sesión para continuar'
-            };
-        }
-        
-        if (!aceptaTerminos.value) {
-            return {
-                valido: false,
-                mensaje: 'Debes aceptar los términos y condiciones'
-            };
-        }
-        
-        return {
-            valido: true,
-            datos: userData.value
-        };
+        if (!isAuthenticated.value) return { valido: false, mensaje: 'Debes iniciar sesión para continuar' };
+        if (!aceptaTerminos.value) return { valido: false, mensaje: 'Debes aceptar los términos y condiciones' };
+        return { valido: true, datos: userData.value };
     };
 
-    defineExpose({
-        validarConfirmacion
-    });
+    defineExpose({ validarConfirmacion });
 </script>
 
 <style scoped>
-/* Estilos adicionales si son necesarios */
+    .confirmacion-card {
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        max-width: 500px;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+
+    .confirmacion-header { padding: 40px 32px; text-align: center; }
+
+    .header-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 32px;
+        color: #ee6f38;
+        transform: rotate(-5deg);
+    }
+
+    .header-titulo { font-size: 1.35rem; font-weight: 900; letter-spacing: -0.5px; }
+    .header-subtitulo { font-size: 0.9rem; font-weight: 600; margin-top: 4px; }
+
+    .confirmacion-divider { height: 4px; background: linear-gradient(90deg, #ee6f38, #ff9a6c, transparent); }
+
+    .confirmacion-body { padding: 32px; }
+
+    .status-banner { display: flex; align-items: center; gap: 16px; padding: 18px; border-radius: 16px; border: 1.5px solid; }
+    .banner-icon-wrap { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .banner-titulo { font-weight: 800; font-size: 1rem; margin-bottom: 2px; }
+    .banner-subtitulo { font-size: 0.82rem; font-weight: 600; }
+
+    .usuario-card { display: flex; align-items: center; padding: 20px; border-radius: 20px; border: 1.5px solid; }
+    .usuario-avatar { background: linear-gradient(135deg, #ee6f38, #ff9a6c); box-shadow: 0 4px 12px rgba(238, 111, 56, 0.35); }
+    .usuario-nombre { font-size: 1.15rem; font-weight: 900; letter-spacing: -0.3px; }
+    .usuario-detalle { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; font-weight: 600; margin-top: 4px; }
+    .usuario-detalle i { font-size: 14px; width: 18px; text-align: center; }
+
+    .btn-cambiar-cuenta {
+        width: 100%;
+        padding: 12px;
+        border-radius: 12px;
+        border: 1.5px solid;
+        background: transparent;
+        font-weight: 800;
+        font-size: 0.82rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-cambiar-cuenta:hover { transform: translateY(-2px); border-color: #ee6f38 !important; color: #ee6f38 !important; }
+
+    .btn-primary {
+        width: 100%;
+        padding: 16px;
+        border-radius: 14px;
+        border: none;
+        background: linear-gradient(135deg, #ee6f38, #ff9a6c);
+        color: white;
+        font-weight: 900;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        letter-spacing: 1px;
+        box-shadow: 0 8px 20px rgba(238, 111, 56, 0.4);
+    }
+
+    .btn-primary:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(238, 111, 56, 0.5); }
+
+    .btn-outlined {
+        width: 100%;
+        padding: 14px;
+        border-radius: 14px;
+        border: 2px solid;
+        background: transparent;
+        font-weight: 800;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-outlined:hover { background: rgba(238, 111, 56, 0.08); transform: translateY(-2px); }
+
+    .divisor-o { display: flex; align-items: center; gap: 14px; }
+    .linea { flex: 1; height: 1px; opacity: 0.5; }
+    .texto-o { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; }
+
+    .terminos-label { display: flex; align-items: center; gap: 14px; cursor: pointer; font-size: 0.9rem; font-weight: 700; }
+
+    .checkbox-custom {
+        width: 24px;
+        height: 24px;
+        border-radius: 8px;
+        border: 2px solid;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        color: transparent;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .checkbox-custom.checked { background: #ee6f38; border-color: #ee6f38; color: white; transform: rotate(360deg) scale(1.1); box-shadow: 0 4px 10px rgba(238, 111, 56, 0.4); }
+
+    .terminos-link { color: #ee6f38; font-weight: 800; text-decoration: none; border-bottom: 2px solid rgba(238, 111, 56, 0.2); transition: all 0.2s; }
+    .terminos-link:hover { border-bottom-color: #ee6f38; }
+
+    .info-banner { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 12px; border: 1px solid; font-size: 0.85rem; font-weight: 600; }
+    .info-icon { color: #ee6f38; font-size: 16px; }
+
+    .seccion-titulo { font-size: 0.95rem; display: flex; align-items: center; }
+
+    .beneficios-card { border-radius: 18px; padding: 20px; border: 1px solid; }
+    .beneficios-titulo { font-size: 0.95rem; font-weight: 800; margin-bottom: 16px; display: flex; align-items: center; }
+    .beneficios-lista { display: flex; flex-direction: column; gap: 12px; }
+    .beneficio-item { display: flex; align-items: center; gap: 12px; font-size: 0.88rem; font-weight: 600; }
+    .beneficio-check { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+
+    .confirmacion-footer { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 18px; letter-spacing: 2px; }
+    .footer-icon { font-size: 16px; color: #ee6f38; }
 </style>

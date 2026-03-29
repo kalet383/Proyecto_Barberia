@@ -185,8 +185,8 @@
               <i class="fas fa-user" style="color: white;"></i>
             </v-avatar>
             <div>
-              <div class="font-weight-medium">{{ getNombreCliente(item.cliente) }}</div>
-              <div class="text-caption text-grey">{{ item.cliente?.email || 'Sin email' }}</div>
+              <div class="font-weight-medium" :style="{ color: txtPrimary }">{{ getNombreCliente(item.cliente) }}</div>
+              <div class="text-caption" :style="{ color: txtSecondary }">{{ item.cliente?.email || 'Sin email' }}</div>
             </div>
           </div>
         </template>
@@ -197,15 +197,15 @@
             <v-avatar size="36" style="background-color: #ee6f38;" class="mr-2">
               <i class="fas fa-user-tie" style="color: white;"></i>
             </v-avatar>
-            <span class="font-weight-medium">{{ getNombreBarbero(item.barbero) }}</span>
+            <span class="font-weight-medium" :style="{ color: txtPrimary }">{{ getNombreBarbero(item.barbero) }}</span>
           </div>
         </template>
 
         <!-- Servicio -->
         <template v-slot:item.servicio="{ item }">
           <div>
-            <div class="font-weight-medium">{{ getNombreServicio(item.servicio) }}</div>
-            <div class="text-caption" style="color: #4caf50;">
+            <div class="font-weight-medium" :style="{ color: txtPrimary }">{{ getNombreServicio(item.servicio) }}</div>
+            <div class="text-caption font-weight-bold" style="color: #4caf50;">
               <i class="fas fa-dollar-sign"></i>
               ${{ getPrecioServicio(item.servicio) }}
             </div>
@@ -215,14 +215,14 @@
         <!-- Fecha -->
         <template v-slot:item.fecha="{ item }">
           <div class="text-center">
-            <div class="font-weight-medium">{{ formatearFechaCorta(item.fecha) }}</div>
-            <div class="text-caption text-grey">{{ getDiaSemana(item.fecha) }}</div>
+            <div class="font-weight-medium" :style="{ color: txtPrimary }">{{ formatearFechaCorta(item.fecha) }}</div>
+            <div class="text-caption" :style="{ color: txtSecondary }">{{ getDiaSemana(item.fecha) }}</div>
           </div>
         </template>
 
         <!-- Hora -->
         <template v-slot:item.hora="{ item }">
-          <v-chip color="grey-lighten-2" size="small">
+          <v-chip :color="isDark ? 'grey-darken-3' : 'grey-lighten-2'" :style="{ color: isDark ? 'white' : '#444' }" size="small" class="font-weight-medium">
             <i class="fas fa-clock mr-1"></i>
             {{ formatearHora(item.hora) }}
           </v-chip>
@@ -333,94 +333,116 @@
 
     <!-- Modal de Detalles -->
     <v-dialog v-model="modalDetalles" max-width="600">
-      <v-card v-if="citaSeleccionada" rounded="lg">
-        <v-card-title class="pa-6" style="background-color: #ee6f38; color: white;">
-          <i class="fas fa-info-circle mr-2"></i>
-          Detalles de la Cita
-        </v-card-title>
+      <v-card v-if="citaSeleccionada" rounded="xl" :style="{ background: cardBg }">
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #ee6f38, #ff9a6c); padding: 20px 24px; display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px;">
+              <i class="fas fa-info-circle"></i>
+            </div>
+            <div>
+              <h3 style="color: white; font-weight: 800; font-size: 1.1rem; margin: 0;">Detalles de la Cita</h3>
+              <p style="color: rgba(255,255,255,0.8); font-size: 0.78rem; margin: 0;">#{{ citaSeleccionada.id_cita }}</p>
+            </div>
+          </div>
+          <v-btn icon variant="text" size="small" @click="modalDetalles = false" style="color: white;">
+            <i class="fas fa-times"></i>
+          </v-btn>
+        </div>
 
-        <v-card-text class="pa-6">
-          <v-row>
+        <v-card-text class="pa-5">
+          <v-row dense>
+            <!-- Cliente -->
+            <v-col cols="12" md="6">
+              <div class="detail-item-adaptive" :style="{ background: detailBg, border: `1px solid ${cardBorder}` }">
+                <div class="detail-icon-box" style="background: rgba(99,102,241,0.12); color: #818cf8;">
+                  <i class="fas fa-user"></i>
+                </div>
+                <div>
+                  <div class="detail-label-adaptive" :style="{ color: txtSecondary }">Cliente</div>
+                  <div class="detail-value-adaptive" :style="{ color: txtPrimary }">{{ getNombreCliente(citaSeleccionada.cliente) }}</div>
+                  <div style="font-size: 0.72rem;" :style="{ color: txtSecondary }">{{ citaSeleccionada.cliente?.email }}</div>
+                </div>
+              </div>
+            </v-col>
+
+            <!-- Barbero -->
+            <v-col cols="12" md="6">
+              <div class="detail-item-adaptive" :style="{ background: detailBg, border: `1px solid ${cardBorder}` }">
+                <div class="detail-icon-box" style="background: rgba(238,111,56,0.12); color: #ee6f38;">
+                  <i class="fas fa-user-tie"></i>
+                </div>
+                <div>
+                  <div class="detail-label-adaptive" :style="{ color: txtSecondary }">Barbero</div>
+                  <div class="detail-value-adaptive" :style="{ color: txtPrimary }">{{ getNombreBarbero(citaSeleccionada.barbero) }}</div>
+                </div>
+              </div>
+            </v-col>
+
+            <!-- Fecha -->
+            <v-col cols="12" md="6">
+              <div class="detail-item-adaptive" :style="{ background: detailBg, border: `1px solid ${cardBorder}` }">
+                <div class="detail-icon-box" style="background: rgba(16,185,129,0.12); color: #10b981;">
+                  <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div>
+                  <div class="detail-label-adaptive" :style="{ color: txtSecondary }">Fecha</div>
+                  <div class="detail-value-adaptive" :style="{ color: txtPrimary }">{{ formatearFecha(citaSeleccionada.fecha) }}</div>
+                </div>
+              </div>
+            </v-col>
+
+            <!-- Hora -->
+            <v-col cols="12" md="6">
+              <div class="detail-item-adaptive" :style="{ background: detailBg, border: `1px solid ${cardBorder}` }">
+                <div class="detail-icon-box" style="background: rgba(59,130,246,0.12); color: #60a5fa;">
+                  <i class="fas fa-clock"></i>
+                </div>
+                <div>
+                  <div class="detail-label-adaptive" :style="{ color: txtSecondary }">Hora</div>
+                  <div class="detail-value-adaptive" :style="{ color: txtPrimary }">{{ formatearHora(citaSeleccionada.hora) }}</div>
+                </div>
+              </div>
+            </v-col>
+
+            <!-- Servicio -->
             <v-col cols="12">
-              <div class="detail-item">
-                <i class="fas fa-hashtag detail-icon" style="color: #ee6f38;"></i>
-                <div>
-                  <div class="detail-label">ID de Cita</div>
-                  <div class="detail-value">#{{ citaSeleccionada.id_cita }}</div>
+              <div class="detail-item-adaptive" :style="{ background: detailBg, border: `1px solid ${cardBorder}` }">
+                <div class="detail-icon-box" style="background: rgba(168,85,247,0.12); color: #c084fc;">
+                  <i class="fas fa-cut"></i>
                 </div>
-              </div>
-            </v-col>
-
-            <v-col cols="12" md="6">
-              <div class="detail-item">
-                <i class="fas fa-user detail-icon text-primary"></i>
-                <div>
-                  <div class="detail-label">Cliente</div>
-                  <div class="detail-value">{{ getNombreCliente(citaSeleccionada.cliente) }}</div>
-                  <div class="text-caption text-grey">{{ citaSeleccionada.cliente?.email }}</div>
-                </div>
-              </div>
-            </v-col>
-
-            <v-col cols="12" md="6">
-              <div class="detail-item">
-                <i class="fas fa-user-tie detail-icon" style="color: #ee6f38;"></i>
-                <div>
-                  <div class="detail-label">Barbero</div>
-                  <div class="detail-value">{{ getNombreBarbero(citaSeleccionada.barbero) }}</div>
-                </div>
-              </div>
-            </v-col>
-
-            <v-col cols="12" md="6">
-              <div class="detail-item">
-                <i class="fas fa-calendar detail-icon text-primary"></i>
-                <div>
-                  <div class="detail-label">Fecha</div>
-                  <div class="detail-value">{{ formatearFecha(citaSeleccionada.fecha) }}</div>
-                </div>
-              </div>
-            </v-col>
-
-            <v-col cols="12" md="6">
-              <div class="detail-item">
-                <i class="fas fa-clock detail-icon text-primary"></i>
-                <div>
-                  <div class="detail-label">Hora</div>
-                  <div class="detail-value">{{ formatearHora(citaSeleccionada.hora) }}</div>
-                </div>
-              </div>
-            </v-col>
-
-            <v-col cols="12">
-              <div class="detail-item">
-                <i class="fas fa-cut detail-icon text-secondary"></i>
-                <div>
-                  <div class="detail-label">Servicio</div>
-                  <div class="detail-value">{{ getNombreServicio(citaSeleccionada.servicio) }}</div>
-                  <div class="text-caption text-grey">
+                <div style="flex: 1;">
+                  <div class="detail-label-adaptive" :style="{ color: txtSecondary }">Servicio</div>
+                  <div class="detail-value-adaptive" :style="{ color: txtPrimary }">{{ getNombreServicio(citaSeleccionada.servicio) }}</div>
+                  <div style="font-size: 0.78rem; margin-top: 2px;" :style="{ color: txtSecondary }">
                     {{ citaSeleccionada.servicio?.descripcion || 'Sin descripción' }}
                   </div>
                 </div>
               </div>
             </v-col>
 
+            <!-- Precio -->
             <v-col cols="12" md="6">
-              <div class="detail-item">
-                <i class="fas fa-dollar-sign detail-icon text-success"></i>
+              <div class="detail-item-adaptive" :style="{ background: detailBg, border: `1px solid ${cardBorder}` }">
+                <div class="detail-icon-box" style="background: rgba(16,185,129,0.12); color: #34d399;">
+                  <i class="fas fa-dollar-sign"></i>
+                </div>
                 <div>
-                  <div class="detail-label">Precio</div>
-                  <div class="detail-value text-success">${{ getPrecioServicio(citaSeleccionada.servicio) }}</div>
+                  <div class="detail-label-adaptive" :style="{ color: txtSecondary }">Precio</div>
+                  <div class="detail-value-adaptive" style="color: #34d399; font-size: 1.2rem;">${{ getPrecioServicio(citaSeleccionada.servicio) }}</div>
                 </div>
               </div>
             </v-col>
 
+            <!-- Estado -->
             <v-col cols="12" md="6">
-              <div class="detail-item">
-                <i class="fas fa-flag detail-icon" :style="{ color: getColorEstado(citaSeleccionada.estado) }"></i>
+              <div class="detail-item-adaptive" :style="{ background: detailBg, border: `1px solid ${cardBorder}` }">
+                <div class="detail-icon-box" :style="{ background: `${getColorHexEstado(citaSeleccionada.estado)}20`, color: getColorHexEstado(citaSeleccionada.estado) }">
+                  <i :class="getIconoEstado(citaSeleccionada.estado)"></i>
+                </div>
                 <div>
-                  <div class="detail-label">Estado</div>
-                  <v-chip :color="getColorEstado(citaSeleccionada.estado)" variant="flat">
+                  <div class="detail-label-adaptive" :style="{ color: txtSecondary }">Estado</div>
+                  <v-chip :color="getColorEstado(citaSeleccionada.estado)" variant="tonal" size="small" rounded="lg" class="font-weight-bold mt-1">
                     {{ citaSeleccionada.estado.toUpperCase() }}
                   </v-chip>
                 </div>
@@ -429,9 +451,10 @@
           </v-row>
         </v-card-text>
 
-        <v-card-actions class="pa-6 pt-0">
+        <v-divider :style="{ borderColor: cardBorder }" />
+        <v-card-actions class="pa-4">
           <v-spacer></v-spacer>
-          <v-btn variant="text" @click="modalDetalles = false">
+          <v-btn variant="flat" color="#ee6f38" rounded="lg" class="text-none font-weight-bold px-6" @click="modalDetalles = false">
             Cerrar
           </v-btn>
         </v-card-actions>
@@ -457,11 +480,20 @@ import { useRoute } from 'vue-router'
 import { useCitaStore } from '@/stores/cita'
 import { useBarberStore } from '@/stores/barber'
 import { useServiceStore } from '@/stores/services'
+import { useCustomizerStore } from '@/stores/customizer'
 
 const route = useRoute()
 const citaStore = useCitaStore()
 const barberStore = useBarberStore()
 const serviceStore = useServiceStore()
+const customizer = useCustomizerStore()
+
+const isDark = computed(() => customizer.activeTheme === 'DarkTheme')
+const txtPrimary  = computed(() => isDark.value ? '#f3f4f6' : '#1a1a2e')
+const txtSecondary = computed(() => isDark.value ? '#9ca3af' : '#444444')
+const cardBg      = computed(() => isDark.value ? '#111827' : '#ffffff')
+const cardBorder  = computed(() => isDark.value ? '#1f2937' : '#e0e0e0')
+const detailBg    = computed(() => isDark.value ? 'rgba(255,255,255,0.03)' : '#f8f9fa')
 
 // Estado
 const cargando = ref(false)
@@ -683,6 +715,15 @@ const getColorEstado = (estado) => {
   return colores[estado] || 'grey'
 }
 
+const getColorHexEstado = (estado) => {
+  const colores = {
+    agendada: '#3b82f6',
+    completada: '#10b981',
+    cancelada: '#ef4444'
+  }
+  return colores[estado] || '#9ca3af'
+}
+
 const getIconoEstado = (estado) => {
   const iconos = {
     agendada: 'fas fa-clock',
@@ -806,9 +847,10 @@ onMounted(async () => {
   align-items: center;
   gap: 12px;
   padding: 16px;
-  background: white;
+  background: v-bind('cardBg');
+  border: 1px solid v-bind('cardBorder');
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
 }
 
@@ -822,8 +864,8 @@ onMounted(async () => {
 }
 
 .stat-chip span {
-  font-weight: 500;
-  color: #424242;
+  font-weight: 700;
+  color: v-bind('txtPrimary');
 }
 
 .detail-item {
@@ -852,5 +894,45 @@ onMounted(async () => {
   font-size: 1rem;
   font-weight: 600;
   color: #212121;
+}
+
+/* ─── Adaptive detail items for dark mode ─── */
+.detail-item-adaptive {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  height: 100%;
+}
+
+.detail-item-adaptive:hover {
+  filter: brightness(1.06);
+}
+
+.detail-icon-box {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.detail-label-adaptive {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.detail-value-adaptive {
+  font-size: 0.97rem;
+  font-weight: 700;
+  line-height: 1.4;
 }
 </style>

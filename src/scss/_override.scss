@@ -62,3 +62,78 @@ html {
     }
   }
 }
+
+/* ═══════════════════════════════════════
+   MEJORA DE CONTRASTE EN CAMPOS (INPUTS)
+═══════════════════════════════════════ */
+
+/* Modo Claro (PurpleTheme) */
+.v-theme--PurpleTheme {
+  .v-field--variant-outlined .v-field__outline {
+    --v-field-border-opacity: 0.4 !important;
+    color: rgba(0, 0, 0, 0.5) !important;
+  }
+  .v-label {
+    opacity: 0.9 !important;
+    color: rgba(0, 0, 0, 0.8) !important;
+    font-weight: 600 !important;
+  }
+  .v-field__input {
+    color: #000000 !important;
+    font-weight: 500 !important;
+  }
+  .v-list-item-title {
+    color: rgba(0, 0, 0, 0.9) !important;
+  }
+}
+
+/* Modo Oscuro (DarkTheme) */
+.v-theme--DarkTheme {
+  .v-field--variant-outlined .v-field__outline {
+    --v-field-border-opacity: 0.4 !important;
+    color: rgba(255, 255, 255, 0.5) !important;
+  }
+  .v-label {
+    opacity: 0.9 !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+    font-weight: 500 !important;
+  }
+  .v-field__input {
+    color: #ffffff !important;
+  }
+
+  /* Estandarización de contenedores (Evitar barras blancas) */
+  .section-header, 
+  .table-toolbar, 
+  .dialog-header, 
+  .products-table th, 
+  .v-table th,
+  header.v-toolbar {
+    background: #1f2937 !important;
+    color: #e5e7eb !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  .section-card, 
+  .table-card, 
+  .v-card--variant-elevated, 
+  .v-card--variant-flat {
+    background: #111827 !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  /* Títulos que antes eran #1a1a2e */
+  .page-title, 
+  .section-title, 
+  .dialog-title, 
+  .v-card-title,
+  h1, h2, h3, h4, h5 {
+    color: #ffffff !important;
+  }
+
+  /* Tarjetas de totales */
+  .total-card {
+    background: linear-gradient(135deg, #1e1b4b, #111827) !important;
+    color: #ffffff !important;
+  }
+}

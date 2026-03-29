@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useCustomizerStore } from '@/stores/customizer';
+
+const customizer = useCustomizerStore();
+const isDark = computed(() => customizer.activeTheme === 'DarkTheme');
 
 const select = ref({ state: 'Today', abbr: 'FL' });
 const items = [
@@ -15,10 +19,11 @@ const chartOptions1 = computed(() => {
       type: 'bar',
       height: 480,
       fontFamily: `inherit`,
-      foreColor: '#a1aab2',
+      foreColor: isDark.value ? '#94a3b8' : '#a1aab2',
+      background: 'transparent',
       stacked: true
     },
-    colors: ['#eef2f6', '#1e88e5', '#5e35b1', '#ede7f6'],
+    colors: isDark.value ? ['#1e293b', '#1e88e5', '#673ab7', '#311b92'] : ['#eef2f6', '#1e88e5', '#5e35b1', '#ede7f6'],
     responsive: [
       {
         breakpoint: 480,
@@ -69,7 +74,10 @@ const chartOptions1 = computed(() => {
       show: true
     },
     tooltip: {
-      theme: 'light'
+      theme: isDark.value ? 'dark' : 'light'
+    },
+    theme: {
+      mode: isDark.value ? 'dark' : 'light'
     }
   };
 });

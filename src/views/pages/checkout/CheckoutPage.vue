@@ -6,6 +6,8 @@ import { useVentaStore, TipoPago } from '@/stores/venta';
 import { useRouter } from 'vue-router';
 import { ChevronRightIcon, TruckIcon, MapPinIcon, CashIcon, ShieldCheckIcon, ArrowLeftIcon } from 'vue-tabler-icons';
 import PickupLocationModal from './PickupLocationModal.vue';
+import LoginModal from '@/components/shared/LoginModal.vue';
+import RegisterModal from '@/components/shared/RegisterModal.vue';
 
 
 const productosStore = useProductosStore();
@@ -28,7 +30,7 @@ const billingFirstName = ref('');
 const billingLastName = ref('');
 const billingIdNumber = ref('');
 const billingAddress = ref('');
-const billingCity = ref('');
+const billingCity = ref('Montería');
 const billingPhone = ref('');
 const paymentMethod = ref<string>('wompi');
 const sameAsShipping = ref(true);
@@ -36,7 +38,22 @@ const saveInfo = ref(false);
 const emailUpdates = ref(false);
 const discountCode = ref('');
 
-const DEPARTMENTS = ['Córdoba', 'Antioquia', 'Bogotá D.C.', 'Cundinamarca'];
+const DEPARTMENTS = ['Córdoba'];
+
+const soloLetras = (event: any) => {
+    const charCode = event.which ? event.which : event.keyCode;
+    // Permitir letras, espacios y caracteres acentuados
+    if (!((charCode >= 65 && charCode <= 90) || (charCode >= 97 && charCode <= 122) || charCode === 32 || charCode >= 192)) {
+        event.preventDefault();
+    }
+};
+
+const soloNumeros = (event: any) => {
+    const charCode = event.which ? event.which : event.keyCode;
+    if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+        event.preventDefault();
+    }
+};
 
 const showConfirmModal = ref(false);
 const orderData = ref<any>(null);
@@ -108,9 +125,8 @@ const showConfirmationModal = () => {
 };
 
 const goToLogin = () => {
-    const formData = { email: contactEmail.value, firstName: firstName.value, lastName: lastName.value, idNumber: idNumber.value, address: address.value, apartamento: apartamento.value, city: city.value, department: department.value, phone: phone.value, deliveryMethod: deliveryMethod.value, paymentMethod: paymentMethod.value, autoOpenModal: true };
-    localStorage.setItem('checkout_temp_data', JSON.stringify(formData));
-    router.push({ path: '/login1', query: { redirect: '/checkout' } });
+    showLoginDialog.value = false;
+    window.dispatchEvent(new CustomEvent('open-login-dialog'));
 };
 
 const finishOrderProcess = () => { router.push('/mis-compras'); };
@@ -143,9 +159,9 @@ const confirmOrder = async () => {
         let tipoPagoBackend: TipoPago;
         switch (paymentMethod.value) {
             case 'pago_al_recibir': tipoPagoBackend = TipoPago.PAGO_CONTRA_ENTREGA; break;
-            case 'transferencia_bancolombia':
-            case 'transferencia_davivienda': tipoPagoBackend = TipoPago.TRANSFERENCIA; break;
-            case 'wompi': tipoPagoBackend = TipoPago.TRANSFERENCIA; break;
+            case 'transferencia_bancolombia': tipoPagoBackend = TipoPago.TRANSFERENCIA_BANCOLOMBIA; break;
+            case 'transferencia_davivienda': tipoPagoBackend = TipoPago.TRANSFERENCIA_DAVIVIENDA; break;
+            case 'wompi': tipoPagoBackend = TipoPago.WOMPI; break;
             default: tipoPagoBackend = TipoPago.PAGO_CONTRA_ENTREGA;
         }
         const ventaData = {
@@ -233,24 +249,24 @@ interface Product { id: number; nombre: string; precio: number; img: string; can
                                     <div class="form-grid">
                                         <div class="form-group full">
                                             <label>País/Región</label>
-                                            <div class="custom-select">
-                                                <select v-model="country"><option value="Colombia">🇨🇴 Colombia</option></select>
-                                                <i class="fas fa-chevron-down"></i>
+                                            <div class="custom-select disabled">
+                                                <select v-model="country" disabled><option value="Colombia">🇨🇴 Colombia</option></select>
+                                                <i class="fas fa-lock"></i>
                                             </div>
                                         </div>
                                         <div class="form-group">
                                             <label>Nombre <span class="required">*</span></label>
-                                            <input v-model="firstName" type="text" placeholder="Tu nombre" :class="{ 'error': errors.firstName }" />
+                                            <input v-model="firstName" type="text" placeholder="Tu nombre" :class="{ 'error': errors.firstName }" @keypress="soloLetras" />
                                             <span class="error-msg" v-if="errors.firstName">{{ errors.firstName }}</span>
                                         </div>
                                         <div class="form-group">
                                             <label>Apellidos <span class="required">*</span></label>
-                                            <input v-model="lastName" type="text" placeholder="Tus apellidos" :class="{ 'error': errors.lastName }" />
+                                            <input v-model="lastName" type="text" placeholder="Tus apellidos" :class="{ 'error': errors.lastName }" @keypress="soloLetras" />
                                             <span class="error-msg" v-if="errors.lastName">{{ errors.lastName }}</span>
                                         </div>
                                         <div class="form-group full">
                                             <label>Cédula / NIT <span class="required">*</span></label>
-                                            <input v-model="idNumber" type="text" placeholder="Solo números" :class="{ 'error': errors.idNumber }" />
+                                            <input v-model="idNumber" type="text" placeholder="Solo números" :class="{ 'error': errors.idNumber }" @keypress="soloNumeros" />
                                             <span class="error-msg" v-if="errors.idNumber">{{ errors.idNumber }}</span>
                                         </div>
                                         <div class="form-group full">
@@ -264,20 +280,20 @@ interface Product { id: number; nombre: string; precio: number; img: string; can
                                         </div>
                                         <div class="form-group">
                                             <label>Ciudad <span class="required">*</span></label>
-                                            <input v-model="city" type="text" :class="{ 'error': errors.city }" />
+                                            <input v-model="city" type="text" :class="{ 'error': errors.city }" readonly class="readonly-field" />
                                         </div>
                                         <div class="form-group">
                                             <label>Departamento</label>
-                                            <div class="custom-select">
-                                                <select v-model="department">
+                                            <div class="custom-select disabled">
+                                                <select v-model="department" disabled>
                                                     <option v-for="dep in DEPARTMENTS" :key="dep" :value="dep">{{ dep }}</option>
                                                 </select>
-                                                <i class="fas fa-chevron-down"></i>
+                                                <i class="fas fa-lock"></i>
                                             </div>
                                         </div>
                                         <div class="form-group full">
                                             <label>Teléfono <span class="required">*</span></label>
-                                            <input v-model="phone" type="tel" placeholder="+57 300 000 0000" :class="{ 'error': errors.phone }" />
+                                            <input v-model="phone" type="tel" placeholder="+57 300 000 0000" :class="{ 'error': errors.phone }" @keypress="soloNumeros" />
                                             <span class="error-msg" v-if="errors.phone">{{ errors.phone }}</span>
                                         </div>
                                     </div>
@@ -394,12 +410,12 @@ interface Product { id: number; nombre: string; precio: number; img: string; can
                                 </div>
                                 <div class="shipping-form">
                                     <div class="form-grid">
-                                        <div class="form-group"><label>Nombre <span class="required">*</span></label><input v-model="billingFirstName" type="text" placeholder="Tu nombre" /></div>
-                                        <div class="form-group"><label>Apellidos <span class="required">*</span></label><input v-model="billingLastName" type="text" placeholder="Tus apellidos" /></div>
-                                        <div class="form-group full"><label>Cédula / NIT <span class="required">*</span></label><input v-model="billingIdNumber" type="text" placeholder="Solo números" /></div>
+                                        <div class="form-group"><label>Nombre <span class="required">*</span></label><input v-model="billingFirstName" type="text" placeholder="Tu nombre" @keypress="soloLetras" /></div>
+                                        <div class="form-group"><label>Apellidos <span class="required">*</span></label><input v-model="billingLastName" type="text" placeholder="Tus apellidos" @keypress="soloLetras" /></div>
+                                        <div class="form-group full"><label>Cédula / NIT <span class="required">*</span></label><input v-model="billingIdNumber" type="text" placeholder="Solo números" @keypress="soloNumeros" /></div>
                                         <div class="form-group full"><label>Dirección <span class="required">*</span></label><input v-model="billingAddress" type="text" placeholder="Dirección completa" /></div>
-                                        <div class="form-group"><label>Ciudad <span class="required">*</span></label><input v-model="billingCity" type="text" /></div>
-                                        <div class="form-group"><label>Teléfono <span class="required">*</span></label><input v-model="billingPhone" type="tel" placeholder="+57 300 000 0000" /></div>
+                                         <div class="form-group"><label>Ciudad <span class="required">*</span></label><input v-model="billingCity" type="text" class="readonly-field" readonly /></div>
+                                        <div class="form-group"><label>Teléfono <span class="required">*</span></label><input v-model="billingPhone" type="tel" placeholder="+57 300 000 0000" @keypress="soloNumeros" /></div>
                                     </div>
                                 </div>
                             </section>
@@ -625,6 +641,12 @@ interface Product { id: number; nombre: string; precio: number; img: string; can
                 </div>
             </v-card>
         </v-dialog>
+        
+        <!-- Login Modal Integrado -->
+        <LoginModal />
+        
+        <!-- Register Modal Integrado -->
+        <RegisterModal />
     </div>
 </template>
 
@@ -704,6 +726,9 @@ interface Product { id: number; nombre: string; precio: number; img: string; can
 .custom-select { position: relative; }
 .custom-select select { appearance: none; cursor: pointer; padding-right: 40px; }
 .custom-select i { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
+.readonly-field { background-color: #f0f0f0 !important; cursor: not-allowed; color: #666 !important; }
+.custom-select.disabled select { background-color: #f0f0f0 !important; cursor: not-allowed; color: #666 !important; }
+.custom-select.disabled i { color: var(--primary) !important; opacity: 0.7; }
 .shipping-method-box { display: flex; justify-content: space-between; align-items: center; background: white; border: 2px solid var(--primary); border-radius: 12px; padding: 16px 20px; margin-top: 20px; }
 .method-info { display: flex; align-items: center; gap: 12px; color: var(--primary); }
 .method-info div { display: flex; flex-direction: column; }

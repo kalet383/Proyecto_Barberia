@@ -4,12 +4,21 @@ import { useVentaStore, EstadoVenta, type Venta } from '@/stores/venta';
 import { useSuperAdminStore } from '@/stores/superadmin';
 import { useProductoStore } from '@/stores/producto';
 import { useAuthStore } from '@/stores/auth';
+import { useCustomizerStore } from '@/stores/customizer';
 
 const authStore = useAuthStore();
-const isAdmin = computed(() => {
-  return authStore.user && (authStore.user as any).Role === 'administrador';
-});
+const customizer = useCustomizerStore();
+const isAdmin = computed(() => authStore.user && (authStore.user as any).Role === 'administrador');
+const isDark = computed(() => customizer.activeTheme === 'DarkTheme');
 
+// Adaptive Colors
+const txtPrimary = computed(() => isDark.value ? '#f3f4f6' : '#1a1a2e');
+const txtSecondary = computed(() => isDark.value ? '#9ca3af' : '#888');
+const cardBg = computed(() => isDark.value ? '#111827' : '#ffffff');
+const cardBorder = computed(() => isDark.value ? '#1f2937' : '#f0f0f0');
+const headerBg = computed(() => isDark.value ? '#161d2f' : '#fafafa');
+const innerBg = computed(() => isDark.value ? '#1e293b' : '#fafafa');
+const shadowColor = computed(() => isDark.value ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.05)');
 const ventaStore = useVentaStore();
 const superAdminStore = useSuperAdminStore();
 const productosStore = useProductoStore();
@@ -17,15 +26,9 @@ const productosStore = useProductoStore();
 const search = ref('');
 const fechaInicio = ref('');
 const fechaFin = ref('');
-
-const clientes = computed(() => superAdminStore.users.filter(u => u.role === 'cliente'));
-const barberos = computed(() => superAdminStore.users.filter(u => u.role === 'barbero'));
-const productos = computed(() => productosStore.productos);
 const detalleDialog = ref(false);
-const confirmDialog = ref(false);
 const loading = ref(false);
 const updating = ref(false);
-
 const selectedVenta = ref<Venta | null>(null);
 const nuevoEstado = ref<EstadoVenta | null>(null);
 const estadisticas = ref<any>(null);
@@ -42,336 +45,401 @@ const headers = [
 
 const estadosVenta = Object.values(EstadoVenta);
 
-onMounted(async () => {
-  await loadData();
-});
+onMounted(async () => { await loadData(); });
 
 const loadData = async () => {
   loading.value = true;
-  try {
-    await Promise.all([
-      ventaStore.fetchVentas(),
-      productosStore.getProductos(),
-      loadEstadisticas()
-    ]);
-  } catch (error) {
-    console.error('Error loading data:', error);
-  } finally {
-    loading.value = false;
-  }
+  try { await Promise.all([ventaStore.fetchVentas(), productosStore.getProductos(), loadEstadisticas()]); }
+  catch (e) { console.error(e); }
+  finally { loading.value = false; }
 };
 
 const loadEstadisticas = async () => {
-  try {
-    estadisticas.value = await ventaStore.getEstadisticas(fechaInicio.value, fechaFin.value);
-  } catch (error) {
-    console.error('Error loading stats:', error);
+  try { estadisticas.value = await ventaStore.getEstadisticas(fechaInicio.value, fechaFin.value); }
+  catch (e) { console.error(e); }
+};
+
+const formatDate = (date: string) => new Date(date).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+const formatCurrency = (value: number) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(value);
+
+const getEstadoColor = (estado: EstadoVenta) => {
+  const c: Record<string, string> = {
+    [EstadoVenta.PENDIENTE]: 'amber-darken-2',
+    [EstadoVenta.PAGADA]:    'blue-darken-1',
+    [EstadoVenta.ENTREGADA]: 'green-darken-1',
+    [EstadoVenta.CANCELADA]: 'red-darken-1',
+  };
+  return c[estado] || 'grey';
+};
+
+const getEstadoIcon = (estado: EstadoVenta) => {
+  const i: Record<string, string> = {
+    [EstadoVenta.PENDIENTE]: 'fas fa-clock',
+    [EstadoVenta.PAGADA]:    'fas fa-credit-card',
+    [EstadoVenta.ENTREGADA]: 'fas fa-check-circle',
+    [EstadoVenta.CANCELADA]: 'fas fa-times-circle',
+  };
+  return i[estado] || 'fas fa-question';
+};
+
+// ✅ NUEVO: color de texto para la palabra del estado
+const getEstadoTextColor = (estado: string) => {
+  const c: Record<string, string> = {
+    PENDIENTE: isDark.value ? '#fbbf24' : '#f59e0b', // amber
+    PAGADA:    isDark.value ? '#60a5fa' : '#2563eb', // blue
+    ENTREGADA: isDark.value ? '#4ade80' : '#16a34a', // green
+    CANCELADA: isDark.value ? '#f87171' : '#dc2626', // red
+  };
+  return c[estado] || (isDark.value ? '#9ca3af' : '#555');
+};
+
+const getEstadoLabel = (e: string) => {
+  if (e === 'ENTREGADA') return 'Entregada';
+  if (e === 'PAGADA')    return 'Pagada';
+  if (e === 'PENDIENTE') return 'Pendiente';
+  if (e === 'CANCELADA') return 'Cancelada';
+  return e;
+};
+
+const formatTipoPago = (tipo: string) => {
+  if (!tipo) return 'N/A';
+  switch (tipo) {
+    case 'TRANSFERENCIA': return 'Transferencia';
+    case 'TRANSFERENCIA_BANCOLOMBIA': return 'Transferencia Bancolombia';
+    case 'TRANSFERENCIA_DAVIVIENDA': return 'Transferencia Davivienda';
+    case 'WOMPI': return 'Pago con Wompi';
+    case 'EFECTIVO': return 'Efectivo';
+    case 'PAGO_CONTRA_ENTREGA': return 'Pago Contra Entrega';
+    default: return tipo.replace(/_/g, ' ');
   }
 };
 
-const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString('es-CO', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-};
-
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    maximumFractionDigits: 0
-  }).format(value);
-};
-
-const getEstadoColor = (estado: EstadoVenta) => {
-  const colors: Record<string, string> = {
-    [EstadoVenta.PENDIENTE]: 'warning',
-    [EstadoVenta.PAGADA]: 'info',
-    [EstadoVenta.ENTREGADA]: 'success',
-    [EstadoVenta.CANCELADA]: 'error'
+const getStatIcon = (key: string) => {
+  const m: Record<string, { icon: string; bg: string; color: string }> = {
+    total:       { icon: 'fas fa-shopping-bag', bg: 'rgba(238,111,56,0.1)', color: '#ee6f38' },
+    ingresos:    { icon: 'fas fa-dollar-sign',  bg: 'rgba(76,175,80,0.1)',  color: '#4caf50' },
+    pendientes:  { icon: 'fas fa-clock',         bg: 'rgba(255,193,7,0.1)', color: '#ffc107' },
+    completadas: { icon: 'fas fa-check-double',  bg: 'rgba(33,150,243,0.1)',color: '#2196f3' },
   };
-  return colors[estado] || 'grey';
+  return m[key];
 };
 
-const verDetalle = (venta: Venta) => {
-  selectedVenta.value = venta;
-  nuevoEstado.value = venta.estado;
-  detalleDialog.value = true;
-};
+const verDetalle = (venta: Venta) => { selectedVenta.value = venta; nuevoEstado.value = venta.estado; detalleDialog.value = true; };
 
 const guardarCambioEstado = async () => {
   if (!selectedVenta.value || !nuevoEstado.value) return;
-  
   updating.value = true;
-  try {
-    await ventaStore.updateEstadoVenta(selectedVenta.value.id, nuevoEstado.value);
-    detalleDialog.value = false;
-    await loadData(); // Recargar para ver cambios y actualizar estadísticas
-  } catch (error: any) {
-    alert('Error al actualizar: ' + error.message);
-  } finally {
-    updating.value = false;
-  }
+  try { await ventaStore.updateEstadoVenta(selectedVenta.value.id, nuevoEstado.value); detalleDialog.value = false; await loadData(); }
+  catch (e: any) { alert('Error: ' + e.message); }
+  finally { updating.value = false; }
 };
 
-const filtrar = async () => {
-  loading.value = true;
-  await loadEstadisticas();
-  loading.value = false;
-};
+const filtrar = async () => { loading.value = true; await loadEstadisticas(); loading.value = false; };
 </script>
 
 <template>
   <v-container fluid>
-    <v-row>
-      <v-col cols="12">
-        <h1 class="text-h3 font-weight-bold mb-6 text-primary">Gestión de Ventas</h1>
-      </v-col>
-    </v-row>
-
-    <!-- Estadísticas -->
-    <v-row v-if="estadisticas" class="mb-6">
-      <v-col cols="12" md="3">
-        <v-card elevation="2" class="rounded-lg">
-          <v-card-text>
-            <div class="text-overline mb-1">Ventas Totales</div>
-            <div class="text-h4 font-weight-bold">{{ estadisticas.totalVentas }}</div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-      <v-col cols="12" md="3">
-        <v-card elevation="2" class="rounded-lg">
-          <v-card-text>
-            <div class="text-overline mb-1 text-success">Ingresos</div>
-            <div class="text-h4 font-weight-bold text-success">{{ formatCurrency(estadisticas.totalIngresos) }}</div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-      <v-col cols="12" md="3">
-        <v-card elevation="2" class="rounded-lg">
-          <v-card-text>
-            <div class="text-overline mb-1 text-warning">Pendientes</div>
-            <div class="text-h4 font-weight-bold text-warning">{{ estadisticas.ventasPorEstado.pendientes }}</div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-      <v-col cols="12" md="3">
-        <v-card elevation="2" class="rounded-lg">
-          <v-card-text>
-            <div class="text-overline mb-1 text-info">Completadas</div>
-            <div class="text-h4 font-weight-bold text-info">{{ (estadisticas.ventasPorEstado.pagadas || 0) + (estadisticas.ventasPorEstado.entregadas || 0) }}</div>
-             <div class="text-caption text-medium-emphasis">Entregadas / Pagadas</div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
-
-    <!-- Filtros y Tabla -->
-    <v-card>
-      <v-card-title class="d-flex align-center flex-wrap gap-4 py-4">
-        <v-text-field
-          v-model="search"
-          prepend-inner-icon="mdi-magnify"
-          label="Buscar venta o cliente..."
-          variant="outlined"
-          density="compact"
-          hide-details
-          class="flex-grow-1"
-          style="max-width: 300px;"
-        ></v-text-field>
-
-        <v-divider vertical class="mx-4 hidden-sm-and-down"></v-divider>
-
-        <div class="d-flex gap-2 align-center">
-          <v-text-field
-            v-model="fechaInicio"
-            type="date"
-            label="Desde"
-            variant="outlined"
-            density="compact"
-            hide-details
-          ></v-text-field>
-          <v-text-field
-            v-model="fechaFin"
-            type="date"
-            label="Hasta"
-            variant="outlined"
-            density="compact"
-            hide-details
-          ></v-text-field>
-          <v-btn icon="mdi-filter" variant="text" @click="filtrar"></v-btn>
+    <!-- ═══ HEADER ═══ -->
+    <div class="page-header mb-6">
+      <div class="d-flex align-center ga-3">
+        <div class="header-icon"><i class="fas fa-receipt"></i></div>
+        <div>
+          <h2 class="text-h5 font-weight-bold" :style="{ color: txtPrimary }">Gestión de Ventas</h2>
+          <p class="text-body-2 text-medium-emphasis mb-0">Control y seguimiento de ventas</p>
         </div>
-      </v-card-title>
+      </div>
+      <v-btn variant="tonal" color="#ee6f38" size="small" class="text-none font-weight-medium" rounded="lg" @click="loadData" :loading="loading">
+        <i class="fas fa-sync-alt mr-2" style="font-size: 11px;"></i> Actualizar
+      </v-btn>
+    </div>
 
-      <v-data-table
-        :headers="headers"
-        :items="ventaStore.ventas"
-        :search="search"
-        :loading="loading"
-        hover
-      >
+    <!-- ═══ STATS ═══ -->
+    <v-row v-if="estadisticas" class="mb-6">
+      <v-col v-for="(stat, idx) in [
+        { key: 'total',       label: 'Ventas Totales', value: estadisticas.totalVentas, color: '#ee6f38', icon: 'fas fa-shopping-bag' },
+        { key: 'ingresos',    label: 'Ingresos',       value: formatCurrency(estadisticas.totalIngresos), color: '#4caf50', icon: 'fas fa-dollar-sign' },
+        { key: 'pendientes',  label: 'Pendientes',     value: estadisticas.ventasPorEstado.pendientes, color: '#ffb300', icon: 'fas fa-clock' },
+        { key: 'completadas', label: 'Completadas',    value: (estadisticas.ventasPorEstado.pagadas || 0) + (estadisticas.ventasPorEstado.entregadas || 0), color: '#2196f3', icon: 'fas fa-check-double' },
+      ]" :key="idx" cols="6" md="3">
+        <v-card class="stat-card" rounded="lg" elevation="0" :style="{ background: cardBg, borderColor: cardBorder }">
+          <v-card-text class="pa-4">
+            <div class="d-flex align-center justify-space-between">
+              <div>
+                <p class="stat-label" :style="{ color: isDark ? '#9ca3af' : '#666', fontWeight: '800' }">{{ stat.label }}</p>
+                <p class="stat-value" :style="{ color: isDark ? '#fafafa' : '#1a1a2e' }">{{ stat.value }}</p>
+              </div>
+              <div class="stat-icon-box" :style="{ 
+                background: isDark ? `${stat.color}15` : `${stat.color}10`, 
+                color: stat.color,
+                border: `1px solid ${isDark ? `${stat.color}40` : `${stat.color}20`}`
+              }">
+                <i :class="stat.icon"></i>
+              </div>
+            </div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+    <v-row v-else-if="loading" class="mb-6">
+      <v-col v-for="n in 4" :key="n" cols="6" md="3"><v-skeleton-loader type="card" rounded="lg" /></v-col>
+    </v-row>
+
+    <!-- ═══ TABLA ═══ -->
+    <v-card rounded="lg" elevation="0" class="table-card">
+      <div class="table-toolbar">
+        <v-text-field v-model="search" placeholder="Buscar venta o cliente..." variant="outlined" density="compact" hide-details rounded="lg" class="search-field" :style="{ background: innerBg }">
+          <template v-slot:prepend-inner><i class="fas fa-search" :style="{ color: isDark ? '#4b5563' : '#aaa', fontSize: '13px' }"></i></template>
+        </v-text-field>
+        <div class="filter-group">
+          <v-text-field v-model="fechaInicio" type="date" label="Desde" variant="outlined" density="compact" hide-details rounded="lg" class="date-field" />
+          <v-text-field v-model="fechaFin" type="date" label="Hasta" variant="outlined" density="compact" hide-details rounded="lg" class="date-field" />
+          <v-tooltip text="Filtrar por fechas" location="top">
+            <template v-slot:activator="{ props }">
+              <v-btn v-bind="props" icon variant="tonal" color="#ee6f38" size="small" rounded="lg" @click="filtrar">
+                <i class="fas fa-filter" style="font-size: 13px;"></i>
+              </v-btn>
+            </template>
+          </v-tooltip>
+        </div>
+      </div>
+
+      <v-data-table :headers="headers" :items="ventaStore.ventas" :search="search" :loading="loading" hover items-per-page="10">
         <template v-slot:item.fechaVenta="{ item }">
-          {{ formatDate(item.fechaVenta) }}
+          <div class="d-flex align-center ga-2">
+            <div class="mini-icon" style="background: rgba(33,150,243,0.08); color: #2196f3;"><i class="far fa-calendar"></i></div>
+            <span class="text-body-2">{{ formatDate(item.fechaVenta) }}</span>
+          </div>
         </template>
 
         <template v-slot:item.cliente="{ item }">
-          <div v-if="item.cliente">
-            <div class="font-weight-bold">{{ item.cliente.nombre }} {{ item.cliente.apellido }}</div>
-            <div class="text-caption text-grey">{{ item.cliente.email }}</div>
+          <div v-if="item.cliente" class="d-flex align-center ga-2 py-2">
+            <v-avatar size="32" color="#ee6f38"><span class="text-white text-caption font-weight-bold">{{ item.cliente.nombre?.charAt(0) }}{{ item.cliente.apellido?.charAt(0) }}</span></v-avatar>
+            <div>
+              <p class="font-weight-bold text-body-2 mb-0" style="line-height: 1.3;">{{ item.cliente.nombre }} {{ item.cliente.apellido }}</p>
+              <p class="text-caption text-medium-emphasis mb-0">{{ item.cliente.email }}</p>
+            </div>
           </div>
         </template>
 
         <template v-slot:item.total="{ item }">
-          <span class="font-weight-black">{{ formatCurrency(item.total) }}</span>
+          <span class="font-weight-bold" :style="{ color: isDark ? '#fafafa' : '#1a1a2e' }">{{ formatCurrency(item.total) }}</span>
         </template>
 
+        <!-- ✅ Estado en tabla: icono + palabra coloreada, sin chip -->
         <template v-slot:item.estado="{ item }">
-          <v-chip :color="getEstadoColor(item.estado)" size="small" class="font-weight-bold">
-            {{ item.estado === 'ENTREGADA' ? 'ENTREGADA' : (item.estado === 'PAGADA' ? 'PAGADA / RETIRADA' : item.estado) }}
-          </v-chip>
+          <div class="d-flex align-center ga-1">
+            <i
+              :class="getEstadoIcon(item.estado)"
+              :style="{ color: getEstadoTextColor(item.estado), fontSize: '12px' }"
+            ></i>
+            <span
+              class="font-weight-bold text-body-2"
+              :style="{ color: getEstadoTextColor(item.estado) }"
+            >
+              {{ getEstadoLabel(item.estado) }}
+            </span>
+          </div>
         </template>
 
         <template v-slot:item.tipoPago="{ item }">
-          <div class="text-capitalize">{{ item.tipoPago?.toLowerCase().replace('_', ' ') }}</div>
+          <v-chip size="x-small" variant="tonal" color="grey-darken-1" label>
+            <i class="fas fa-wallet mr-1" style="font-size: 9px;"></i>
+            {{ formatTipoPago(item.tipoPago) }}
+          </v-chip>
         </template>
 
         <template v-slot:item.actions="{ item }">
-          <v-btn color="primary" variant="text" size="small" @click="verDetalle(item)">
-            {{ isAdmin ? 'Ver / Editar' : 'Ver' }}
-          </v-btn>
+          <div class="text-center">
+            <v-tooltip :text="isAdmin ? 'Gestionar venta' : 'Ver detalles'" location="top">
+              <template v-slot:activator="{ props }">
+                <v-btn v-bind="props" variant="tonal" color="#ee6f38" size="x-small" class="text-none font-weight-bold" rounded="lg" @click="verDetalle(item)">
+                  <i :class="isAdmin ? 'fas fa-cog' : 'fas fa-eye'" class="mr-1" style="font-size: 10px;"></i>
+                  {{ isAdmin ? 'Gestionar' : 'Ver' }}
+                </v-btn>
+              </template>
+            </v-tooltip>
+          </div>
+        </template>
+
+        <template v-slot:loading><v-skeleton-loader type="table-row@5" /></template>
+        <template v-slot:no-data>
+          <div class="text-center py-8">
+            <div class="empty-icon mb-3" :style="{ background: isDark ? 'rgba(238,111,56,0.15)' : 'rgba(238,111,56,0.08)' }"><i class="fas fa-receipt"></i></div>
+            <p class="font-weight-bold mb-1" :style="{ color: txtPrimary }">Sin ventas</p>
+            <p class="text-caption text-medium-emphasis">Las ventas aparecerán aquí</p>
+          </div>
         </template>
       </v-data-table>
     </v-card>
 
-    <!-- Dialogo de Detalle -->
-    <v-dialog v-model="detalleDialog" max-width="900" scrollable>
-      <v-card v-if="selectedVenta">
-        <v-toolbar color="primary" density="compact">
-          <v-toolbar-title>Venta #{{ selectedVenta.id }}</v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-btn icon="mdi-close" @click="detalleDialog = false"></v-btn>
-        </v-toolbar>
-
-        <v-card-text class="pa-4">
-          <v-row>
-            <!-- Info General -->
-            <v-col cols="12" md="4" class="border-right">
-              <h3 class="text-subtitle-1 font-weight-bold mb-4">Información del Cliente</h3>
-              <div class="mb-4">
-                <div class="text-caption text-grey">Nombre</div>
-                <div>{{ selectedVenta.cliente.nombre }} {{ selectedVenta.cliente.apellido }}</div>
-              </div>
-              <div class="mb-4">
-                <div class="text-caption text-grey">Contacto</div>
-                <div>{{ selectedVenta.cliente.email }}</div>
-                <div>{{ selectedVenta.cliente.telefono }}</div>
-              </div>
-              <div class="mb-4" v-if="selectedVenta.direccionEnvio">
-                <div class="text-caption text-grey">Dirección de Envío</div>
-                <div>{{ selectedVenta.direccionEnvio }}</div>
-              </div>
-              
-              <v-divider class="my-4"></v-divider>
-              
-              <template v-if="isAdmin">
-                <h3 class="text-subtitle-1 font-weight-bold mb-4">Gestión de Estado</h3>
-                <v-select
-                  v-model="nuevoEstado"
-                  :items="estadosVenta"
-                  label="Estado de la Venta"
-                  variant="outlined"
-                  density="compact"
-                ></v-select>
-                
-                <div class="d-flex flex-column gap-2 mt-2">
-                  <div class="text-caption text-grey">
-                    Nota: Al cambiar a 'CANCELADA', se restaurará el stock automáticamente.
+    <!-- ═══ DIALOG DETALLE ═══ -->
+    <v-dialog v-model="detalleDialog" max-width="880" scrollable>
+      <v-card v-if="selectedVenta" rounded="lg">
+        <div class="dialog-header">
+          <div class="d-flex align-center ga-3">
+            <div class="dialog-icon" :style="{ background: isDark ? 'rgba(238,111,56,0.15)' : 'rgba(238,111,56,0.1)' }"><i class="fas fa-file-invoice-dollar"></i></div>
+            <div>
+              <h3 class="font-weight-bold" :style="{ color: txtPrimary, fontSize: '1.1rem' }">Venta #{{ selectedVenta.id }}</h3>
+              <p class="text-caption text-medium-emphasis mb-0">{{ formatDate(selectedVenta.fechaVenta) }}</p>
+            </div>
+          </div>
+          <div class="d-flex align-center ga-2">
+            <!-- ✅ Estado en header del dialog: icono + palabra coloreada -->
+            <div class="d-flex align-center ga-1">
+              <i :class="getEstadoIcon(selectedVenta.estado)" :style="{ color: getEstadoTextColor(selectedVenta.estado), fontSize: '13px' }"></i>
+              <span class="font-weight-bold text-body-2" :style="{ color: getEstadoTextColor(selectedVenta.estado) }">
+                {{ getEstadoLabel(selectedVenta.estado) }}
+              </span>
+            </div>
+            <v-btn icon variant="text" size="small" @click="detalleDialog = false"><i class="fas fa-times"></i></v-btn>
+          </div>
+        </div>
+        <v-divider />
+        <v-card-text class="pa-0" style="max-height: 65vh; overflow-y: auto;">
+          <v-row no-gutters>
+            <!-- Sidebar -->
+            <v-col cols="12" md="4" class="sidebar-col">
+              <div class="pa-5">
+                <p class="section-label mb-3"><i class="fas fa-user-circle mr-2" style="color: #ee6f38; font-size: 13px;"></i>Cliente</p>
+                <v-card variant="flat" rounded="lg" :color="isDark ? '#1e293b' : 'grey-lighten-5'" class="pa-3 mb-5">
+                  <div class="d-flex align-center ga-3">
+                    <v-avatar size="40" color="#ee6f38"><span class="text-white font-weight-bold text-caption">{{ selectedVenta.cliente.nombre?.charAt(0) }}{{ selectedVenta.cliente.apellido?.charAt(0) }}</span></v-avatar>
+                    <div>
+                      <p class="font-weight-bold text-body-2 mb-0">{{ selectedVenta.cliente.nombre }} {{ selectedVenta.cliente.apellido }}</p>
+                      <p class="text-caption text-medium-emphasis mb-0">{{ selectedVenta.cliente.email }}</p>
+                      <p class="text-caption text-medium-emphasis mb-0" v-if="selectedVenta.cliente.telefono">{{ selectedVenta.cliente.telefono }}</p>
+                    </div>
                   </div>
+                </v-card>
+
+                <div class="mb-5" v-if="selectedVenta.direccionEnvio">
+                  <p class="section-label mb-2"><i class="fas fa-map-marker-alt mr-2" style="color: #2196f3; font-size: 12px;"></i>Envío</p>
+                  <p class="text-body-2 text-medium-emphasis">{{ selectedVenta.direccionEnvio }}</p>
                 </div>
-              </template>
-              <template v-else>
-                <h3 class="text-subtitle-1 font-weight-bold mb-4">Estado Actual</h3>
-                <v-chip :color="getEstadoColor(selectedVenta.estado)" size="small" class="font-weight-bold mb-4">
-                  {{ selectedVenta.estado === 'ENTREGADA' ? 'ENTREGADA' : (selectedVenta.estado === 'PAGADA' ? 'PAGADA / RETIRADA' : selectedVenta.estado) }}
-                </v-chip>
-              </template>
+
+                <div class="mb-5">
+                  <p class="section-label mb-2"><i class="fas fa-wallet mr-2" style="color: #9c27b0; font-size: 12px;"></i>Pago</p>
+                  <v-chip size="small" variant="tonal" color="grey-darken-1" label>{{ formatTipoPago(selectedVenta.tipoPago) }}</v-chip>
+                </div>
+
+                <v-divider class="mb-5" />
+
+                <template v-if="isAdmin">
+                  <p class="section-label mb-3">
+                    <i class="fas fa-sliders-h mr-2" style="color: #ff8f00; font-size: 12px;"></i>Cambiar Estado
+                  </p>
+                  <v-select
+                    v-model="nuevoEstado"
+                    :items="estadosVenta"
+                    label="Estado"
+                    variant="outlined"
+                    density="compact"
+                    rounded="lg"
+                    color="#ee6f38"
+                    hide-details
+                  >
+                    <!-- ✅ Valor seleccionado: icono + palabra coloreada -->
+                    <template v-slot:selection="{ item }">
+                      <div class="d-flex align-center ga-2">
+                        <i
+                          :class="getEstadoIcon(item.value as EstadoVenta)"
+                          :style="{ color: getEstadoTextColor(item.value), fontSize: '12px' }"
+                        ></i>
+                        <span
+                          class="font-weight-bold text-body-2"
+                          :style="{ color: getEstadoTextColor(item.value) }"
+                        >
+                          {{ getEstadoLabel(item.value) }}
+                        </span>
+                      </div>
+                    </template>
+
+                    <!-- ✅ Cada opción: icono + palabra coloreada, sin fondo -->
+                    <template v-slot:item="{ item, props }">
+                      <v-list-item v-bind="props" title="">
+                        <template v-slot:title>
+                          <div class="d-flex align-center ga-2">
+                            <i
+                              :class="getEstadoIcon(item.value as EstadoVenta)"
+                              :style="{ color: getEstadoTextColor(item.value), fontSize: '12px' }"
+                            ></i>
+                            <span
+                              class="font-weight-bold text-body-2"
+                              :style="{ color: getEstadoTextColor(item.value) }"
+                            >
+                              {{ getEstadoLabel(item.value) }}
+                            </span>
+                          </div>
+                        </template>
+                      </v-list-item>
+                    </template>
+                  </v-select>
+                  <p class="text-caption text-medium-emphasis mt-2">
+                    <i class="fas fa-info-circle mr-1" style="font-size: 10px; color: #ffc107;"></i>Al cancelar se restaura el stock.
+                  </p>
+                </template>
+
+                <template v-else>
+                  <p class="section-label mb-3"><i class="fas fa-info-circle mr-2" style="color: #2196f3; font-size: 12px;"></i>Estado</p>
+                  <!-- ✅ Estado sidebar no-admin: icono + palabra coloreada -->
+                  <div class="d-flex align-center ga-2">
+                    <i :class="getEstadoIcon(selectedVenta.estado)" :style="{ color: getEstadoTextColor(selectedVenta.estado), fontSize: '13px' }"></i>
+                    <span class="font-weight-bold text-body-2" :style="{ color: getEstadoTextColor(selectedVenta.estado) }">
+                      {{ getEstadoLabel(selectedVenta.estado) }}
+                    </span>
+                  </div>
+                </template>
+              </div>
             </v-col>
 
             <!-- Productos -->
             <v-col cols="12" md="8">
-              <h3 class="text-subtitle-1 font-weight-bold mb-4">Productos ({{ selectedVenta.detalles.length }})</h3>
-              
-              <v-table density="comfortable" class="border rounded mb-4">
-                <thead>
-                  <tr>
-                    <th>Producto</th>
-                    <th class="text-center">Cant.</th>
-                    <th class="text-right">Precio</th>
-                    <th class="text-right">Subtotal</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="detalle in selectedVenta.detalles" :key="detalle.id">
-                    <td>
-                      <div class="d-flex align-center py-2">
-                        <v-avatar rounded size="40" class="mr-3 bg-grey-lighten-3">
-                          <v-img v-if="detalle.producto.imagenUrl" :src="detalle.producto.imagenUrl" cover></v-img>
-                          <v-icon v-else>mdi-image</v-icon>
-                        </v-avatar>
-                        <div>
-                          <div class="font-weight-medium">{{ detalle.producto.nombre }}</div>
-                          <div class="text-caption text-grey">ID: {{ detalle.producto.id }}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="text-center">{{ detalle.cantidad }}</td>
-                    <td class="text-right">
-                      <template v-if="detalle.en_oferta">
-                        <div class="d-flex flex-column align-end">
-                          <v-chip size="x-small" color="green" variant="flat" prepend-icon="mdi-sale" class="mb-1">OFERTA</v-chip>
-                          <span class="font-weight-bold text-green-darken-2">{{ formatCurrency(detalle.precioUnitario) }}</span>
-                          <span class="text-caption text-grey text-decoration-line-through">{{ formatCurrency(detalle.precio_original) }}</span>
-                        </div>
-                      </template>
-                      <template v-else>
-                        {{ formatCurrency(detalle.precioUnitario) }}
-                      </template>
-                    </td>
-                    <td class="text-right font-weight-bold" :class="detalle.en_oferta ? 'text-green-darken-2' : ''">{{ formatCurrency(detalle.subtotal) }}</td>
-                  </tr>
-                </tbody>
-                <tfoot class="bg-grey-lighten-4"> 
-                  <tr>
-                    <td colspan="3" class="text-right font-weight-bold">Total</td>
-                    <td class="text-right font-weight-black">{{ formatCurrency(selectedVenta.total) }}</td>
-                  </tr>
-                </tfoot>
-              </v-table>
-
-              <div v-if="selectedVenta.notas" class="bg-amber-lighten-5 pa-3 rounded border border-amber-lighten-4">
-                <div class="text-caption font-weight-bold text-amber-darken-4">Notas del Cliente:</div>
-                <div class="text-body-2">{{ selectedVenta.notas }}</div>
+              <div class="pa-5">
+                <p class="section-label mb-3">
+                  <i class="fas fa-box mr-2" style="color: #4caf50; font-size: 12px;"></i>Productos
+                  <v-chip size="x-small" color="#4caf50" variant="tonal" class="ml-2">{{ selectedVenta.detalles.length }}</v-chip>
+                </p>
+                <div class="detail-list">
+                  <div v-for="detalle in selectedVenta.detalles" :key="detalle.id" class="detail-row">
+                    <v-avatar rounded="lg" size="44" class="product-thumb">
+                      <v-img v-if="detalle.producto.imagenUrl" :src="detalle.producto.imagenUrl" cover />
+                      <i v-else class="fas fa-image" style="color: #ccc; font-size: 16px;"></i>
+                    </v-avatar>
+                    <div class="flex-grow-1">
+                      <p class="font-weight-bold text-body-2 mb-0">{{ detalle.producto.nombre }}</p>
+                      <p class="text-caption text-medium-emphasis mb-0">
+                        {{ detalle.cantidad }} ×
+                        <template v-if="detalle.en_oferta">
+                          <span class="text-green-darken-2 font-weight-bold">{{ formatCurrency(detalle.precioUnitario) }}</span>
+                          <span class="text-decoration-line-through ml-1">{{ formatCurrency(detalle.precio_original ?? 0) }}</span>
+                        </template>
+                        <template v-else>{{ formatCurrency(detalle.precioUnitario) }}</template>
+                      </p>
+                    </div>
+                    <v-chip v-if="detalle.en_oferta" size="x-small" color="green" variant="tonal" label class="mr-2">
+                      <i class="fas fa-bolt mr-1" style="font-size: 8px;"></i>Oferta
+                    </v-chip>
+                    <span class="font-weight-bold text-body-2" :class="detalle.en_oferta ? 'text-green-darken-2' : ''">{{ formatCurrency(detalle.subtotal) }}</span>
+                  </div>
+                </div>
+                <div class="total-bar mt-4" :style="{ background: headerBg, borderColor: cardBorder }">
+                  <span class="font-weight-bold" :style="{ color: txtPrimary }">Total</span>
+                  <span class="total-amount">{{ formatCurrency(selectedVenta.total) }}</span>
+                </div>
+                <v-alert v-if="selectedVenta.notas" color="amber-lighten-5" border="start" border-color="amber-darken-1" density="compact" rounded="lg" class="mt-4">
+                  <p class="text-caption font-weight-bold mb-1" style="color: #f57f17;"><i class="fas fa-sticky-note mr-1"></i>Notas</p>
+                  <p class="text-body-2 mb-0">{{ selectedVenta.notas }}</p>
+                </v-alert>
               </div>
             </v-col>
           </v-row>
         </v-card-text>
-
-        <v-card-actions class="pa-4 border-top">
-          <v-spacer></v-spacer>
-          <v-btn variant="text" @click="detalleDialog = false">Cerrar</v-btn>
-          <v-btn 
-            v-if="isAdmin"
-            color="primary" 
-            prepend-icon="mdi-content-save"
-            @click="guardarCambioEstado"
-            :loading="updating"
-            :disabled="nuevoEstado === selectedVenta.estado"
-          >
-            Guardar Cambios
+        <v-divider />
+        <v-card-actions class="pa-4">
+          <v-spacer />
+          <v-btn variant="outlined" color="grey-darken-1" class="text-none" rounded="lg" @click="detalleDialog = false">Cerrar</v-btn>
+          <v-btn v-if="isAdmin" color="#ee6f38" variant="flat" class="text-none font-weight-bold" rounded="lg" @click="guardarCambioEstado" :loading="updating" :disabled="nuevoEstado === selectedVenta.estado">
+            <i class="fas fa-save mr-2" style="font-size: 13px;"></i>Guardar
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -380,14 +448,30 @@ const filtrar = async () => {
 </template>
 
 <style scoped>
-.text-primary {
-  color: rgb(var(--v-theme-primary));
-}
-.gap-4 { gap: 16px; }
-.gap-2 { gap: 8px; }
-.border-right { border-right: 1px solid rgba(0,0,0,0.12); }
-
-@media (max-width: 960px) {
-  .border-right { border-right: none; border-bottom: 1px solid rgba(0,0,0,0.12); padding-bottom: 16px; margin-bottom: 16px; }
-}
+.page-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.header-icon { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #ee6f38, #ff9a6c); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; box-shadow: 0 4px 12px rgba(238,111,56,0.25); }
+.stat-card { border: 1px solid v-bind('cardBorder'); transition: all 0.25s ease; }
+.stat-card:hover { border-color: rgba(238,111,56,0.3) !important; box-shadow: 0 10px 20px v-bind('shadowColor') !important; transform: translateY(-3px); }
+.stat-label { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.stat-value { font-size: 1.5rem; font-weight: 900; line-height: 1.2; margin: 0; }
+.stat-icon-box { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.table-card { border: 1px solid v-bind('cardBorder'); overflow: hidden; background: v-bind('cardBg'); }
+.table-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 16px 20px; border-bottom: 1px solid v-bind('cardBorder'); }
+.search-field { max-width: 280px; }
+.filter-group { display: flex; align-items: center; gap: 8px; }
+.date-field { max-width: 160px; }
+.mini-icon { width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0; }
+.empty-icon { width: 56px; height: 56px; border-radius: 50%; background: rgba(238,111,56,0.08); display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 22px; color: #ee6f38; }
+.dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; flex-wrap: wrap; gap: 10px; background: v-bind('headerBg'); }
+.dialog-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #ee6f38; font-size: 15px; }
+.sidebar-col { border-right: 1px solid v-bind('cardBorder'); background: v-bind('headerBg'); }
+.section-label { font-size: 0.82rem; font-weight: 800; text-transform: uppercase; margin: 0; display: flex; align-items: center; letter-spacing: 0.5px; }
+.detail-list { display: flex; flex-direction: column; }
+.detail-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid v-bind('cardBorder'); }
+.detail-row:last-child { border-bottom: none; }
+.product-thumb { background: v-bind('innerBg'); border: 1px solid v-bind('cardBorder'); flex-shrink: 0; }
+.total-bar { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-radius: 14px; border: 1.5px solid v-bind('cardBorder'); transition: all 0.3s ease; }
+.total-amount { font-size: 1.25rem; font-weight: 800; color: #ee6f38; }
+@media (max-width: 960px) { .sidebar-col { border-right: none; border-bottom: 1px solid #f0f0f0; } .table-toolbar { flex-direction: column; align-items: stretch; } .search-field { max-width: 100%; } .date-field { max-width: 100%; flex: 1; } .stat-value { font-size: 1.2rem; } }
+@media (max-width: 600px) { .page-header { flex-direction: column; align-items: flex-start; } .dialog-header { flex-direction: column; align-items: flex-start; } }
 </style>

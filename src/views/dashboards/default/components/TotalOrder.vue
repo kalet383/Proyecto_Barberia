@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { ArrowDownLeftCircleIcon, ShoppingCartIcon, CircleArrowDownLeftIcon } from 'vue-tabler-icons';
+import { useCustomizerStore } from '@/stores/customizer';
+
+const customizer = useCustomizerStore();
+const isDark = computed(() => customizer.activeTheme === 'DarkTheme');
 
 const tab = ref('1');
 
@@ -10,7 +14,8 @@ const chartOptions1 = computed(() => {
       type: 'bar',
       height: 90,
       fontFamily: `inherit`,
-      foreColor: '#a1aab2',
+      foreColor: isDark.value ? '#94a3b8' : '#a1aab2',
+      background: 'transparent',
       sparkline: {
         enabled: true
       }
@@ -32,7 +37,7 @@ const chartOptions1 = computed(() => {
       max: 100
     },
     tooltip: {
-      theme: 'light',
+      theme: isDark.value ? 'dark' : 'light',
       fixed: {
         enabled: false
       },
@@ -47,6 +52,9 @@ const chartOptions1 = computed(() => {
       marker: {
         show: false
       }
+    },
+    theme: {
+      mode: isDark.value ? 'dark' : 'light'
     }
   };
 });
@@ -68,7 +76,8 @@ const chartOptions2 = computed(() => {
       type: 'bar',
       height: 90,
       fontFamily: `inherit`,
-      foreColor: '#a1aab2',
+      foreColor: isDark.value ? '#94a3b8' : '#a1aab2',
+      background: 'transparent',
       sparkline: {
         enabled: true
       }
@@ -90,7 +99,7 @@ const chartOptions2 = computed(() => {
       max: 100
     },
     tooltip: {
-      theme: 'light',
+      theme: isDark.value ? 'dark' : 'light',
       fixed: {
         enabled: false
       },
@@ -105,6 +114,9 @@ const chartOptions2 = computed(() => {
       marker: {
         show: false
       }
+    },
+    theme: {
+      mode: isDark.value ? 'dark' : 'light'
     }
   };
 });

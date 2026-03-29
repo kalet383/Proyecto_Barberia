@@ -2,10 +2,10 @@ import { createVuetify } from 'vuetify'
 import { h } from 'vue'
 import '@fortawesome/fontawesome-free/css/all.css'
 import { aliases, mdi } from 'vuetify/iconsets/mdi-svg'
-import { icons } from './mdi-icon' // si tienes íconos personalizados
+import { icons } from './mdi-icon'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
-import { PurpleTheme } from '@/theme/LightTheme'
+import { PurpleTheme, DarkTheme } from '@/theme/LightTheme'
 
 export default createVuetify({
   components,
@@ -27,19 +27,45 @@ export default createVuetify({
   theme: {
     defaultTheme: 'PurpleTheme',
     themes: {
-      PurpleTheme
+      PurpleTheme,
+      DarkTheme
     }
   },
   defaults: {
     VBtn: {},
     VCard: {
-      rounded: 'md'
+      rounded: 'md',
+      elevation: 0,
+      border: true
     },
     VTextField: {
-      rounded: 'lg'
+      rounded: 'lg',
+      variant: 'outlined',
+      density: 'comfortable',
+      color: 'primary',
+      validateOn: 'submit lazy'
+    },
+    VSelect: {
+      color: 'primary',
+      validateOn: 'submit lazy'
+    },
+    VTextarea: {
+      color: 'primary',
+      validateOn: 'submit lazy'
+    },
+    VFileInput: {
+      color: 'primary',
+      validateOn: 'submit lazy'
+    },
+    VAutocomplete: {
+      color: 'primary',
+      validateOn: 'submit lazy'
+    },
+    VCombobox: {
+      color: 'primary',
+      validateOn: 'submit lazy'
     },
     VTooltip: {
-      // set v-tooltip default location to top
       location: 'top'
     }
   }

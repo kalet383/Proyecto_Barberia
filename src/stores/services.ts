@@ -30,9 +30,17 @@ export const useServiceStore = defineStore('service', {
     }),
 
     getters: {
-        featuredServices: (state) => state.services.filter(s => s.publicado), // Only filtering by published now
-        regularServices: (state) => state.services.filter(s => s.publicado),
+        // Servicios que se muestran en el carrusel de inicio (Solo publicados y destacados)
+        featuredServices: (state) => state.services.filter(s => s.publicado && s.destacado),
+        
+        // Servicios "normales" (Publicados pero no destacados)
+        nonFeaturedServices: (state) => state.services.filter(s => s.publicado && !s.destacado),
+        
+        // Todos los publicados (Para el modal de agendar)
         allPublishedServices: (state) => state.services.filter(s => s.publicado),
+        
+        // Alias para compatibilidad si se usa en otros sitios
+        regularServices: (state) => state.services.filter(s => s.publicado),
     },
 
     actions: {
@@ -40,8 +48,11 @@ export const useServiceStore = defineStore('service', {
             this.loading = true
             try {
                 const { data } = await api.get('/servicio', { withCredentials: true })
-                this.services = data
-                return data;
+                this.services = data.map((s: any) => ({
+                    ...s,
+                    precio: Number(s.precio) || 0
+                }));
+                return this.services;
             } catch (err: unknown) {
                 if (axios.isAxiosError(err) && err.response?.data?.message) {
                     this.error = err.response.data.message
@@ -76,7 +87,12 @@ export const useServiceStore = defineStore('service', {
                 const { data } = await api.patch(`/servicio/${id}`, payload, { withCredentials: true })
                 const index = this.services.findIndex(s => s.id === id)
                 if (index !== -1) {
-                    this.services[index] = data
+                    // Mergear para no perder campos como 'categoria' si el backend no los devuelve en el PATCH
+                    this.services[index] = { 
+                        ...this.services[index], 
+                        ...data,
+                        precio: data.precio !== undefined ? Number(data.precio) : this.services[index].precio
+                    }
                 }
                 return data
             } catch (err: unknown) {

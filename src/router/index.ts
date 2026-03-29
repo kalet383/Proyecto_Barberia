@@ -19,7 +19,14 @@ export const router = createRouter({
     },
     MainRoutes,
     PublicRoutes
-  ]
+  ],
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition;
+    } else {
+      return { top: 0 };
+    }
+  }
 });
 
 router.beforeEach(async (to, from, next) => {
@@ -100,9 +107,14 @@ router.beforeEach(async (to, from, next) => {
     }
   }
 
-  // si ya está logueado e intenta entrar a /login -> lo manda al home
+  // Si ya está logueado e intenta entrar a /login -> lo manda al home
   if (auth.user && (to.path === '/login' || to.path === '/login1')) {
     return next(auth.returnUrl || '/');
+  }
+
+  // 🎯 Redirigir SuperAdmin fuera del dashboard genérico si es necesario
+  if (auth.user && userRole === 'superadmin' && (to.path === '/dashboard' || to.path === '/dashboard/default' || to.path === '/inicio-dashboard')) {
+    return next('/superadmin/dashboard');
   }
 
   next();

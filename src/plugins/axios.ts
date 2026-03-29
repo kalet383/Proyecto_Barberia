@@ -1,9 +1,14 @@
 import axios from 'axios';
 
 // Instancia base de Axios para tu API NestJS
+// URL de API adaptativa (funciona en localhost y desde el celular en la misma red)
+const apiBaseUrl = typeof window !== 'undefined'
+    ? `http://${window.location.hostname}:3000`
+    : 'http://localhost:3000';
+
 const api = axios.create({
-    baseURL: 'http://localhost:3000',
-    withCredentials: true, // habilítalo si usas cookies
+    baseURL: apiBaseUrl,
+    withCredentials: true,
 });
 
 export function setAuthToken(token: string) {

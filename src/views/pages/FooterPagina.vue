@@ -67,7 +67,7 @@
             <ul class="contact-list">
               <li class="contact-item">
                 <i class="fas fa-map-marker-alt contact-icon"></i>
-                <span>Calle 123 #45-67<br>Bogotá, Colombia</span>
+                <span>Calle 123 #45-67<br>Monteria, Colombia</span>
               </li>
               <li class="contact-item">
                 <i class="fas fa-phone contact-icon"></i>
@@ -140,14 +140,9 @@
 
       <!-- Copyright y links legales -->
       <v-divider class="my-6 divider-custom"></v-divider>
-      <v-row class="copyright-section">
-        <v-col cols="12" md="6" class="text-center text-md-left">
-          <p class="copyright-text">
-            © 2025 <span class="brand-name">STYLEHUB</span>. Todos los derechos reservados.
-          </p>
-        </v-col>
-        <v-col cols="12" md="6" class="text-center text-md-right">
-          <div class="legal-links">
+      <v-row class="copyright-section justify-center text-center">
+        <v-col cols="12">
+          <div class="legal-links mb-3">
             <a href="javascript:void(0)" @click="showPolicy('privacy')">Política de Privacidad</a>
             <span class="separator">•</span>
             <a href="javascript:void(0)" @click="showPolicy('terms')">Términos de Servicio</a>
@@ -158,6 +153,9 @@
             <span class="separator">•</span>
             <a href="javascript:void(0)" @click="showPolicy('data')">Protección de Datos</a>
           </div>
+          <p class="copyright-text">
+            © 2026 <span class="brand-name">STYLEHUB</span>. Todos los derechos reservados.
+          </p>
         </v-col>
       </v-row>
     </v-container>
@@ -587,26 +585,55 @@ const suscribirse = () => {
 
 .legal-links {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
+  padding: 12px 0;
 }
 
 .legal-links a {
-  color: #6b7280;
+  color: #9ca3af;
   text-decoration: none;
   font-size: 0.9rem;
-  transition: color 0.3s ease;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  display: inline-block;
+  font-family: 'DM Sans', sans-serif;
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+
+.legal-links a::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #ee6f38, #ff9a6c);
+  transform: translateX(-50%);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 1px;
 }
 
 .legal-links a:hover {
   color: #ee6f38;
+  background: rgba(238, 111, 56, 0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(238, 111, 56, 0.15);
+}
+
+.legal-links a:hover::before {
+  width: 70%;
 }
 
 .separator {
-  color: #6b7280;
-  font-size: 0.8rem;
+  color: rgba(238, 111, 56, 0.4);
+  font-size: 0.9rem;
+  font-weight: 300;
 }
 
 /* Responsive */

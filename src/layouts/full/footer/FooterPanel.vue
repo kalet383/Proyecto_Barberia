@@ -13,7 +13,7 @@ const footerLink = shallowRef<FooterLink[]>([]);
     <v-row justify="center" align="center" no-gutters>
       <v-col cols="12" sm="6">
         <p class="text-body-1 mb-0 text-sm-left text-center">
-          @ 2025 Stylehub ♥ todos los derechos reservados
+          @ 2026 Stylehub ♥ todos los derechos reservados
         </p>
       </v-col>
       <v-col class="text-sm-right text-center" cols="12" sm="6">

@@ -2,12 +2,23 @@ import { defineStore } from 'pinia';
 import api from '@/plugins/axios';
 import axios from 'axios';
 
+export interface User {
+  id: number | string;
+  nombre: string;
+  apellido: string;
+  email: string;
+  role: string;
+  Role?: string;
+  foto?: string;
+  [key: string]: any;
+}
+
 interface AuthState {
-  user: Record<string, unknown> | null; // Tipo genérico hasta definir User
+  user: User | null;
   loading: boolean;
   error: string | null;
   returnUrl: string | null;
-  menu: number | null; // Ajusta el tipo según tu estructura de menú
+  menu: number | null;
 }
 
 export const useAuthStore = defineStore('auth', {
@@ -59,6 +70,43 @@ export const useAuthStore = defineStore('auth', {
           throw err.response.data.message;
         }
         throw 'Login failed';
+      }
+    },
+
+    async loginWithGoogle(idToken: string) {
+      try {
+        // Enviar el token de Google al backend
+        const res = await api.post('/auth/google', { token: idToken }, { withCredentials: true });
+        this.user = res.data.user;
+
+        // Normalizar rol en minúsculas para uso consistente en la app
+        const rawRole = (this.user as any).Role || (this.user as any).role;
+        if (rawRole) {
+          (this.user as any).role = String(rawRole).toLowerCase();
+        }
+
+        if (this.user && (this.user as any).role == 'cliente') {
+          this.menu = 2;
+        }
+        if (this.user && (this.user as any).role == 'administrador') {
+          this.menu = 0;
+        }
+        if (this.user && (this.user as any).role == 'barbero') {
+          this.menu = 1;
+        }
+        if (this.user && (this.user as any).role == 'superadmin') {
+          this.menu = 3;
+        }
+
+        return {
+          ...res.data,
+          role: (this.user as any).role
+        };
+      } catch (err: unknown) {
+        if (axios.isAxiosError(err) && err.response?.data?.message) {
+          throw err.response.data.message;
+        }
+        throw 'Fallo en la autenticación con Google';
       }
     },
 
@@ -132,8 +180,13 @@ export const useAuthStore = defineStore('auth', {
       // 🎯 Resetear estado
       this.resetAuthState();
       
-      // 🎯 Limpiar localStorage
+      // 🎯 Limpiar datos de sesión pero PRESERVAR la preferencia de tema
+      const themeMode = localStorage.getItem('themeMode');
       localStorage.clear();
+      if (themeMode) {
+        localStorage.setItem('themeMode', themeMode);
+      }
+      
       sessionStorage.clear();
       
       // 🎯 Limpiar cookies (si existen)

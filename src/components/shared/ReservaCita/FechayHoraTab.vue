@@ -1,66 +1,88 @@
 <template>
   <v-container class="fecha-hora-container">
-    <h3 class="text-h3 mb-4">Selecciona una fecha y hora</h3>
+    <div class="section-header mb-5">
+        <div class="title-accent"></div>
+        <h3 class="section-title" :style="{ color: txtPrimary }">Selecciona fecha y hora</h3>
+    </div>
 
     <div class="scroll-fecha-hora">
-      <!-- 🔹 Selector de fecha horizontal estilo moderno -->
-      <v-card class="pa-4 mb-6" elevation="2" rounded="lg">
-        <div class="d-flex justify-space-between align-center mb-4">
+      <!-- Selector de fecha -->
+      <div class="fecha-card mb-4" :style="{ background: cardBg, border: `1.5px solid ${cardBorder}` }">
+        <div class="fecha-card-header">
           <div>
-            <v-label class="text-subtitle-1 d-block mb-1">Selecciona un día</v-label>
-            <span class="mes-anio">{{ mesYAnioActual }}</span>
+            <span class="card-label">Día de la cita</span>
+            <span class="mes-anio" :style="{ color: txtPrimary }">{{ mesYAnioActual }}</span>
           </div>
-          <div class="d-flex ga-2 align-center position-relative">
-            <!-- 🆕 Botón para abrir calendario completo con v-menu -->
+          <div class="nav-controls">
+            <!-- Calendario completo -->
             <v-menu v-model="mostrarCalendario" :close-on-content-click="false" location="bottom end" offset="8">
-              <template v-slot:activator="{ props }">
-                <v-btn icon size="small" variant="outlined" color="#ee6f38"v-bind="props"title="Ver calendario completo">
+              <template v-slot:activator="{ props: menuProps }">
+                <v-btn
+                  v-bind="menuProps"
+                  class="nav-btn calendar-btn"
+                  density="comfortable"
+                  icon
+                  variant="flat"
+                  title="Ver calendario completo"
+                >
                   <i class="fas fa-calendar-alt"></i>
                 </v-btn>
               </template>
-
-              <v-card min-width="320">
+              <v-card min-width="320" rounded="lg" elevation="12" :style="{ background: cardBg, border: `1px solid ${cardBorder}` }">
                 <v-card-text class="pa-0">
-                  <v-date-picker v-model="fechaCalendario" :min="fechaMinima" color="#ee6f38" show-adjacent-months hide-header elevation="0" @update:model-value="aplicarFechaCalendario"></v-date-picker>
+                  <v-date-picker 
+                    v-model="fechaCalendario" 
+                    :min="fechaMinima" 
+                    :max="fechaMaxima" 
+                    color="#ee6f38" 
+                    show-adjacent-months 
+                    hide-header 
+                    elevation="0" 
+                    @update:model-value="aplicarFechaCalendario"
+                    :theme="isDark ? 'dark' : 'light'"
+                    class="custom-date-picker"
+                  ></v-date-picker>
                 </v-card-text>
               </v-card>
             </v-menu>
             
-            <v-btn icon size="small" variant="outlined" color="black" @click="semanaAnterior">
-              <i class="fas fa-chevron-left"></i>
-            </v-btn>
-            <v-btn icon size="small" variant="outlined" color="black" @click="semanaSiguiente">
-              <i class="fas fa-chevron-right"></i>
-            </v-btn>
+            <button class="nav-btn" @click="semanaAnterior" :style="{ borderColor: cardBorder, color: txtSecondary }"><i class="fas fa-chevron-left"></i></button>
+            <button class="nav-btn" @click="semanaSiguiente" :style="{ borderColor: cardBorder, color: txtSecondary }"><i class="fas fa-chevron-right"></i></button>
           </div>
         </div>
 
-        <!-- Días en formato horizontal -->
-        <div class="dias-horizontales">
-          <div v-for="(date, index) in diasVisibles" :key="index" class="dia-card"
+        <!-- Días horizontales -->
+        <div class="dias-grid">
+          <button
+            v-for="(date, index) in diasVisibles"
+            :key="index"
+            class="dia-btn"
             :class="{ 
               'dia-seleccionado': esMismaFecha(date, fechaSeleccionada),
               'dia-hoy': esHoy(date) && !esMismaFecha(date, fechaSeleccionada),
-              'dia-deshabilitado': esDiaPasado(date)
+              'dia-deshabilitado': esDiaFueraDeRango(date)
             }"
+            :disabled="esDiaFueraDeRango(date)"
             @click="seleccionarDia(date)"
+            :style="!esMismaFecha(date, fechaSeleccionada) ? { background: headerBg, borderColor: cardBorder, color: txtPrimary } : {}"
           >
-            <span class="dia-nombre">{{ obtenerNombreDia(date) }}</span>
-            <span class="dia-numero">{{ date.getDate() }}</span>
-          </div>
+            <span class="dia-nombre" :style="{ color: esMismaFecha(date, fechaSeleccionada) ? 'white' : txtSecondary }">{{ obtenerNombreDia(date) }}</span>
+            <span class="dia-numero" :style="{ color: esMismaFecha(date, fechaSeleccionada) ? 'white' : txtPrimary }">{{ date.getDate() }}</span>
+            <span v-if="esHoy(date)" class="dia-hoy-dot"></span>
+          </button>
         </div>
-      </v-card>
+      </div>
 
-      <!-- 🔹 Selector de hora con input type="time" -->
-      <v-card class="pa-4" elevation="2" rounded="lg">
-        <v-label class="text-subtitle-1 mb-2">
-          <i class="fas fa-clock mr-2"></i>
-          Selecciona una hora
-        </v-label>
+      <!-- Selector de hora -->
+      <div class="hora-card" :style="{ background: cardBg, border: `1.5px solid ${cardBorder}` }">
+        <div class="hora-card-header">
+          <i class="fas fa-clock hora-icon"></i>
+          <span class="card-label">Hora de la cita</span>
+        </div>
         
-        <div v-if="!fechaSeleccionada" class="text-center py-4 text-grey">
-          <i class="fas fa-calendar-day mr-2"></i>
-          Primero selecciona una fecha
+        <div v-if="!fechaSeleccionada" class="hora-placeholder">
+          <i class="fas fa-calendar-day placeholder-icon" :style="{ color: isDark ? '#374151' : '#eee' }"></i>
+          <p :style="{ color: txtSecondary }">Selecciona primero una fecha</p>
         </div>
         
         <div v-else class="hora-selector">
@@ -75,36 +97,38 @@
             :min="horaMinima"
             :class="{ 'hora-invalida': esHoraInvalida }"
             @blur="validarHora"
+            :base-color="cardBorder"
+            :color="isDark ? 'orange' : '#ee6f38'"
           >
             <template v-slot:prepend-inner>
-              <i class="fas fa-clock" style="color: #666; font-size: 18px;"></i>
+              <i class="fas fa-clock" style="color: #ee6f38; font-size: 16px;"></i>
             </template>
           </v-text-field>
           
-          <!-- Mensaje de ayuda/error -->
-          <div v-if="esHoy(fechaSeleccionada)" class="mt-2">
-            <div v-if="esHoraInvalida" class="text-caption error-text">
-              <i class="fas fa-exclamation-circle mr-1"></i>
-              No puedes seleccionar una hora que ya pasó. Hora mínima: {{ formatearHoraMinima }}
-            </div>
-            <div v-else class="text-caption text-grey">
-              <i class="fas fa-info-circle mr-1"></i>
-              Puedes seleccionar desde las {{ formatearHoraMinima }} en adelante
-            </div>
+          <div v-if="esHoy(fechaSeleccionada)" class="hora-hint" :class="{ error: esHoraInvalida }" :style="!esHoraInvalida ? { background: headerBg, color: txtSecondary } : {}">
+            <i :class="['fas mr-1', esHoraInvalida ? 'fa-exclamation-circle' : 'fa-info-circle']"></i>
+            <span v-if="esHoraInvalida">Hora inválida. Mínima: {{ formatearHoraMinima }}</span>
+            <span v-else>Disponible desde las {{ formatearHoraMinima }}</span>
           </div>
         </div>
-      </v-card>
+      </div>
 
-      <!-- 🔹 Resumen temporal -->
-      <div v-if="fechaSeleccionada && horaSeleccionada && !esHoraInvalida" class="resumen-seleccion mt-6">
-        <v-alert type="success" border="start" color="#ee6f38" variant="tonal">
-          <div class="d-flex align-center mb-2">
-            <i class="fas fa-check-circle mr-2"></i>
-            <strong>Tu Cita:</strong>
-          </div>
-          <i class="fas fa-calendar-alt mr-2"></i>{{ formatearFecha(fechaSeleccionada) }}<br>
-          <i class="fas fa-clock mr-2"></i>Hora: {{ formatearHora(horaSeleccionada) }}
-        </v-alert>
+      <!-- Resumen de selección -->
+      <div v-if="fechaSeleccionada && horaSeleccionada && !esHoraInvalida" class="resumen-cita mt-6">
+        <div class="resumen-icon">
+            <i class="fas fa-check"></i>
+        </div>
+        <div class="resumen-info">
+            <span class="resumen-titulo">Tu cita programada</span>
+            <span class="resumen-fecha" :style="{ color: txtPrimary }">
+                <i class="fas fa-calendar-alt mr-1"></i>
+                {{ formatearFecha(fechaSeleccionada) }}
+            </span>
+            <span class="resumen-hora" :style="{ color: txtPrimary }">
+                <i class="fas fa-clock mr-1"></i>
+                {{ formatearHora(horaSeleccionada) }}
+            </span>
+        </div>
       </div>
     </div>
   </v-container>
@@ -113,57 +137,61 @@
 <script setup>
   import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
   import { useReservaStore } from '@/stores/reserva'
+  import { useCustomizerStore } from '@/stores/customizer'
 
   const reservaStore = useReservaStore()
+  const customizer = useCustomizerStore()
+  
+  const isDark = computed(() => customizer.activeTheme === 'DarkTheme');
+  
+  // Adaptive Colors
+  const txtPrimary = computed(() => isDark.value ? '#f3f4f6' : '#1a1a1a');
+  const txtSecondary = computed(() => isDark.value ? '#9ca3af' : '#666');
+  const cardBg = computed(() => isDark.value ? '#111827' : '#ffffff');
+  const cardBorder = computed(() => isDark.value ? '#1f2937' : '#eeeeee');
+  const headerBg = computed(() => isDark.value ? '#1e293b' : '#fafafa');
+
   const emit = defineEmits(['emit-fechay-hora', 'estado-fechayhora-siguiente'])
   const fechaSeleccionada = ref(null)
   const horaSeleccionada = ref(null)
   const semanaActual = ref(new Date())
-  const horaActual = ref(new Date()) // 🆕 Ref para la hora actual que se actualiza
-  const intervalId = ref(null) // 🆕 Para guardar el ID del intervalo
-  const mostrarCalendario = ref(false) // 🆕 Para controlar el diálogo del calendario
-  const fechaCalendario = ref(null) // 🆕 Para el v-date-picker
+  const horaActual = ref(new Date())
+  const intervalId = ref(null)
+  const mostrarCalendario = ref(false)
+  const fechaCalendario = ref(null)
   
-  const nombresMeses = [
-    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-  ]
+  const nombresMeses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 
-  // 🆕 Computed para la fecha mínima (hoy)
   const fechaMinima = computed(() => {
-    const hoy = new Date()
-    return hoy.toISOString().split('T')[0]
+    return new Date().toISOString().split('T')[0]
   })
 
-  // 🆕 Función para aplicar la fecha seleccionada del calendario
+  const fechaMaxima = computed(() => {
+    const hoy = new Date()
+    const max = new Date(hoy)
+    max.setMonth(hoy.getMonth() + 2)
+    return max.toISOString().split('T')[0]
+  })
+
   const aplicarFechaCalendario = (fecha) => {
     if (fecha) {
-      // Convertir la fecha del calendario a objeto Date
       const fechaObj = new Date(fecha)
       fechaSeleccionada.value = fechaObj
-      
-      // Actualizar la semana visible para que incluya esta fecha
       semanaActual.value = new Date(fechaObj)
-      
-      // Cerrar el menú
       mostrarCalendario.value = false
     }
   }
 
-  // 🆕 Computed reactivo que usa horaActual en lugar de new Date()
   const horaMinima = computed(() => {
     if (!fechaSeleccionada.value) return '00:00'
-    
     if (esHoy(fechaSeleccionada.value)) {
       const horas = String(horaActual.value.getHours()).padStart(2, '0')
       const minutos = String(horaActual.value.getMinutes()).padStart(2, '0')
       return `${horas}:${minutos}`
     }
-    
     return '00:00'
   })
 
-  // Computed para formatear la hora mínima en formato legible
   const formatearHoraMinima = computed(() => {
     if (!horaMinima.value) return ''
     const [h, m] = horaMinima.value.split(':').map(Number)
@@ -172,238 +200,155 @@
     return `${h12}:${m.toString().padStart(2, '0')} ${ampm}`
   })
 
-  // Computed para verificar si la hora seleccionada es inválida
   const esHoraInvalida = computed(() => {
     if (!fechaSeleccionada.value || !horaSeleccionada.value) return false
-    
-    // Solo validar si es hoy
-    if (esHoy(fechaSeleccionada.value)) {
-      return horaSeleccionada.value < horaMinima.value
-    }
-    
+    if (esHoy(fechaSeleccionada.value)) return horaSeleccionada.value < horaMinima.value
     return false
   })
 
-  // Función para validar la hora cuando el usuario termina de editarla
   const validarHora = () => {
-    if (esHoraInvalida.value) {
-      // Limpiar la hora si es inválida
-      horaSeleccionada.value = null
-    }
+    if (esHoraInvalida.value) horaSeleccionada.value = null
   }
 
-  // Función para verificar si un día ya pasó
-  const esDiaPasado = (fecha) => {
-    const hoy = new Date()
-    hoy.setHours(0, 0, 0, 0)
-    const fechaComparar = new Date(fecha)
-    fechaComparar.setHours(0, 0, 0, 0)
-    return fechaComparar < hoy
+  const esDiaFueraDeRango = (fecha) => {
+    const hoy = new Date(); hoy.setHours(0, 0, 0, 0)
+    const limite = new Date(hoy); limite.setMonth(hoy.getMonth() + 2)
+    const fechaComparar = new Date(fecha); fechaComparar.setHours(0, 0, 0, 0)
+    return fechaComparar < hoy || fechaComparar > limite
   }
 
-  // 🆕 Iniciar intervalo para actualizar la hora sincronizado con el reloj del sistema
   const iniciarActualizacionHora = () => {
-    // Actualizar inmediatamente
     horaActual.value = new Date()
-    
-    // Función que actualiza la hora y valida
     const actualizarYValidar = () => {
       horaActual.value = new Date()
-      
-      // Si hay una hora seleccionada y ahora es inválida, limpiarla
-      if (horaSeleccionada.value && esHoraInvalida.value) {
-        horaSeleccionada.value = null
-      }
+      if (horaSeleccionada.value && esHoraInvalida.value) horaSeleccionada.value = null
     }
-    
-    // Calcular cuántos milisegundos faltan para el próximo minuto
     const ahora = new Date()
     const segundosRestantes = 60 - ahora.getSeconds()
     const milisegundosRestantes = (segundosRestantes * 1000) - ahora.getMilliseconds()
-    
-    // Programar la primera actualización exactamente cuando cambie el minuto
     setTimeout(() => {
       actualizarYValidar()
-      
-      // Después de la primera sincronización, actualizar cada minuto exacto
       intervalId.value = setInterval(actualizarYValidar, 60000)
     }, milisegundosRestantes)
   }
 
-  // 🆕 Detener el intervalo cuando el componente se desmonte
   const detenerActualizacionHora = () => {
-    if (intervalId.value) {
-      clearInterval(intervalId.value)
-      intervalId.value = null
-    }
-    // También limpiar cualquier setTimeout pendiente si existe
-    // (aunque el setTimeout se ejecuta una sola vez, es buena práctica)
+    if (intervalId.value) { clearInterval(intervalId.value); intervalId.value = null }
   }
 
-  // Cargar valores previos si existen
   onMounted(() => {
-    // Iniciar actualización de hora
     iniciarActualizacionHora()
-    
     if (reservaStore.fechaSeleccionada) {
       const f = reservaStore.fechaSeleccionada
       fechaSeleccionada.value = typeof f === 'string' ? new Date(f + 'T00:00:00') : f
       semanaActual.value = new Date(fechaSeleccionada.value)
-      // 🆕 También actualizar fechaCalendario
       fechaCalendario.value = reservaStore.fechaSeleccionada
-    }
-    if (fechaSeleccionada.value) {
-      semanaActual.value = new Date(fechaSeleccionada.value)
     }
     if (reservaStore.horaSeleccionada) {
       horaSeleccionada.value = reservaStore.horaSeleccionada
     }
   })
 
-  // 🆕 Limpiar intervalo al desmontar
-  onUnmounted(() => {
-    detenerActualizacionHora()
+  onUnmounted(() => { detenerActualizacionHora() })
+
+  const mesYAnioActual = computed(() => {
+    const fecha = semanaActual.value
+    return `${nombresMeses[fecha.getMonth()]} ${fecha.getFullYear()}`
   })
 
-  // Generar 7 días visibles desde la semana actual
   const diasVisibles = computed(() => {
     const dias = []
     const inicio = new Date(semanaActual.value)
-    
+    const diaSemana = inicio.getDay()
+    inicio.setDate(inicio.getDate() - diaSemana)
     for (let i = 0; i < 7; i++) {
-      const fecha = new Date(inicio)
-      fecha.setDate(inicio.getDate() + i)
-      dias.push(fecha)
+      const d = new Date(inicio)
+      d.setDate(inicio.getDate() + i)
+      dias.push(d)
     }
     return dias
   })
 
-  // Watch para detectar cambios y validar
-  watch([fechaSeleccionada, horaSeleccionada], ([nuevaFecha, nuevaHora]) => {
-    const ambosSeleccionados = !!(nuevaFecha && nuevaHora && nuevaHora.trim() !== '')
-    
-    // Solo habilitar el botón si ambos están seleccionados Y la hora es válida
-    const esValido = ambosSeleccionados && !esHoraInvalida.value
-    
-    emit('estado-fechayhora-siguiente', esValido)
-    
-    if (esValido) {
-      actualizarFechayHora()
+  const semanaAnterior = () => {
+    const hoy = new Date()
+    hoy.setHours(0, 0, 0, 0)
+    const domingoActual = new Date(semanaActual.value)
+    domingoActual.setDate(domingoActual.getDate() - domingoActual.getDay())
+    domingoActual.setHours(0, 0, 0, 0)
+    const domingoHoy = new Date(hoy)
+    domingoHoy.setDate(domingoHoy.getDate() - domingoHoy.getDay())
+    domingoHoy.setHours(0, 0, 0, 0)
+
+    if (domingoActual > domingoHoy) {
+      const nueva = new Date(semanaActual.value)
+      nueva.setDate(nueva.getDate() - 7)
+      semanaActual.value = nueva
     }
-  }, { deep: true })
-
-  // Watch para limpiar hora si cambia la fecha y la hora ya no es válida
-  watch(fechaSeleccionada, (nuevaFecha) => {
-    if (nuevaFecha && horaSeleccionada.value) {
-      if (esHoy(nuevaFecha) && horaSeleccionada.value < horaMinima.value) {
-        horaSeleccionada.value = null
-      }
-    }
-  })
-
-  // Obtener mes y año actual de la semana visible
-  const mesYAnioActual = computed(() => {
-    const fechaMedia = diasVisibles.value[3] || semanaActual.value
-    return `${nombresMeses[fechaMedia.getMonth()]} ${fechaMedia.getFullYear()}`
-  })
-
-  const semanaSiguiente = () => {
-    const nuevaFecha = new Date(semanaActual.value)
-    nuevaFecha.setDate(nuevaFecha.getDate() + 7)
-    semanaActual.value = nuevaFecha
   }
 
-  const semanaAnterior = () => {
-    const nuevaFecha = new Date(semanaActual.value)
-    nuevaFecha.setDate(nuevaFecha.getDate() - 7)
-    semanaActual.value = nuevaFecha
+  const semanaSiguiente = () => {
+    const nueva = new Date(semanaActual.value)
+    nueva.setDate(nueva.getDate() + 7)
+    semanaActual.value = nueva
+  }
+
+  const esMismaFecha = (a, b) => {
+    if (!a || !b) return false
+    const da = new Date(a); const db = new Date(b)
+    return da.getFullYear() === db.getFullYear() && da.getMonth() === db.getMonth() && da.getDate() === db.getDate()
   }
 
   const esHoy = (fecha) => {
+    if (!fecha) return false
     const hoy = new Date()
-    return fecha.toDateString() === hoy.toDateString()
-  }
-
-  const esMismaFecha = (fecha1, fecha2) => {
-    if (!fecha1 || !fecha2) return false
-    const f1 = new Date(fecha1)
-    const f2 = new Date(fecha2)
-    return f1.toDateString() === f2.toDateString()
+    return esMismaFecha(fecha, hoy)
   }
 
   const obtenerNombreDia = (fecha) => {
-    const nombres = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb']
-    return nombres[fecha.getDay()]
+    const dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
+    return dias[new Date(fecha).getDay()]
   }
 
   const seleccionarDia = (fecha) => {
-    if (esDiaPasado(fecha)) {
-      return
-    }
+    if (esDiaFueraDeRango(fecha)) return
     fechaSeleccionada.value = fecha
   }
 
   const actualizarFechayHora = () => {
     if (!fechaSeleccionada.value || !horaSeleccionada.value) return
-
     let fechaISO = ''
-
     if (fechaSeleccionada.value instanceof Date && !isNaN(fechaSeleccionada.value)) {
       fechaISO = fechaSeleccionada.value.toISOString().split('T')[0]
-    } 
-    else if (typeof fechaSeleccionada.value === 'string') {
-      const partes = fechaSeleccionada.value.match(/(\d{1,2}) de (\w+) de (\d{4})/)
-      if (partes) {
-        const [_, dia, mesTexto, año] = partes
-        const meses = {
-          enero: 0, febrero: 1, marzo: 2, abril: 3, mayo: 4, junio: 5,
-          julio: 6, agosto: 7, septiembre: 8, octubre: 9, noviembre: 10, diciembre: 11
-        }
-        const fecha = new Date(año, meses[mesTexto.toLowerCase()], dia)
-        fechaISO = fecha.toISOString().split('T')[0]
-      }
     }
     reservaStore.setFechaHora(fechaISO, horaSeleccionada.value)
   }
 
+  watch([fechaSeleccionada, horaSeleccionada], ([fecha, hora]) => {
+    if (fecha && hora && !esHoraInvalida.value) {
+      actualizarFechayHora()
+      emit('emit-fechay-hora', { fecha, hora })
+      emit('estado-fechayhora-siguiente', true)
+    } else {
+      emit('estado-fechayhora-siguiente', false)
+    }
+  })
+
   const formatearFecha = (fecha) => {
     if (!fecha) return ''
-
     let dateObj = null
-
     if (fecha instanceof Date && !isNaN(fecha)) {
       dateObj = fecha
     } else if (typeof fecha === 'string') {
       if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
         dateObj = new Date(fecha + 'T00:00:00')
-      } else {
-        const partes = fecha.match(/(\d{1,2})\s+de\s+([a-zA-Záéíóúñ]+)\s+de\s+(\d{4})/i)
-        if (partes) {
-          const [, dia, mesTexto, anio] = partes
-          const meses = {
-            enero: 0, febrero: 1, marzo: 2, abril: 3, mayo: 4, junio: 5,
-            julio: 6, agosto: 7, septiembre: 8, octubre: 9, noviembre: 10, diciembre: 11
-          }
-          const mesIndex = meses[mesTexto.toLowerCase()]
-          if (mesIndex !== undefined) {
-            dateObj = new Date(Number(anio), mesIndex, Number(dia))
-          }
-        } else {
-          const intento = new Date(fecha)
-          if (!isNaN(intento)) dateObj = intento
-        }
       }
     }
-
-    if (!dateObj || isNaN(dateObj)) return 'Invalid Date'
-
-    const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
-    return dateObj.toLocaleDateString('es-ES', opciones)
+    if (!dateObj || isNaN(dateObj)) return ''
+    return dateObj.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
   }
 
   const formatearHora = (hora) => {
     if (!hora) return ''
-
     if (/^\d{1,2}:\d{2}$/.test(hora)) {
       const [hoursStr, minutes] = hora.split(':')
       const h = parseInt(hoursStr, 10)
@@ -411,181 +356,210 @@
       const h12 = h % 12 || 12
       return `${h12}:${minutes} ${ampm}`
     }
-
-    if (typeof hora === 'string') {
-      const normalized = hora.replace(/\./g, '').trim()
-      return normalized.toUpperCase()
-    }
-
     return String(hora)
   }
 </script>
 
 <style scoped>
   .fecha-hora-container {
-    max-width: 700px;
-    margin-left: 40px;
+    max-width: 600px;
+    margin-left: 32px;
     text-align: left;
+    padding: 8px 0;
+  }
+
+  .section-header { display: flex; align-items: center; gap: 12px; }
+
+  .title-accent {
+    width: 4px;
+    height: 28px;
+    background: linear-gradient(180deg, #ee6f38, #ff9a6c);
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.3px;
   }
 
   .scroll-fecha-hora {
-    max-height: 600px;
+    max-height: 540px;
     overflow-y: auto;
-    padding-right: 8px;
+    padding-right: 6px;
   }
 
-  .scroll-fecha-hora::-webkit-scrollbar {
-    width: 8px;
+  .scroll-fecha-hora::-webkit-scrollbar { width: 4px; }
+  .scroll-fecha-hora::-webkit-scrollbar-thumb { background: #ee6f38; border-radius: 4px; }
+
+  .fecha-card, .hora-card {
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
   }
 
-  .scroll-fecha-hora::-webkit-scrollbar-thumb {
-    background-color: #b0b0b0;
-    border-radius: 10px;
+  .fecha-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
   }
 
-  .scroll-fecha-hora::-webkit-scrollbar-thumb:hover {
-    background-color: #8c8c8c;
+  .card-label {
+    display: block;
+    font-size: 0.72rem;
+    color: #9e9e9e;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-weight: 700;
+    margin-bottom: 3px;
   }
 
   .mes-anio {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: black;
+    font-size: 1.1rem;
+    font-weight: 800;
     text-transform: capitalize;
   }
 
-  /* Diseño horizontal de días */
-  .dias-horizontales {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 12px;
+  .nav-controls { display: flex; gap: 8px; align-items: center; }
+
+  .nav-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    border: 1.5px solid;
+    background: transparent;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
   }
 
-  .dia-card {
+  .nav-btn:hover { border-color: #ee6f38 !important; color: #ee6f38 !important; }
+
+  .calendar-btn {
+    background: linear-gradient(135deg, #ee6f38, #ff9a6c);
+    border-color: transparent !important;
+    color: white !important;
+  }
+
+  .dias-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
+
+  .dia-btn {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 16px 8px;
-    background-color: #f5f5f5;
-    border-radius: 12px;
+    padding: 14px 4px;
+    border-radius: 14px;
+    border: 1.5px solid;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
     position: relative;
     user-select: none;
   }
 
-  .dia-card:hover {
-    background-color: #e0e0e0;
-    transform: translateY(-2px);
+  .dia-btn:not(.dia-deshabilitado):hover {
+    border-color: #ee6f38 !important;
+    transform: translateY(-4px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
   }
 
-  .dia-deshabilitado {
-    background-color: #fafafa;
-    color: #bdbdbd;
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
-
-  .dia-deshabilitado:hover {
-    background-color: #fafafa;
-    transform: none;
-  }
+  .dia-deshabilitado { opacity: 0.2; cursor: not-allowed; }
 
   .dia-seleccionado {
-    background: linear-gradient(135deg, #ee6f38 0%, #ee6f38 100%);
-    color: white;
-    box-shadow: 0 4px 12px rgba(238, 111, 56, 0.3);
-    transform: scale(1.05);
+    background: linear-gradient(135deg, #ee6f38, #ff9a6c) !important;
+    border-color: transparent !important;
+    color: white !important;
+    box-shadow: 0 8px 20px rgba(238, 111, 56, 0.4) !important;
+    transform: translateY(-4px) scale(1.05);
   }
 
-  .dia-hoy {
-    border: 2px solid #ee6f38;
-  }
+  .dia-hoy { border-color: rgba(238, 111, 56, 0.6) !important; }
 
-  .dia-hoy::after {
-    content: '';
+  .dia-hoy-dot {
     position: absolute;
-    bottom: 4px;
-    width: 6px;
-    height: 6px;
+    bottom: 6px;
+    width: 4px;
+    height: 4px;
     border-radius: 50%;
-    background-color: #ee6f38;
+    background: #ee6f38;
   }
 
-  .dia-seleccionado.dia-hoy::after {
-    background-color: white;
+  .dia-seleccionado .dia-hoy-dot { background: white; }
+
+  .dia-nombre { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .dia-numero { font-size: 1.4rem; font-weight: 900; line-height: 1; }
+
+  .hora-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .hora-icon { color: #ee6f38; font-size: 18px; }
+
+  .hora-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px;
+    text-align: center;
   }
 
-  .dia-nombre {
-    font-size: 0.75rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    margin-bottom: 4px;
-    opacity: 0.8;
-  }
+  .placeholder-icon { font-size: 40px; margin-bottom: 12px; }
+  .hora-placeholder p { font-size: 0.9rem; font-weight: 600; margin: 0; }
 
-  .dia-numero {
-    font-size: 1.5rem;
-    font-weight: 700;
-  }
+  .time-input { max-width: 260px; }
+  .time-input :deep(.v-field) { border-radius: 14px !important; }
+  .time-input :deep(input[type="time"]) { font-size: 1.1rem; font-weight: 800; color: v-bind(txtPrimary); }
+  .time-input :deep(input[type="time"]::-webkit-calendar-picker-indicator) { filter: v-bind(isDark ? 'invert(1)' : 'none'); }
 
-  /* Selector de hora */
-  .hora-selector {
+  .hora-invalida :deep(.v-field) { background-color: rgba(229, 57, 53, 0.05) !important; border-color: #e53935 !important; }
+
+  .hora-hint {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     margin-top: 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 10px 16px;
+    border-radius: 10px;
+    max-width: 360px;
   }
 
-  .time-input {
-    max-width: 250px;
+  .hora-hint.error { color: #e53935; background: rgba(229, 57, 53, 0.1); }
+
+  .resumen-cita {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(238, 111, 56, 0.12), rgba(238, 111, 56, 0.05));
+    border: 1px solid rgba(238, 111, 56, 0.3);
   }
 
-  .time-input :deep(input[type="time"]) {
-    font-size: 1.1rem;
-    font-weight: 500;
+  .resumen-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: #ee6f38;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    box-shadow: 0 4px 12px rgba(238, 111, 56, 0.4);
   }
 
-  .time-input :deep(input[type="time"]::-webkit-calendar-picker-indicator) {
-    cursor: pointer;
-    font-size: 1.2rem;
-    opacity: 0.6;
-    transition: opacity 0.2s;
-  }
+  .resumen-info { display: flex; flex-direction: column; gap: 4px; }
+  .resumen-titulo { font-size: 0.7rem; font-weight: 800; color: #ee6f38; text-transform: uppercase; letter-spacing: 1px; }
+  .resumen-fecha, .resumen-hora { font-size: 0.95rem; font-weight: 700; text-transform: capitalize; display: flex; align-items: center; }
+  .resumen-fecha i, .resumen-hora i { color: #ee6f38; width: 20px; }
 
-  .time-input :deep(input[type="time"]::-webkit-calendar-picker-indicator:hover) {
-    opacity: 1;
-  }
-
-  /* Estilo para hora inválida */
-  .hora-invalida :deep(.v-field) {
-    border: 2px solid #d32f2f !important;
-    background-color: #ffebee;
-  }
-
-  .hora-invalida :deep(input) {
-    color: #d32f2f;
-  }
-
-  .error-text {
-    color: #d32f2f;
-    font-weight: 500;
-  }
-
-  .text-grey {
-    color: #757575;
-    font-size: 0.95rem;
-  }
-
-  .fas {
-    vertical-align: middle;
-  }
-
-  /* Responsive */
   @media (max-width: 600px) {
-    .dias-horizontales {
-      grid-template-columns: repeat(4, 1fr);
-    }
-    
-    .fecha-hora-container {
-      margin-left: 0;
-    }
+    .dias-grid { grid-template-columns: repeat(4, 1fr); }
+    .fecha-hora-container { margin-left: 0; padding: 16px; }
   }
 </style>
